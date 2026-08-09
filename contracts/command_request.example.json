@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "request_id": "example-001",
+  "action": "give_perk",
+  "target_xuid": "1111111111111111",
+  "arguments": {
+    "perk": "jug"
+  },
+  "requested_at_utc": "2026-08-02T16:25:00Z",
+  "mode": "simulation"
+}

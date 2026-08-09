@@ -1,0 +1,83 @@
+PINTE MOD CONTROL CENTER v2.2 — MVP PREVIEW
+===========================================
+
+Cette version est une préversion opérateur. Elle peut être utilisée sans installer
+le SDK .NET lorsque le paquet portable Windows x64 complet est fourni.
+
+DÉMARRAGE
+---------
+
+1. Décompressez entièrement l’archive dans un dossier normal.
+2. Lancez PinteMod.ControlCenter.exe.
+3. Au premier lancement, l’application utilise des données simulées.
+4. Dans Paramètres, choisissez LOCAL ou LAN puis indiquez explicitement le dossier
+   UnrankedServer contenant le sous-dossier boiii.
+5. Cliquez sur TESTER LA SOURCE. Ce contrôle est strictement en lecture seule.
+6. Si le résultat est PRÊT ou PARTIEL, vous pouvez enregistrer cette source pour le
+   prochain démarrage.
+
+RCON — FACULTATIF ET MANUEL
+--------------------------
+
+- Les essais terrain peuvent être regroupés à la fin ; ne testez une action destructive que sur un serveur dont vous acceptez de modifier la partie.
+- Une copie des fichiers serveur ne peut pas répondre en RCON : BOIII doit déjà être
+  lancé par l’opérateur.
+- Aucun diagnostic n’est envoyé automatiquement.
+- Les diagnostics disponibles sont ezzhealth full, ezzpausestatus, ezzmap,
+  ezzpowerstatus, ezzpapstatus, ezzround, ezzplayers, ezzmapaudit full,
+  ezzeventstatus et ezzpowerups.
+- Les diagnostics Carte, Courant, Pack-a-Punch, Manche et Joueurs sont strictement
+  read-only. Leur réponse est neutralisée avant affichage.
+- Les réponses diagnostics et les événements visibles de la Live Console peuvent être
+  copiés localement ; seules les valeurs déjà neutralisées sont utilisées.
+- Ne communiquez jamais votre secret RCON. Il est protégé localement avec DPAPI et
+  n’est jamais réaffiché.
+- Les actions serveur autorisées couvrent manche, courant, Pack-a-Punch, musique,
+  passages standard, zombies et délai des power-ups PinteMod.
+- En mode hybride, les actions joueur autorisées utilisent uniquement le BOIII_XUID
+  issu des logs locaux : assistance, armes/atouts, power-ups, téléportation,
+  modération et rôle.
+- Chaque mutation exige une confirmation, ne fait aucun retry, puis verrouille toutes
+  les pages jusqu’à votre vérification explicite de la partie ou de la console.
+
+SÉCURITÉ
+--------
+
+- Aucun serveur web, cloud, broadcast ou découverte automatique.
+- Aucune écriture directe du Control Center dans PinteMod et aucune modification GSC.
+  Les commandes Ban, Mute et Rôle demandent à PinteMod d’effectuer ses écritures
+  administratives normales uniquement après confirmation explicite.
+- Aucun lancement automatique de BOIII, BAT ou outil PowerShell.
+- Aucun secret, fichier DPAPI, configuration personnelle ou donnée serveur n’est
+  inclus dans ce paquet.
+- Les XUID, IP, GUID et chemins présents dans les retours affichables sont filtrés.
+
+CONFIGURATION LOCALE
+--------------------
+
+Les préférences et le secret protégé sont propres au compte Windows courant et sont
+conservés sous :
+
+  %LOCALAPPDATA%\PinteMod\ControlCenter
+
+Ils ne se trouvent pas dans le dossier de l’application et ne doivent jamais être
+copiés dans une archive de revue.
+
+ÉTAT DE VALIDATION
+------------------
+
+- Lecture locale hybride : validée.
+- Navigation, Paramètres et Live Console : validés automatiquement.
+- Fondation RCON et Pause/Reprendre : validées.
+- Diagnostics Carte, Courant, Pack-a-Punch, Manche et Joueurs : validés par tests
+  automatisés et vérification humaine sur serveur réel.
+- Commandes gameplay réelles : Pause/Reprendre avec retour local ; actions serveur et
+  joueur listées dans l’interface avec vérification manuelle obligatoire.
+- L’historique de modération local du joueur sélectionné est consultable en lecture
+  seule ; le XUID complet et le chemin réel ne sont jamais affichés.
+- Le catalogue de cartes combine les 14 cartes officielles, une ligne de rotation
+  collée explicitement, les cartes custom ajoutées localement et la carte observée.
+  Aucun server_zm.cfg n’est lu automatiquement et aucune écriture serveur n’est faite.
+- Changement/redémarrage de carte, boss et événement restent simulés tant qu’un
+  contrat générique sûr n’est pas disponible.
+- Depuis un autre PC, la source LAN attend le partage read-only \\portable\PinteModData.

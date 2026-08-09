@@ -1,0 +1,312 @@
+<UserControl x:Class="PinteMod.ControlCenter.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:PinteMod.ControlCenter.Controls">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <controls:ResponsiveUniformGrid MinItemWidth="430" MaxColumns="2" Margin="16">
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="CONNEXION OPÉRATEUR" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Text="Tester une racine PinteMod sur cette machine ou via un partage LAN explicite."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" TextWrapping="Wrap" />
+
+                    <TextBlock Text="EMPLACEMENT" Style="{StaticResource EyebrowTextStyle}" />
+                    <ComboBox ItemsSource="{Binding OperatorModes}"
+                              SelectedItem="{Binding SelectedOperatorMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Margin="0,7,0,0" />
+                    <TextBlock Text="{Binding OperatorModeHelp}" Foreground="{StaticResource TextMutedBrush}"
+                               FontSize="9" Margin="0,6,0,12" TextWrapping="Wrap" />
+
+                    <TextBlock Text="CHEMIN DES DONNÉES PINTE MOD" Style="{StaticResource EyebrowTextStyle}" />
+                    <TextBox Text="{Binding OperatorServerRoot, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,7,0,12"
+                             ToolTip="Chemin explicite uniquement · aucun parcours automatique" />
+
+                    <Button Content="TESTER LA SOURCE"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding TestDataSourceCommand}"
+                            HorizontalAlignment="Left" Padding="14,8" />
+
+                    <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding DataSourceTestStatus}"
+                                       Foreground="{Binding DataSourceTestHealth, Converter={StaticResource StatusBrushConverter}}"
+                                       FontSize="10" FontWeight="Bold" />
+                            <TextBlock Text="{Binding DataSourceTestMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <CheckBox Content="Activer cette source au prochain démarrage"
+                              IsChecked="{Binding ActivateDataSourceOnStartup, Mode=TwoWay}"
+                              Margin="0,14,0,10" />
+                    <Button Content="ENREGISTRER LA CONFIGURATION"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding SaveConfigurationCommand}"
+                            HorizontalAlignment="Left" Padding="14,8" />
+                    <StackPanel Margin="0,10,0,0">
+                        <TextBlock Text="{Binding ConfigurationSaveStatus}" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding ConfigurationSaveMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="10" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <TextBlock Text="Le test ne modifie aucun fichier PinteMod. Une source activée sera appliquée au prochain lancement, sans ligne de commande."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,10,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="INTERFACE" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Text="Actualisation hybride active ; les autres préférences restent à venir."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,18" />
+                    <Grid Margin="0,0,0,14">
+                        <CheckBox Content="Actualisation automatique" IsChecked="{Binding AutomaticRefresh, Mode=OneWay}" IsEnabled="{Binding AutomaticRefreshAvailable, Mode=OneWay}" />
+                        <Border HorizontalAlignment="Right" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="7,3"><TextBlock Text="{Binding AutomaticRefreshStatus}" Style="{StaticResource EyebrowTextStyle}" /></Border>
+                    </Grid>
+                    <Grid Margin="0,0,0,14">
+                        <CheckBox Content="Alertes sonores" IsChecked="{Binding SoundAlerts, Mode=OneWay}" IsEnabled="{Binding SoundAlertsAvailable, Mode=OneWay}" />
+                        <Border HorizontalAlignment="Right" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="7,3"><TextBlock Text="À VENIR" Style="{StaticResource EyebrowTextStyle}" /></Border>
+                    </Grid>
+                    <Grid>
+                        <CheckBox Content="Mode compact manuel" IsChecked="{Binding CompactMode, Mode=OneWay}" IsEnabled="{Binding CompactModeAvailable, Mode=OneWay}" />
+                        <Border HorizontalAlignment="Right" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="7,3"><TextBlock Text="À VENIR" Style="{StaticResource EyebrowTextStyle}" /></Border>
+                    </Grid>
+                    <TextBlock Text="La sidebar compacte s’active uniquement selon la largeur de fenêtre."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,14,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="CATALOGUE DE CARTES" Style="{StaticResource SectionTitleStyle}" />
+                        <Border HorizontalAlignment="Right" Background="{StaticResource SuccessSoftBrush}"
+                                CornerRadius="4" Padding="7,3">
+                            <TextBlock Text="LOCAL · SÛR" Foreground="{StaticResource SuccessBrush}" FontSize="9" FontWeight="Bold" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="Cartes officielles, rotation serveur copiée et customs ajoutées manuellement. Aucun fichier serveur n’est modifié."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,6,0,14" TextWrapping="Wrap" />
+
+                    <TextBlock Text="IMPORTER UNE ROTATION" Style="{StaticResource EyebrowTextStyle}" />
+                    <TextBlock Text="Copiez uniquement la ligne active « set sv_maprotation » depuis server_zm.cfg. Ne collez jamais le fichier complet."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,7" TextWrapping="Wrap" />
+                    <TextBox Text="{Binding MapRotationLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="16384" TextWrapping="Wrap" MinHeight="54"
+                             ToolTip="Cette ligne est analysée localement et n’est jamais envoyée en RCON." />
+                    <Button Content="IMPORTER LA ROTATION"
+                            Command="{Binding ImportMapRotationCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0" />
+
+                    <TextBlock Text="AJOUTER UNE CARTE CUSTOM" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
+                    <Grid Margin="0,7,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="3*" /></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="CODE INTERNE" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding ManualMapCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     MaxLength="64" Margin="0,6,0,0" ToolTip="Exemple : zm_ma_custom · caractères autorisés : a-z, 0-9 et _" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="NOM D’AFFICHAGE" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding ManualMapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     MaxLength="80" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+                    <Button Content="AJOUTER AU CONTROL CENTER"
+                            Command="{Binding AddManualMapCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0" />
+
+                    <TextBlock Text="CATALOGUE ACTUEL" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
+                    <ComboBox ItemsSource="{Binding MapCatalogEntries}"
+                              SelectedItem="{Binding SelectedMapCatalogEntry, Mode=TwoWay}"
+                              DisplayMemberPath="DisplayLabel" Margin="0,7,0,0" />
+                    <Button Content="RETIRER L’ENTRÉE MANUELLE"
+                            Command="{Binding RemoveManualMapCommand}"
+                            Style="{StaticResource DangerButtonStyle}"
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0"
+                            ToolTip="Retire uniquement l’entrée locale ; ne désinstalle et ne supprime aucune map serveur." />
+
+                    <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,13,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding MapCatalogStatus}"
+                                       Foreground="{Binding MapCatalogHealth, Converter={StaticResource StatusBrushConverter}}"
+                                       FontSize="10" FontWeight="Bold" />
+                            <TextBlock Text="{Binding MapCatalogMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Le catalogue est enregistré sous le profil Windows du Control Center. Supprimer une entrée ici ne touche jamais BOIII."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,9,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="RCON — TESTS DE CONNEXION" Style="{StaticResource SectionTitleStyle}" />
+                        <Border HorizontalAlignment="Right" Background="{StaticResource WarningSoftBrush}"
+                                BorderBrush="{StaticResource WarningBrush}" BorderThickness="1" CornerRadius="4" Padding="7,3">
+                            <TextBlock Text="FACULTATIF" Foreground="{StaticResource WarningBrush}" FontSize="9" FontWeight="Bold" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="RCON permet au Control Center d’interroger un serveur BOIII déjà lancé. Une simple copie des fichiers serveur ne suffit pas."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,7,0,12" TextWrapping="Wrap" />
+                    <TextBlock Text="Vous pouvez ignorer toute cette section tant que vous ne souhaitez pas tester un serveur en cours d’exécution."
+                               Foreground="{StaticResource WarningBrush}" FontSize="10" FontWeight="SemiBold"
+                               Margin="0,0,0,12" TextWrapping="Wrap" />
+
+                    <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="COMMENT FAIRE" Style="{StaticResource EyebrowTextStyle}" />
+                            <TextBlock Text="1. Indiquer où joindre BOIII et son port RCON."
+                                       Foreground="{StaticResource TextPrimaryBrush}" FontSize="10" Margin="0,6,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="2. Enregistrer sur ce PC le secret RCON déjà configuré côté serveur."
+                                       Foreground="{StaticResource TextPrimaryBrush}" FontSize="10" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="3. Cliquer sur un seul test. Rien n’est envoyé automatiquement."
+                                       Foreground="{StaticResource TextPrimaryBrush}" FontSize="10" Margin="0,4,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="1 · ADRESSE DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="ADRESSE" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding RconAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,7,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="PORT RCON" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding RconPortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,7,0,0" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="IP numérique uniquement. Même PC : 127.0.0.1. Autre PC : adresse privée LAN du serveur. Les IP publiques et noms d’hôte sont refusés."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,7,0,0" TextWrapping="Wrap" />
+                    <Button Content="MÉMORISER L’ADRESSE ET LE PORT" Command="{Binding SaveConfigurationCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTip="Si l’activation de la source est cochée, testez d’abord la source PinteMod située au-dessus."
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,10,0,0" />
+                    <TextBlock Text="Bouton désactivé ? Cliquez d’abord sur TESTER LA SOURCE dans la carte Connexion opérateur."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
+
+                    <TextBlock Text="2 · SECRET RCON" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
+                    <TextBlock Text="Utilisez le même secret que celui déjà configuré pour BOIII. Ne me le transmettez pas : il reste protégé sur ce compte Windows."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    <Grid Margin="0,7,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <PasswordBox x:Name="RconPasswordBox" MaxLength="128" ToolTip="Le secret n’est jamais lié au ViewModel ni réaffiché." />
+                        <Button Grid.Column="1" Content="ENREGISTRER LE SECRET" Click="SaveRconSecret_Click"
+                                Style="{StaticResource PrimaryButtonStyle}" Margin="10,0,0,0" Padding="12,7" />
+                    </Grid>
+                    <TextBlock Text="{Binding RconSecretStatus}" Foreground="{StaticResource AccentBrightBrush}"
+                               FontSize="9" FontWeight="Bold" Margin="0,6,0,0" />
+
+                    <TextBlock Text="3 · LANCER UN TEST MANUEL" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
+                    <TextBlock Text="Le serveur doit déjà être lancé par vous. Ces boutons demandent seulement son état et ne modifient pas la partie."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    <WrapPanel Margin="0,14,0,0">
+                        <Button Content="VÉRIFIER LA SANTÉ PINTE MOD" Command="{Binding TestRconHealthCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}" ToolTip="Commande autorisée : ezzhealth full"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="VÉRIFIER L’ÉTAT DE LA PAUSE" Command="{Binding TestRconPauseCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Commande autorisée : ezzpausestatus"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="CARTE" Command="{Binding TestRconMapCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Diagnostic read-only : ezzmap"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="COURANT" Command="{Binding TestRconPowerCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Diagnostic read-only : ezzpowerstatus"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="PACK-A-PUNCH" Command="{Binding TestRconPackAPunchCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Diagnostic read-only : ezzpapstatus"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="MANCHE" Command="{Binding TestRconRoundCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Diagnostic read-only : ezzround"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="JOUEURS" Command="{Binding TestRconPlayersCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Diagnostic neutralisé : ezzplayers"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="AUDIT CARTE" Command="{Binding TestRconMapAuditCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Compatibilité déclarée : ezzmapaudit full"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="ÉVÉNEMENTS" Command="{Binding TestRconEventStatusCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Diagnostic read-only : ezzeventstatus"
+                                Padding="12,7" Margin="0,0,8,8" />
+                        <Button Content="POWER-UPS" Command="{Binding TestRconPowerUpCatalogCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" ToolTip="Catalogue read-only : ezzpowerups"
+                                Padding="12,7" Margin="0,0,8,8" />
+                    </WrapPanel>
+
+                    <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,6,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding RconTestStatus}"
+                                       Foreground="{Binding RconTestHealth, Converter={StaticResource StatusBrushConverter}}"
+                                       FontWeight="Bold" FontSize="10" />
+                            <TextBlock Text="{Binding RconCommandSent}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,4,0,0" />
+                            <TextBox Text="{Binding RconResponse, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto" MaxHeight="180" Margin="0,8,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button Content="COPIER LA RÉPONSE" Command="{Binding CopyRconResponseCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="10,5"
+                                        ToolTip="Copie uniquement la réponse déjà neutralisée" />
+                                <TextBlock Text="{Binding RconCopyStatus}" Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="9" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Diagnostics manuels autorisés : santé, pause, carte, courant, Pack-a-Punch, manche, joueurs, audit carte, événements et power-ups. Aucun texte libre n’est accepté."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,9,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="SÉCURITÉ" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Text="Garanties actives du mode opérateur." Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,16" />
+                    <Grid Margin="0,0,0,12"><Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" HorizontalAlignment="Left" /><TextBlock Text="Aucun port entrant ni découverte réseau" Margin="18,0,0,0" FontSize="12" /></Grid>
+                    <Grid Margin="0,0,0,12"><Ellipse Width="8" Height="8" Fill="{StaticResource WarningBrush}" HorizontalAlignment="Left" /><TextBlock Text="RCON uniquement sur action explicite" Margin="18,0,0,0" FontSize="12" /></Grid>
+                    <Grid Margin="0,0,0,12"><Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" HorizontalAlignment="Left" /><TextBlock Text="Secret DPAPI jamais réaffiché" Margin="18,0,0,0" FontSize="12" /></Grid>
+                    <Grid Margin="0,0,0,12"><Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" HorizontalAlignment="Left" /><TextBlock Text="Aucune écriture dans PinteMod" Margin="18,0,0,0" FontSize="12" /></Grid>
+                    <Grid><Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" HorizontalAlignment="Left" /><TextBlock Text="Ciblage préparé par XUID" Margin="18,0,0,0" FontSize="12" /></Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="SOURCE DE DONNÉES" Style="{StaticResource SectionTitleStyle}" />
+                    <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="6" Padding="12" Margin="0,14,0,12">
+                        <Grid>
+                            <StackPanel Margin="0,0,100,0"><TextBlock Text="FOURNISSEUR ACTIF" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding ActiveProviderName}" Margin="0,6,0,0" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+                            <TextBlock Text="{Binding DataMode}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="10" />
+                        </Grid>
+                    </Border>
+                    <TextBlock Text="{Binding DataScope}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="10" TextWrapping="Wrap" />
+                    <TextBlock Text="RACINE LOCALE" Style="{StaticResource EyebrowTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{Binding ServerRootDisplay}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    <TextBlock Text="Un snapshot partagé alimente les six pages. En mode hybride, les lecteurs restent confinés à la racine explicite et les logs sont limités à la session active et à une liste blanche."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="À PROPOS" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Text="PinteMod Control Center" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,0" />
+                    <TextBlock Text="Prototype v2.2 · .NET 8 · WPF" Foreground="{StaticResource AccentBrightBrush}" Margin="0,5,0,0" />
+                    <TextBlock Text="Base serveur : PinteMod v2.1.1 stable" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,14,0,0" />
+                    <TextBlock Text="Application Windows locale, sans compte, serveur web ni port entrant."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+        </controls:ResponsiveUniformGrid>
+    </ScrollViewer>
+</UserControl>

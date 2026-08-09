@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>PinteMod.ControlCenter</AssemblyName>
+    <RootNamespace>PinteMod.ControlCenter</RootNamespace>
+    <Version>2.2.0</Version>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <FileVersion>2.2.0.0</FileVersion>
+    <InformationalVersion>2.2.0-mvp-preview</InformationalVersion>
+    <Product>PinteMod Control Center</Product>
+    <Description>Interface opérateur locale ou LAN pour PinteMod.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PinteMod.ControlCenter.Core\PinteMod.ControlCenter.Core.csproj" />
+    <ProjectReference Include="..\PinteMod.ControlCenter.Infrastructure\PinteMod.ControlCenter.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\packaging\LISEZ-MOI.txt"
+          Link="LISEZ-MOI.txt"
+          CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

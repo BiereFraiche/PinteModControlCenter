@@ -1,0 +1,36 @@
+name: build-and-test
+
+on:
+  push:
+    branches: [main, "agent/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore .\app\PinteMod.ControlCenter.sln --configfile .\app\NuGet.Config
+
+      - name: Build
+        run: dotnet build .\app\PinteMod.ControlCenter.sln -c ${{ matrix.configuration }} --no-restore
+
+      - name: Test
+        run: dotnet test .\app\PinteMod.ControlCenter.sln -c ${{ matrix.configuration }} --no-build --no-restore

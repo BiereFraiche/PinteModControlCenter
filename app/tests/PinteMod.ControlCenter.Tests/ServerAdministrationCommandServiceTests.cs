@@ -1,0 +1,263 @@
+using System.Net.Sockets;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PinteMod.ControlCenter.Core.Contracts;
+using PinteMod.ControlCenter.Core.Models;
+using PinteMod.ControlCenter.Infrastructure.Rcon;
+
+namespace PinteMod.ControlCenter.Tests;
+
+[TestClass]
+public sealed class ServerAdministrationCommandServiceTests
+{
+    private static readonly RconEndpoint Endpoint = new("127.0.0.1", 27018, TimeSpan.FromSeconds(3));
+
+    [TestMethod]
+    public async Task SupportedActions_UseOnlyClosedWhitelistedCommandTexts()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+        var requests = new[]
+        {
+            new ServerAdministrationRequest(ServerAdministrationAction.NextRound),
+            new ServerAdministrationRequest(ServerAdministrationAction.SetRound, 42),
+            new ServerAdministrationRequest(ServerAdministrationAction.EnablePower),
+            new ServerAdministrationRequest(ServerAdministrationAction.EnablePackAPunch),
+            new ServerAdministrationRequest(ServerAdministrationAction.PlayMapMusic),
+            new ServerAdministrationRequest(ServerAdministrationAction.StopMapMusic),
+            new ServerAdministrationRequest(ServerAdministrationAction.UnlockStandardPassages),
+            new ServerAdministrationRequest(ServerAdministrationAction.KeepLastZombie),
+            new ServerAdministrationRequest(ServerAdministrationAction.KillAllZombies),
+            new ServerAdministrationRequest(ServerAdministrationAction.MakePowerUpsPermanent),
+            new ServerAdministrationRequest(ServerAdministrationAction.RestorePowerUpTimeout)
+        };
+
+        var results = new List<ServerAdministrationExecutionResult>();
+        foreach (var request in requests)
+        {
+            results.Add(await service.ExecuteAsync(request, Endpoint));
+        }
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "ezznextround",
+                "ezzsetround 42",
+                "ezzpower",
+                "ezzpap",
+                "ezzmusicplayall",
+                "ezzmusicstopall",
+                "ezzunlock",
+                "ezzlastzombie",
+                "ezzkillzombies",
+                "ezzfreezepowerups on",
+                "ezzfreezepowerups off"
+            },
+            client.Commands);
+        Assert.IsTrue(results.All(result =>
+            result.Status == ServerAdministrationExecutionStatus.SentAwaitingManualVerification));
+        Assert.IsTrue(results.All(result => result.CommandSent));
+    }
+
+    [TestMethod]
+    [DataRow(ServerAdministrationAction.SetRound, null)]
+    [DataRow(ServerAdministrationAction.SetRound, 1)]
+    [DataRow(ServerAdministrationAction.SetRound, 256)]
+    [DataRow(ServerAdministrationAction.NextRound, 10)]
+    [DataRow((ServerAdministrationAction)int.MaxValue, null)]
+    public async Task InvalidRequest_IsRejectedBeforeSecretAndTransport(
+        ServerAdministrationAction action,
+        int? targetRound)
+    {
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(
+            client,
+            secret,
+            new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(action, targetRound),
+            Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidRequest, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task PublicAddress_IsRejectedBeforeTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(ServerAdministrationAction.EnablePower),
+            new RconEndpoint("8.8.8.8", 27018, TimeSpan.FromSeconds(3)));
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidConfiguration, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task MissingSecret_NeverCallsTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client, null);
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(ServerAdministrationAction.EnablePackAPunch),
+            Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.SecretMissing, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task Timeout_IsConservativelyMarkedAsPossiblySentWithoutRetry()
+    {
+        var client = new ThrowingClient(new TimeoutException());
+        var service = CreateService(client);
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(ServerAdministrationAction.NextRound),
+            Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.DeliveryUnknown, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        Assert.AreEqual(1, client.CallCount);
+    }
+
+    [TestMethod]
+    public async Task SocketFailure_IsConservativelyMarkedAsPossiblySentWithoutRetry()
+    {
+        var client = new ThrowingClient(
+            new SocketException((int)SocketError.ConnectionReset));
+        var service = CreateService(client);
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(ServerAdministrationAction.EnablePower),
+            Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.TransportError, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        Assert.AreEqual(1, client.CallCount);
+    }
+
+    [TestMethod]
+    public async Task TextResponse_IsNeutralizedBeforePresentation()
+    {
+        const string fullXuid = "1234567890abcdef";
+        var service = CreateService(new CapturingClient($"Done for BOIII_XUID: {fullXuid}"));
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(ServerAdministrationAction.EnablePower),
+            Endpoint);
+
+        Assert.IsFalse(result.DisplayMessage.Contains(fullXuid, StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(result.DisplayMessage, "1234…cdef");
+    }
+
+    [TestMethod]
+    public async Task SharedGate_SerializesConcurrentServerMutations()
+    {
+        var client = new ConcurrencyTrackingClient();
+        var service = new ServerAdministrationCommandService(
+            client,
+            new CountingSecretStore("secret"),
+            new FakeClock(DateTimeOffset.UtcNow),
+            new RconOperationGate());
+
+        await Task.WhenAll(
+            service.ExecuteAsync(
+                new ServerAdministrationRequest(ServerAdministrationAction.EnablePower),
+                Endpoint),
+            service.ExecuteAsync(
+                new ServerAdministrationRequest(ServerAdministrationAction.EnablePackAPunch),
+                Endpoint));
+
+        Assert.AreEqual(1, client.MaximumConcurrency);
+    }
+
+    private static ServerAdministrationCommandService CreateService(
+        IRconClient client,
+        string? secret = "secret") => new(
+        client,
+        new CountingSecretStore(secret),
+        new FakeClock(DateTimeOffset.UtcNow));
+
+    private sealed class CapturingClient(string response) : IRconClient
+    {
+        public List<string> Commands { get; } = [];
+
+        public Task<string> SendAsync(
+            RconEndpoint endpoint,
+            string password,
+            string command,
+            CancellationToken cancellationToken = default)
+        {
+            Commands.Add(command);
+            return Task.FromResult(response);
+        }
+    }
+
+    private sealed class ThrowingClient(Exception exception) : IRconClient
+    {
+        public int CallCount { get; private set; }
+
+        public Task<string> SendAsync(
+            RconEndpoint endpoint,
+            string password,
+            string command,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromException<string>(exception);
+        }
+    }
+
+    private sealed class ConcurrencyTrackingClient : IRconClient
+    {
+        private int _concurrency;
+
+        public int MaximumConcurrency { get; private set; }
+
+        public async Task<string> SendAsync(
+            RconEndpoint endpoint,
+            string password,
+            string command,
+            CancellationToken cancellationToken = default)
+        {
+            var current = Interlocked.Increment(ref _concurrency);
+            MaximumConcurrency = Math.Max(MaximumConcurrency, current);
+            try
+            {
+                await Task.Delay(40, cancellationToken);
+                return string.Empty;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _concurrency);
+            }
+        }
+    }
+
+    private sealed class CountingSecretStore(string? secret) : IRconSecretStore
+    {
+        public int ReadCount { get; private set; }
+
+        public Task<bool> HasSecretAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(!string.IsNullOrEmpty(secret));
+
+        public Task SaveAsync(string value, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<string?> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            ReadCount++;
+            return Task.FromResult(secret);
+        }
+    }
+}

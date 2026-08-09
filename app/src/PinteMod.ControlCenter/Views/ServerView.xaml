@@ -1,0 +1,282 @@
+<UserControl x:Class="PinteMod.ControlCenter.Views.ServerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:PinteMod.ControlCenter.Controls"
+             xmlns:core="clr-namespace:PinteMod.ControlCenter.Core.Simulation;assembly=PinteMod.ControlCenter.Core">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="20">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+
+            <controls:ResponsiveUniformGrid Grid.Row="0" MinItemWidth="180" MaxColumns="5" Margin="-4,-4,-4,12">
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="SERVEUR · ÉTAT OBSERVÉ" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding ServerStatusText}" Style="{StaticResource KpiValueStyle}"
+                                   Foreground="{Binding ServerStatusHealth, Converter={StaticResource StatusBrushConverter}}" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding ServerStatusSource}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel><TextBlock Text="CARTE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding MapName}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="{Binding MapCode}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{StaticResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="INFÉRÉE DES LOGS SI DISPONIBLE" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel><TextBlock Text="PINTE MOD" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PinteModVersion}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="VERSION DU SNAPSHOT" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="PAUSE COMMUNAUTAIRE" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding PauseStatusText}" Style="{StaticResource KpiValueStyle}"
+                                   Foreground="{Binding PauseStatusHealth, Converter={StaticResource StatusBrushConverter}}" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding PauseModuleVersion}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,5,0,0" />
+                        <TextBlock Text="{Binding PauseDetails}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding PauseSourceSummary}" Foreground="{StaticResource TextMutedBrush}" FontSize="8" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </controls:ResponsiveUniformGrid>
+
+            <Border Grid.Row="1" Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="7" Padding="14,11" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="ACTIONS SERVEUR SIMULÉES · AUCUN TRANSPORT RCON" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="Les contrôles ci-dessous produisent uniquement un résultat local structuré."
+                               Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10"
+                               Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
+                    <controls:ResponsiveUniformGrid MinItemWidth="112" MaxColumns="6"
+                                                    Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}}">
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="ACTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Action}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="CIBLE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.TargetDisplay}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="XUID" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.ShortXuid}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="OPTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Option}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="HEURE · STATUT" Style="{StaticResource EyebrowTextStyle}" /><TextBlock FontSize="12" Margin="0,4,0,0"><Run Text="{Binding LastSimulationResult.Time, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding LastSimulationResult.Status, Mode=OneWay}" Foreground="{Binding LastSimulationResult.StatusValue, Mode=OneWay, Converter={StaticResource StatusBrushConverter}}" /></TextBlock></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
+                    </controls:ResponsiveUniformGrid>
+                </StackPanel>
+            </Border>
+
+            <controls:ResponsiveUniformGrid Grid.Row="2" MinItemWidth="430" MaxColumns="2" Margin="-4,-4,-4,12">
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="CARTE &amp; SESSION" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="Catalogue hybride : officielles, rotation importée, customs manuelles et carte observée."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" />
+                        <WrapPanel>
+                            <ComboBox ItemsSource="{Binding MapOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedMap}" Width="230" Margin="0,0,10,10" />
+                            <Button Content="Changer" Style="{StaticResource SimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeMap}" />
+                        </WrapPanel>
+                        <Button Content="Redémarrer la carte" Style="{StaticResource DangerSimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RestartMap}" HorizontalAlignment="Left" />
+                        <TextBlock Text="Le catalogue est local ; la commande de changement reste volontairement inactive."
+                                   Foreground="{StaticResource WarningBrush}" FontSize="10" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="MANCHE &amp; PROGRESSION · ACTIONS RÉELLES" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="Liste blanche fermée · confirmation et vérification de la console obligatoires."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,10" TextWrapping="Wrap" />
+                        <WrapPanel>
+                            <ComboBox ItemsSource="{Binding RoundOptions}" SelectedItem="{Binding SelectedRound}" Width="110" Margin="0,0,10,10" />
+                            <Button Content="DÉFINIR LA MANCHE" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding SetRoundCommand}" ToolTip="Commande réelle confirmée : ezzsetround" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <WrapPanel>
+                            <Button Content="TERMINER LA MANCHE" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding NextRoundCommand}" ToolTip="Commande réelle confirmée : ezznextround" Margin="0,0,8,8" />
+                            <Button Content="ACTIVER LE COURANT" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding EnablePowerCommand}" ToolTip="Commande réelle confirmée : ezzpower" Margin="0,0,8,8" />
+                            <Button Content="ACTIVER PACK-A-PUNCH" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding EnablePackAPunchCommand}" ToolTip="Commande réelle confirmée : ezzpap" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <Border Background="{StaticResource WarningSoftBrush}" CornerRadius="5" Padding="10" Margin="0,3,0,0">
+                            <TextBlock Text="{Binding ServerAdministrationNotice}" Foreground="{StaticResource WarningBrush}"
+                                       FontSize="10" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        </Border>
+                        <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="{Binding ServerAdministrationStatus}"
+                                           Foreground="{Binding ServerAdministrationHealth, Converter={StaticResource StatusBrushConverter}}"
+                                           FontSize="10" FontWeight="Bold" />
+                                <TextBlock Text="{Binding ServerAdministrationCommandSent}" Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="10" Margin="0,4,0,0" />
+                                <TextBlock Text="{Binding ServerAdministrationMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                                           FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                <Button Content="J’AI VÉRIFIÉ LA CONSOLE" Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding AcknowledgeServerAdministrationCommand}" HorizontalAlignment="Left"
+                                        Margin="0,9,0,0" ToolTip="Lève uniquement le verrou manuel après votre vérification du serveur" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="CONTENU &amp; IA · ACTIONS RÉELLES" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="Confirmation et vérification console obligatoires après chaque action."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,10" TextWrapping="Wrap" />
+                        <TextBlock Text="MUSIQUE DE CARTE" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,6" />
+                        <WrapPanel>
+                            <Button Content="LANCER" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PlayMapMusicCommand}"
+                                    ToolTip="Commande réelle confirmée : ezzmusicplayall" Margin="0,0,8,8" />
+                            <Button Content="ARRÊTER" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding StopMapMusicCommand}"
+                                    ToolTip="Commande réelle confirmée : ezzmusicstopall" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <TextBlock Text="PASSAGES &amp; ZOMBIES" Style="{StaticResource EyebrowTextStyle}" Margin="0,2,0,6" />
+                        <WrapPanel>
+                            <Button Content="OUVRIR PASSAGES STANDARD" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding UnlockStandardPassagesCommand}" ToolTip="Commande réelle confirmée : ezzunlock" Margin="0,0,8,8" />
+                            <Button Content="GARDER 1 ZOMBIE" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding KeepLastZombieCommand}" ToolTip="Commande réelle confirmée : ezzlastzombie" Margin="0,0,8,8" />
+                            <Button Content="ÉLIMINER LES ZOMBIES" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding KillAllZombiesCommand}" ToolTip="Commande réelle destructive confirmée : ezzkillzombies" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <TextBlock Text="POWER-UPS CRÉÉS PAR PINTE MOD" Style="{StaticResource EyebrowTextStyle}" Margin="0,2,0,6" />
+                        <WrapPanel>
+                            <Button Content="PERMANENTS" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding MakePowerUpsPermanentCommand}" ToolTip="Commande réelle confirmée : ezzfreezepowerups on" Margin="0,0,8,8" />
+                            <Button Content="DÉLAI NORMAL" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding RestorePowerUpTimeoutCommand}" ToolTip="Commande réelle confirmée : ezzfreezepowerups off" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <TextBlock Text="ACTIONS SPÉCIFIQUES À LA CARTE · SIMULATION" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
+                        <WrapPanel>
+                            <Button Content="ÉVÉNEMENTS · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
+                                    Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.TriggerEvent}" />
+                            <Button Content="BOSS · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
+                                    Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.SpawnBoss}" />
+                            <Button Content="POWER-UP GLOBAL · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
+                                    Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.SpawnPowerUp}" />
+                        </WrapPanel>
+                        <TextBlock Text="Pour un power-up réel et sûr, sélectionnez un joueur dans Dashboard ou Joueurs : le ciblage utilise alors son BOIII_XUID."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="PAUSE COMMUNAUTAIRE · COMMANDES" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="Contrat v0.3 et diagnostics terrain validés · confirmation et retour local obligatoires."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" TextWrapping="Wrap" />
+                        <WrapPanel>
+                            <Button Content="ACTUALISER LE STATUT" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding RefreshPauseStatusCommand}"
+                                    ToolTip="Diagnostic manuel autorisé : ezzpausestatus" Margin="0,0,8,8" />
+                            <Button Content="METTRE EN PAUSE" Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding PauseServerCommand}" IsEnabled="{Binding CanPauseServer, Mode=OneWay}"
+                                    ToolTip="Commande réelle confirmée : ezzpauseforce" Margin="0,0,8,8" />
+                            <Button Content="REPRENDRE" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding ResumeServerCommand}" IsEnabled="{Binding CanResumeServer, Mode=OneWay}"
+                                    ToolTip="Commande réelle confirmée : ezzresume" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <Border Background="{StaticResource WarningSoftBrush}" CornerRadius="5" Padding="10" Margin="0,4,0,0">
+                            <TextBlock Text="{Binding RealPauseControlsNotice}" Foreground="{StaticResource WarningBrush}"
+                                       FontSize="10" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        </Border>
+                        <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="{Binding PauseCommandStatus}" Foreground="{Binding PauseCommandHealth, Converter={StaticResource StatusBrushConverter}}"
+                                           FontSize="10" FontWeight="Bold" />
+                                <TextBlock Text="{Binding PauseCommandSent}" Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="10" Margin="0,4,0,0" />
+                                <TextBlock Text="{Binding PauseCommandMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                                           FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="DIAGNOSTICS SERVEUR · READ-ONLY" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="Commandes manuelles fermées · aucune modification de la partie."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,10" TextWrapping="Wrap" />
+                        <WrapPanel>
+                            <Button Content="CARTE" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding MapDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzmap" Margin="0,0,8,8" />
+                            <Button Content="COURANT" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PowerDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzpowerstatus" Margin="0,0,8,8" />
+                            <Button Content="PACK-A-PUNCH" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PackAPunchDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzpapstatus" Margin="0,0,8,8" />
+                            <Button Content="MANCHE" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding RoundDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzround" Margin="0,0,8,8" />
+                            <Button Content="JOUEURS" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PlayersDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzplayers" Margin="0,0,8,8" />
+                            <Button Content="AUDIT CARTE" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding MapAuditDiagnosticCommand}"
+                                    ToolTip="Compatibilité déclarée : ezzmapaudit full" Margin="0,0,8,8" />
+                            <Button Content="ÉVÉNEMENTS" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding EventStatusDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzeventstatus" Margin="0,0,8,8" />
+                            <Button Content="POWER-UPS" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PowerUpCatalogDiagnosticCommand}"
+                                    ToolTip="Catalogue read-only : ezzpowerups" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,2,0,10">
+                            <StackPanel>
+                                <TextBlock Text="{Binding ServerDiagnosticStatus}"
+                                           Foreground="{Binding ServerDiagnosticHealth, Converter={StaticResource StatusBrushConverter}}"
+                                           FontSize="10" FontWeight="Bold" />
+                                <TextBlock Text="{Binding ServerDiagnosticCommandSent}" Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="10" Margin="0,4,0,0" />
+                                <TextBox Text="{Binding ServerDiagnosticMessage, Mode=OneWay}" IsReadOnly="True"
+                                         MaxHeight="150" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
+                                         Margin="0,6,0,0" ToolTip="Réponse neutralisée avant affichage" />
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button Content="COPIER LA RÉPONSE" Command="{Binding CopyServerDiagnosticCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}" Padding="10,5"
+                                            ToolTip="Copie uniquement la réponse déjà neutralisée" />
+                                    <TextBlock Text="{Binding ServerDiagnosticCopyStatus}" Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="9" VerticalAlignment="Center" Margin="10,0,0,0" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="Rapport local ponctuel · ne prouve pas la santé runtime."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,0,0,6" />
+                        <Border Background="{StaticResource SuccessSoftBrush}" CornerRadius="5" Padding="10" Margin="0,4,0,0">
+                            <TextBlock Text="{Binding DiagnosticsPreview}" Foreground="{StaticResource SuccessBrush}" FontSize="10" FontWeight="SemiBold" />
+                        </Border>
+                        <TextBlock Text="{Binding InstallationSourceSummary}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,7,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BanServiceDetails}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </controls:ResponsiveUniformGrid>
+
+            <StackPanel Grid.Row="3">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                  <StackPanel>
+                    <TextBlock Text="SERVICES LOCAUX · HEARTBEATS AUTORITAIRES" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding Services}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><controls:ResponsiveUniformGrid MinItemWidth="150" MaxColumns="5" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="4,4,12,8">
+                                    <Ellipse Width="8" Height="8" Margin="0,3,8,0" Fill="{Binding Health, Converter={StaticResource StatusBrushConverter}}" />
+                                    <StackPanel><TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="{Binding Description}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" /></StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="VÉRIFICATION D’INSTALLATION · DÉTAILS NEUTRALISÉS" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,10" />
+                        <ItemsControl ItemsSource="{Binding InstallationChecks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="110" /><ColumnDefinition Width="260" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Status}" Foreground="{Binding Health, Converter={StaticResource StatusBrushConverter}}" FontWeight="Bold" FontSize="10" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="10" TextWrapping="Wrap" Margin="0,0,12,0" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Recommendation}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" TextWrapping="Wrap" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
