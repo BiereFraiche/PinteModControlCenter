@@ -69,7 +69,7 @@ Dernière mise à jour : 2026-08-09
 ## Tests
 
 - **Terminé** — Écrire les tests de validation XUID, du fournisseur simulé et des actions simulées.
-- **À faire** — Installer durablement le SDK .NET 8 sur la machine si des builds locales régulières sont souhaitées.
+- **Terminé** — SDK officiel .NET 8.0.423 installé durablement sur la machine pour les validations locales régulières.
 - **Terminé** — Utiliser temporairement le SDK officiel .NET 8.0.423 pour la validation locale.
 - **Terminé** — Ajouter les tests de ViewModels, navigation, sélection partagée, états métier, filtres et paramètres.
 - **Terminé** — Exécuter Debug et Release sans warning ni erreur.
@@ -141,9 +141,9 @@ Dernière mise à jour : 2026-08-09
 ### Interface graphique
 
 - **Terminé** — Finaliser les affichages de provenance, disponibilité, diagnostic, logs et joueurs inférés.
-- **À valider** — Revue humaine globale des sept captures hybrides du ZIP final.
+- **Terminé** — Revue humaine globale des sept captures hybrides du ZIP final, couverte par les validations Bloc A puis la revue globale V1.
 - **Terminé** — Corriger les sept blocages de la première revue globale : confidentialité, formes JSON, cache métadonnées, rotation des logs, moniteur hors UI, arrêt attendu et captures cohérentes.
-- **À valider** — Transmettre les résultats et quatre captures remplacées pour le verdict final du Bloc A.
+- **Terminé** — Transmettre les résultats et quatre captures remplacées pour le verdict final du Bloc A.
 
 ### Données locales
 
@@ -166,7 +166,7 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — Bloc B diagnostic : Health et statut Pause réels validés sur un serveur déjà lancé, sans lancement automatique.
 - **Terminé** — Première commande réelle Community Pause/Reprendre : implémentée, sécurisée et validée avec l’opérateur seul en jeu.
 - **Terminé** — Conserver en simulation ou « À venir » toutes les actions non autorisées ; seules les listes blanches explicitement auditées peuvent utiliser le transport réel.
-- **En cours** — Bloc C : administration complète ; actions serveur et joueur principales implémentées, validation terrain globale reportée à la fin.
+- **Terminé** — Bloc C : actions serveur et joueur principales implémentées et revue globale V1 conclue sans blocage ; validation terrain globale conservée comme jalon opérationnel final.
 - **Terminé** — Produire le paquet autonome Windows x64 `PinteMod-ControlCenter-v2.2-MVP-Preview-win-x64.zip`, sans secret, configuration ni donnée serveur.
 - **Terminé** — Valider le packaging MVP Preview : 149/149 tests en Debug et Release, archive sûre et empreinte SHA-256 fournie.
 - **Terminé** — Vérifier depuis le PC fixe que le partage read-only `PinteModData` du portable est accessible et contient la session, les quatre heartbeats, `ranks_v2` et `remote`.
@@ -206,7 +206,7 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — Ajouter les régressions `SocketException` sur la première mutation et exception non normalisée, puis revalider 218/218 tests.
 - **Terminé** — Produire le paquet final de clôture Bloc B avec sources complètes, preuves et manifeste SHA-256 vérifié.
 - **Terminé** — Verdict ChatGPT final obtenu : `FONDATION BLOC B VALIDÉE — aucune correction bloquante`.
-- **En cours** — Bloc C : activer progressivement les seules mutations dont le contrat, les bornes et le mode de vérification sont établis.
+- **Terminé** — Bloc C : seules les mutations dont le contrat, les bornes et le mode de vérification sont établis ont été activées.
 
 ## Bloc C — administration complète
 
@@ -247,6 +247,13 @@ Dernière mise à jour : 2026-08-09
 - **À valider** — Effectuer une seule validation terrain finale regroupant les actions serveur et joueur nécessaires, au lieu d’imposer une revue après chaque bouton.
 - **À valider** — Vérifier visuellement le catalogue hybride, l’historique local et le nouveau bouton Power-up dans la Preview 13 ; le test serveur du power-up peut attendre la validation terrain finale.
 - **Terminé** — Ajouter en un seul lot la copie locale des réponses diagnostics neutralisées et du filtre visible de la Live Console, avec gestion non bloquante d’un presse-papiers indisponible.
-- **À valider** — Utiliser la Preview 13 pour la prochaine vérification visuelle ; la Preview 12 est remplacée.
+- **Terminé** — Preview 13 utilisée comme paquet de la revue globale finale ; la Preview 12 reste remplacée.
 - **Bloqué** — Changement/redémarrage de carte : aucun contrat GSC générique sûr et stable n’a été identifié ; conserver les boutons simulés.
 - **Bloqué** — Mutations événements et boss : les commandes auditées sont dépendantes des cartes et ne fournissent pas de contrat générique assez sûr ; conserver la simulation.
+
+## Clôture V1 et publication
+
+- **Terminé** — Revue indépendante globale de la source et du paquet Preview 13 : aucun blocage obligatoire, aucune correction de sécurité, confidentialité, RCON, confinement, sérialisation ou packaging requise.
+- **Terminé** — La revue autorise explicitement la clôture du code V1 en conservant simulés changement/redémarrage de carte, boss et événements génériques.
+- **Terminé** — Candidate `v2.2.0-rc.1` créée et contrôlée à partir des octets exacts de la Preview 13 auditée, puis préparée pour publication GitHub avec archive et SHA-256.
+- **À valider** — Effectuer la validation terrain groupée restante avant de promouvoir la candidate vers le tag stable `v2.2.0`.
