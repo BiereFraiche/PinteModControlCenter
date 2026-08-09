@@ -1,0 +1,31 @@
+<Application x:Class="PinteMod.ControlCenter.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:PinteMod.ControlCenter.ViewModels"
+             xmlns:views="clr-namespace:PinteMod.ControlCenter.Views">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/PinteModTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <DataTemplate DataType="{x:Type viewModels:DashboardViewModel}">
+                <views:DashboardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:PlayersViewModel}">
+                <views:PlayersView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:ServerViewModel}">
+                <views:ServerView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:RecordsViewModel}">
+                <views:RecordsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:LogsViewModel}">
+                <views:LogsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:SettingsViewModel}">
+                <views:SettingsView />
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

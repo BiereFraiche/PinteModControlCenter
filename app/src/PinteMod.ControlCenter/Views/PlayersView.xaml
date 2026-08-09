@@ -1,0 +1,42 @@
+<UserControl x:Class="PinteMod.ControlCenter.Views.PlayersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:PinteMod.ControlCenter.Controls">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <controls:ResponsiveUniformGrid MinItemWidth="440" MaxColumns="2" Margin="16">
+            <StackPanel Margin="4">
+                <controls:ResponsiveUniformGrid MinItemWidth="145" MaxColumns="2" Margin="-4,-4,-4,12">
+                    <Border Style="{StaticResource CardStyle}" Margin="4">
+                        <StackPanel><TextBlock Text="CONNECTÉS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PlayerCount}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /></StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Margin="4">
+                        <StackPanel><TextBlock Text="EN VIE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding AlivePlayerCountDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" /></StackPanel>
+                    </Border>
+                </controls:ResponsiveUniformGrid>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                        <StackPanel Margin="0,0,0,14">
+                            <TextBlock Text="JOUEURS CONNECTÉS" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock Text="Le pseudo n’est jamais une clé d’action."
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" />
+                            <TextBlock Text="{Binding SourceSummary}" Foreground="{StaticResource AccentBrightBrush}"
+                                       FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ListBox Grid.Row="1" ItemsSource="{Binding Players}" SelectedItem="{Binding SelectedPlayer, Mode=TwoWay}"
+                                 ItemContainerStyle="{StaticResource PlayerListItemStyle}" ItemTemplate="{StaticResource PlayerListItemTemplate}" />
+                        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Visibility="{Binding HasPlayers, Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
+                            <TextBlock Text="AUCUN JOUEUR" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding EmptyMessage}"
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <controls:PlayerDetailsControl Margin="4" />
+        </controls:ResponsiveUniformGrid>
+    </ScrollViewer>
+</UserControl>

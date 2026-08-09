@@ -1,0 +1,149 @@
+<UserControl x:Class="PinteMod.ControlCenter.Controls.PlayerDetailsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:PinteMod.ControlCenter.Controls"
+             xmlns:core="clr-namespace:PinteMod.ControlCenter.Core.Simulation;assembly=PinteMod.ControlCenter.Core">
+    <Border Style="{StaticResource CardStyle}"
+            Visibility="{Binding SelectedPlayer, Converter={StaticResource NullToVisibilityConverter}}">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Border Width="58" Height="58" CornerRadius="29" Background="{StaticResource AccentSoftBrush}"
+                        BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
+                    <TextBlock Text="{Binding SelectedPlayer.Initials}" FontSize="16" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrightBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,3,8,0">
+                    <TextBlock Text="{Binding SelectedPlayer.DisplayName}" FontSize="20" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="CIBLE XUID  " Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding SelectedPlayer.ShortXuid}" FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding SelectedPlayer.ClientLabel}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+                <Border Grid.Column="2" Style="{StaticResource SimulationBadgeBorderStyle}" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding PlayerActionsBadge}" FontSize="10" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrightBrush}" />
+                </Border>
+            </Grid>
+
+            <controls:ResponsiveUniformGrid MinItemWidth="105" MaxColumns="6" Margin="0,18,0,16">
+                <StackPanel Margin="0,0,14,8"><TextBlock Text="RÔLE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.Role}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel Margin="0,0,14,8"><TextBlock Text="LANGUE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.Language}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel Margin="0,0,14,8"><TextBlock Text="PAYS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.CountryCode}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel Margin="0,0,14,8"><TextBlock Text="ÉTAT" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.LifeStateText}" Foreground="{Binding SelectedPlayer.LifeState, Converter={StaticResource StatusBrushConverter}}" FontWeight="SemiBold" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel Margin="0,0,14,8"><TextBlock Text="POINTS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.Points}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel Margin="0,0,0,8"><TextBlock Text="PRÉSENCE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.PresenceText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+            </controls:ResponsiveUniformGrid>
+
+            <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="5" Padding="12,10" Margin="0,0,0,16"
+                    Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
+                <TextBlock Text="Choisissez une action. Elle sera évaluée localement sans aucune commande serveur."
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" />
+            </Border>
+
+            <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                    Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="RÉSULTAT DE SIMULATION" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
+                    <controls:ResponsiveUniformGrid MinItemWidth="112" MaxColumns="6">
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="ACTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Action}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="CIBLE AFFICHÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.TargetDisplay}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="XUID" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.ShortXuid}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="OPTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Option}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,12,8"><TextBlock Text="HEURE · STATUT" Style="{StaticResource EyebrowTextStyle}" /><TextBlock FontSize="12" Margin="0,4,0,0"><Run Text="{Binding LastSimulationResult.Time, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding LastSimulationResult.Status, Mode=OneWay}" Foreground="{Binding LastSimulationResult.StatusValue, Mode=OneWay, Converter={StaticResource StatusBrushConverter}}" /></TextBlock></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
+                    </controls:ResponsiveUniformGrid>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                    Visibility="{Binding HasPlayerAdministrationResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="RÉSULTAT DE L’ACTION RÉELLE" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding PlayerAdministrationStatus}" FontWeight="Bold"
+                               Foreground="{Binding PlayerAdministrationHealth, Converter={StaticResource StatusBrushConverter}}" />
+                    <TextBlock Text="{Binding PlayerAdministrationCommandSent}" FontSize="10" Margin="0,5,0,0" />
+                    <TextBlock Text="{Binding PlayerAdministrationMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="10" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    <Button Content="J’AI VÉRIFIÉ LA PARTIE / CONSOLE" Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding AcknowledgePlayerAdministrationCommand}" HorizontalAlignment="Left" Margin="0,10,0,0" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding PlayerActionsNotice}" Foreground="{StaticResource WarningBrush}"
+                       FontSize="10" Margin="0,0,0,12" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Text="ASSISTANCE" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
+                    <WrapPanel>
+                        <Button Content="REVIVE" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RevivePlayer}" />
+                        <Button Content="RESPAWN" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RespawnPlayer}" />
+                        <ComboBox ItemsSource="{Binding PointsOptions}" SelectedItem="{Binding SelectedPointsAmount}" Width="90" Margin="0,0,8,8" />
+                        <Button Content="AJOUTER POINTS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GrantPoints}" />
+                        <Button Content="MUNITIONS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RefillAmmo}" />
+                        <Button Content="GODMODE" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ToggleGodmode}" />
+                        <Button Content="TÉLÉPORTER AU VISEUR" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.TeleportPlayer}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Text="ARMES &amp; ATOUTS" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
+                    <WrapPanel>
+                        <ComboBox ItemsSource="{Binding WeaponOptions}" SelectedItem="{Binding SelectedWeapon}" Width="145" Margin="0,0,8,8" />
+                        <Button Content="DONNER L’ARME" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GiveWeapon}" />
+                        <ComboBox ItemsSource="{Binding PerkOptions}" SelectedItem="{Binding SelectedPerk}" Width="145" Margin="0,0,8,8" />
+                        <Button Content="DONNER L’ATOUT" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GivePerk}" />
+                        <Button Content="TOUS LES ATOUTS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GiveAllPerks}" />
+                        <ComboBox ItemsSource="{Binding PowerUpOptions}" SelectedItem="{Binding SelectedPowerUp}" Width="145" Margin="0,0,8,8" />
+                        <Button Content="FAIRE APPARAÎTRE LE POWER-UP" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GivePowerUpPlayer}" />
+                    </WrapPanel>
+                    <TextBlock Text="Listes fermées issues des alias stables PinteMod · aucune saisie de commande libre"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="6" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="MODÉRATION &amp; IDENTITÉ" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
+                    <WrapPanel>
+                        <Button Content="MUTE" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.MutePlayer}" />
+                        <Button Content="UNMUTE" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.UnmutePlayer}" />
+                        <Button Content="KICK" Style="{StaticResource DangerButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.KickPlayer}" />
+                        <ComboBox ItemsSource="{Binding BanDurationOptions}" SelectedItem="{Binding SelectedBanDuration}" Width="125" Margin="0,0,8,8" />
+                        <Button Content="BAN" Style="{StaticResource DangerButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.BanPlayer}" />
+                        <ComboBox ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding SelectedRole}" Width="135" Margin="0,0,8,8" />
+                        <Button Content="ATTRIBUER LE RÔLE" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeRole}" />
+                        <Button Content="RETIRER LE RÔLE" Style="{StaticResource DangerButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RemoveRole}" />
+                        <Button Content="CHARGER L’HISTORIQUE LOCAL" Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding LoadPlayerHistoryCommand}"
+                                ToolTip="Lecture read-only du fichier de modération associé au BOIII_XUID sélectionné" />
+                    </WrapPanel>
+                    <TextBlock Text="Mute, ban et rôle utilisent les écritures administratives internes de PinteMod après confirmation. Le Control Center n’écrit jamais directement dans ces fichiers."
+                               Foreground="{StaticResource WarningBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,10,0,0"
+                            Visibility="{Binding HasPlayerHistoryResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding PlayerHistoryStatus}"
+                                       Foreground="{Binding PlayerHistoryHealth, Converter={StaticResource StatusBrushConverter}}"
+                                       FontWeight="Bold" FontSize="10" />
+                            <TextBlock Text="{Binding PlayerHistoryCounters}" Foreground="{StaticResource TextPrimaryBrush}"
+                                       FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding PlayerHistoryLastAction}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

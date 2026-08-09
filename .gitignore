@@ -1,0 +1,49 @@
+# Build
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+
+# Local server sandbox — never commit
+server-sandbox/
+server-production/
+UnrankedServer/
+
+# Runtime and private PinteMod data
+**/boiii/scriptdata/
+**/*.local.json
+**/*.secret.txt
+**/*.dpapi
+**/runtime/
+**/logs/
+**/profiles/
+**/bans/
+**/records/
+**/backups/
+
+# Game/BOIII binaries and assets
+**/*.exe
+**/*.dll
+**/*.pdb
+**/*.ff
+**/*.xpak
+**/*.pak
+**/usermaps/
+**/workshop/
+
+# Local captures/exports
+exports/
+temp/
+*.log
+
+# Generated Control Center deliverables — publish through GitHub Releases, not Git
+app/artifacts/
+
+# Local GitHub/Codex scratch data
+.codex/
+.agents/
+
+# Keep the audited public reference archive when explicitly present
+!reference/PinteMod_v2.1.1.zip

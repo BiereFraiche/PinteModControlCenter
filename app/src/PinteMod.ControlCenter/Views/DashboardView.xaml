@@ -1,0 +1,208 @@
+<UserControl x:Class="PinteMod.ControlCenter.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:PinteMod.ControlCenter.Controls">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    BorderBrush="{StaticResource AccentBrush}">
+                <controls:ResponsiveUniformGrid MinItemWidth="340" MaxColumns="2">
+                    <StackPanel Margin="0,0,14,8">
+                        <TextBlock Text="{Binding ModeLabel}" Style="{StaticResource SectionTitleStyle}"
+                                   Foreground="{StaticResource AccentBrightBrush}" />
+                        <TextBlock Text="{Binding ModeSummary}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="10" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding DeclaredVersionLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                   FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding InstallationSummary}"
+                                   Foreground="{Binding InstallationHealth, Converter={StaticResource StatusBrushConverter}}"
+                                   FontSize="9" FontWeight="SemiBold" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,8">
+                        <TextBlock Text="SOURCE SESSION" Style="{StaticResource EyebrowTextStyle}" />
+                        <WrapPanel Margin="0,6,0,0">
+                            <TextBlock FontSize="10" Margin="0,0,12,4">
+                                <Run Text="Lecture : " /><Run Text="{Binding SessionReadStatus, Converter={StaticResource StatusTextConverter}, Mode=OneWay}"
+                                                               Foreground="{Binding SessionReadStatus, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock FontSize="10" Margin="0,0,12,4">
+                                <Run Text="Fraîcheur : " /><Run Text="{Binding SessionFreshness, Converter={StaticResource StatusTextConverter}, Mode=OneWay}"
+                                                                 Foreground="{Binding SessionFreshness, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding SessionAgeLabel}"
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,0,12,4" />
+                            <TextBlock Text="{Binding SessionProvenance}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,0,0,4" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding SessionSourceLabel}" Foreground="{StaticResource AccentBrightBrush}"
+                                   FontSize="9" FontWeight="Bold" Margin="0,3,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </controls:ResponsiveUniformGrid>
+            </Border>
+
+            <controls:ResponsiveUniformGrid Grid.Row="1" MinItemWidth="155" MaxColumns="5" Margin="-4,-4,-4,12">
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="CARTE ACTUELLE" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding MapName}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding MapCode}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" />
+                        <TextBlock Text="{Binding MapSourceLabel}" Foreground="{StaticResource AccentBrightBrush}" FontSize="9" FontWeight="Bold" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0"
+                                   Foreground="{StaticResource AccentBrightBrush}" />
+                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="DURÉE DE SESSION" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding DurationDisplayText}"
+                                   Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="JOUEURS CONNECTÉS" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding PlayersDisplay}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="ÉTAT DE LA PARTIE" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{Binding RankedStatusDisplay, Converter={StaticResource StatusTextConverter}}"
+                                   Style="{StaticResource KpiValueStyle}"
+                                   Foreground="{Binding RankedStatusDisplay, Converter={StaticResource StatusBrushConverter}}"
+                                   Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
+                    </StackPanel>
+                </Border>
+            </controls:ResponsiveUniformGrid>
+
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <TextBlock Text="ÉTAT DES SERVICES" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="{Binding ServicesSourceLabel}" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Right" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Services}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <controls:ResponsiveUniformGrid MinItemWidth="210" MaxColumns="5" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="6" Padding="12" Margin="4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <Ellipse Width="9" Height="9" VerticalAlignment="Top" Margin="0,4,10,0"
+                                                 Fill="{Binding Health, Converter={StaticResource StatusBrushConverter}}" />
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" />
+                                            <TextBlock Text="{Binding Description}" Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="10" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Health, Converter={StaticResource StatusTextConverter}}"
+                                                       Foreground="{Binding Health, Converter={StaticResource StatusBrushConverter}}"
+                                                       FontSize="10" FontWeight="Bold" Margin="0,5,0,0" />
+                                            <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,8,0,6" />
+                                            <TextBlock FontSize="9" Margin="0,2,0,0">
+                                                <Run Text="Déclaré : " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="{Binding DeclaredStateText, Mode=OneWay}"
+                                                     Foreground="{Binding DeclaredState, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="9" Margin="0,2,0,0">
+                                                <Run Text="Lecture : " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="{Binding ReadStatusText, Mode=OneWay}"
+                                                     Foreground="{Binding ReadStatus, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="9" Margin="0,2,0,0">
+                                                <Run Text="Fraîcheur : " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="{Binding FreshnessText, Mode=OneWay}"
+                                                     Foreground="{Binding Freshness, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                                <Run Text=" · âge " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="{Binding AgeText, Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="9" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding SourceLabel}">
+                                                <Run Text="Provenance : " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="{Binding ProvenanceText, Mode=OneWay}"
+                                                     Foreground="{Binding Provenance, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding CacheNotice}" Foreground="{StaticResource WarningBrush}"
+                                                       FontSize="9" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"
+                                                       Visibility="{Binding CacheNotice, Converter={StaticResource NullToVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <controls:ResponsiveUniformGrid Grid.Row="3" MinItemWidth="440" MaxColumns="2" Margin="-4,-4,-4,12">
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <TextBlock Text="ÉVÉNEMENTS EN DIRECT" Style="{StaticResource SectionTitleStyle}" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding LogsSourceSummary}" Style="{StaticResource EyebrowTextStyle}" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Events}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="0,9">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="64" /><ColumnDefinition Width="94" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Time}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                                            <Border Grid.Column="1" Background="{StaticResource AccentSoftBrush}" CornerRadius="3" Padding="6,3" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="Bold"
+                                                           Foreground="{Binding Severity, Converter={StaticResource StatusBrushConverter}}" />
+                                            </Border>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Details}" Foreground="{StaticResource TextSecondaryBrush}"
+                                                           FontSize="10" Margin="0,3,0,0" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                        <Grid Margin="0,0,0,12">
+                            <TextBlock Text="JOUEURS" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock Text="SÉLECTION PAR XUID" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Right" />
+                        </Grid>
+                        <ListBox Grid.Row="1" ItemsSource="{Binding Players}"
+                                 SelectedItem="{Binding SelectedPlayer, Mode=TwoWay}"
+                                 ItemContainerStyle="{StaticResource PlayerListItemStyle}"
+                                 ItemTemplate="{StaticResource PlayerListItemTemplate}" />
+                    </Grid>
+                </Border>
+            </controls:ResponsiveUniformGrid>
+
+            <controls:PlayerDetailsControl Grid.Row="4" />
+        </Grid>
+    </ScrollViewer>
+</UserControl>
