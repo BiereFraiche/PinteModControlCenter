@@ -6,9 +6,11 @@ PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WP
 
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
 
-> **Baseline actuelle :** v2.2 MVP Preview 13.
+> **Candidate actuelle :** v2.2.0-rc.1, issue de la baseline MVP Preview 13 validée par revue indépendante.
 > Debug et Release : **0 avertissement, 0 erreur et 285/285 tests réussis**.
 > Sans configuration explicite, l’application démarre toujours en simulation complète.
+
+[Télécharger v2.2.0-rc.1](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.1)
 
 ![Direction graphique validée de PinteMod Control Center](design/pintemod-control-center-reference.png)
 
@@ -128,9 +130,10 @@ Compilation Release   PASS — 0 avertissement, 0 erreur
 Tests Debug           PASS — 285/285
 Tests Release         PASS — 285/285
 Contrôle du ZIP       PASS — aucun PDB, secret ou fichier serveur
+Revue globale         PASS — code V1 autorisé à la clôture
 ```
 
-Les commandes réelles restantes doivent être validées de manière groupée sur un serveur dont la partie peut être modifiée sans déranger de joueurs.
+La candidate correspond exactement au paquet couvert par cette revue. Une dernière validation terrain groupée reste le jalon opérationnel avant la promotion vers le tag stable `v2.2.0`. Aucun essai ne doit déranger des joueurs.
 
 ## Projet associé
 

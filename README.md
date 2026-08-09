@@ -12,9 +12,11 @@ PinteMod Control Center is a local Windows operator application for observing an
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current baseline:** v2.2 MVP Preview 13.
+> **Current release candidate:** v2.2.0-rc.1, built from the independently validated MVP Preview 13 baseline.
 > Debug and Release builds complete with **0 warnings, 0 errors and 285/285 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
+
+[Download v2.2.0-rc.1](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.1)
 
 ![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
 
@@ -135,7 +137,7 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-The stable read-only phases and Bloc B foundation have completed independent review. The current operator baseline has:
+The complete V1 source and portable package have passed independent global review with no mandatory correction. The current operator baseline has:
 
 ```text
 Debug build     PASS — 0 warnings, 0 errors
@@ -143,9 +145,10 @@ Release build   PASS — 0 warnings, 0 errors
 Debug tests     PASS — 285/285
 Release tests   PASS — 285/285
 ZIP audit       PASS — no PDB, secret, server file or unsafe path
+Global review   PASS — V1 codebase cleared for closure
 ```
 
-Real-server actions still require grouped human validation on a server whose current match may safely be modified. No test should be performed while players could be disrupted.
+The release candidate is the exact package covered by that review. A final grouped field validation remains the operational gate before promoting it to the stable `v2.2.0` tag. No test should be performed while players could be disrupted.
 
 ## Related project
 

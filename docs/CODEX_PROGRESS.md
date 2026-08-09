@@ -2834,3 +2834,42 @@ La Preview 11 est désormais remplacée par la Preview 13 (`app/artifacts/mvp-pr
 - Décision consignée : les futures extensions GSC ne doivent pas être présentées comme de simples boutons WPF restant à terminer.
 - Aucun code applicatif, serveur, secret, RCON ou paquet de la Preview 13 n’a été modifié pendant cette passe documentaire.
 - Création de `docs/PINTEMOD_REQUIREMENTS_NEXT.md` : heartbeat global, snapshot runtime serveur/joueurs, capacités par carte, feedback de mutations et contrats sûrs pour les futures actions carte/boss/événements.
+
+## 2026-08-09 — Revue globale V1 validée
+
+### Verdict reçu
+
+- Aucun blocage obligatoire détecté.
+- Aucune correction de sécurité, confidentialité, RCON, confinement local, sérialisation ou packaging n’est requise avant clôture.
+- La revue confirme les listes blanches fermées, le ciblage BOIII_XUID, DPAPI CurrentUser, la neutralisation des données, le confinement des lecteurs, l’absence d’écriture PinteMod et la sémantique conservatrice des mutations UDP.
+- Le SHA-256 du paquet Preview 13 a été recalculé par la revue et correspond exactement à `8ED173DEF5D67B14791433AAE1B60EBD136BA6F3963D972CE59E5D5D59D205F5`.
+- Conclusion externe explicite : la V1 peut être clôturée en conservant les fonctions sans contrat sûr en simulation.
+
+### Décision de livraison
+
+- Aucun code applicatif n’est modifié à la suite du verdict.
+- Les octets exacts de la Preview 13 auditée sont promus en candidate `v2.2.0-rc.1`.
+- La revue statique clôt le code V1 ; la dernière validation terrain groupée reste le jalon avant le tag stable `v2.2.0`.
+- Les extensions nécessitant de nouveaux contrats PinteMod restent suivies séparément dans `docs/PINTEMOD_REQUIREMENTS_NEXT.md`.
+
+### Compilation et tests de clôture
+
+- SDK officiel .NET 8.0.423 installé durablement sur la machine de développement.
+- Debug : compilation réussie, 0 avertissement, 0 erreur ; 285/285 tests réussis.
+- Release : compilation réussie, 0 avertissement, 0 erreur ; 285/285 tests réussis.
+- Aucun serveur BOIII, BAT, EXE serveur ou transport RCON n’a été lancé pendant cette validation.
+
+### Paquet candidat
+
+- Source auditée : `app/artifacts/PinteMod-ControlCenter-v2.2-MVP-Preview-13-win-x64.zip`.
+- Candidate : `app/artifacts/PinteMod-ControlCenter-v2.2.0-rc.1-win-x64.zip`.
+- SHA-256 commun : `8ED173DEF5D67B14791433AAE1B60EBD136BA6F3963D972CE59E5D5D59D205F5`.
+- Identité binaire vérifiée : les deux archives ont exactement la même empreinte et la même taille de 70 067 814 octets.
+- Contrôle de candidate : 466 entrées, 0 chemin dangereux, 0 nom interdit, exécutable et `LISEZ-MOI.txt` présents.
+- Publication GitHub prévue sous le tag préversion `v2.2.0-rc.1`, avec l’archive et son fichier SHA-256 comme seuls assets binaires.
+
+### Problèmes et validation humaine
+
+- Le runtime .NET système ne contenait initialement aucun SDK ; l’installation officielle durable 8.0.423 a corrigé ce point sans modification du projet.
+- Aucune capture supplémentaire n’est produite, puisque le code et le rendu sont strictement ceux du paquet déjà revu.
+- La validation terrain groupée des mutations restantes demeure nécessaire avant le tag stable `v2.2.0` ; elle n’est pas remplacée par la revue statique.

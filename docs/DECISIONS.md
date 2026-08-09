@@ -627,3 +627,11 @@ Dernière mise à jour : 2026-08-02
 **Raison.** Leur activation ne dépend pas d’un simple bouton WPF : elle exige une autorité runtime, un format versionné, une compatibilité par carte et des essais serveur dédiés. Les considérer comme du « code restant » sous-estimerait le risque et encouragerait l’invention de données ou de commandes.
 
 **Méthode.** Les travaux futurs restent organisés en lots cohérents avec tests ciblés internes, une seule suite Debug/Release finale et une seule validation humaine regroupée. Les prompts de reprise et de revue sont conservés sous `docs/` afin de maintenir ces garanties entre les sessions.
+
+## ADR-085 — La Preview 13 validée devient la candidate V1 sans recompilation comportementale
+
+**Décision.** La revue globale indépendante conclut à zéro blocage obligatoire et autorise la clôture du code V1. Le paquet Preview 13 couvert par cette revue est donc promu octet pour octet sous le nom `v2.2.0-rc.1`, sans changement de code, de XAML, de contrat RCON ou de contenu binaire.
+
+**Traçabilité.** L’empreinte SHA-256 recalculée par la revue correspond exactement à `8ED173DEF5D67B14791433AAE1B60EBD136BA6F3963D972CE59E5D5D59D205F5`. Renommer la copie de distribution ne change pas cette empreinte ; la Preview 13 reste la provenance auditée.
+
+**Jalon stable.** La revue de code ne remplace pas l’observation terrain des mutations qui n’ont pas toutes été déclenchées sur un serveur réel. La candidate peut être distribuée pour cette validation groupée, mais le tag stable `v2.2.0` attend son résultat. Les fonctions sans contrat PinteMod sûr restent simulées et ne bloquent ni la candidate ni la V1.

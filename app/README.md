@@ -59,15 +59,15 @@ Sans argument, l’application reste entièrement simulée.
 
 ## Paquet portable Windows x64
 
-Le paquet autonome de prévalidation est disponible ici :
+La candidate autonome validée par revue indépendante est disponible ici :
 
 ```text
-app/artifacts/PinteMod-ControlCenter-v2.2-MVP-Preview-13-win-x64.zip
+app/artifacts/PinteMod-ControlCenter-v2.2.0-rc.1-win-x64.zip
 ```
 
 Il contient le runtime .NET 8 Windows nécessaire : aucun SDK n’est requis sur le poste cible. Décompresser entièrement l’archive puis lancer `PinteMod.ControlCenter.exe`. Le fichier `LISEZ-MOI.txt` rappelle le démarrage, les garanties read-only et le report volontaire des essais RCON à une période sans joueur.
 
-Le paquet ne contient aucune configuration opérateur, secret DPAPI, donnée PinteMod, log, XUID, fichier serveur ou GSC. Il s’agit d’une préversion : les diagnostics RCON et Community Pause ont été validés sur le serveur réel. Les nouvelles actions serveur et joueur sont protégées par confirmation et verrou manuel ; leurs essais terrain sont regroupés dans une seule validation finale.
+Le paquet ne contient aucune configuration opérateur, secret DPAPI, donnée PinteMod, log, XUID, fichier serveur ou GSC. Cette candidate est une copie octet pour octet de la Preview 13 auditée. Les diagnostics RCON, Community Pause et principales actions serveur ont été validés sur le serveur réel. Les autres actions serveur et joueur sont protégées par confirmation et verrou manuel ; leurs essais terrain restent regroupés dans une seule validation finale avant le tag stable.
 
 ### Test de source Local/LAN
 
