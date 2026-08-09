@@ -1,7 +1,7 @@
-PINTE MOD CONTROL CENTER v2.2 — MVP PREVIEW
-===========================================
+PINTE MOD CONTROL CENTER v2.2.0 — RELEASE CANDIDATE 2
+=====================================================
 
-Cette version est une préversion opérateur. Elle peut être utilisée sans installer
+Cette version est une candidate opérateur. Elle peut être utilisée sans installer
 le SDK .NET lorsque le paquet portable Windows x64 complet est fourni.
 
 DÉMARRAGE

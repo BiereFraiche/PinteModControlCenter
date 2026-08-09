@@ -48,12 +48,8 @@ public sealed class LocalPlayerModerationHistoryReader(
                 return Failure(LocalReadStatus.Invalid, "Le fichier d’historique dépasse la limite autorisée.", info.LastWriteTimeUtc);
             }
 
-            await using var stream = new FileStream(
+            await using var stream = VerifiedReadOnlyFile.Open(
                 path,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete,
-                4096,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
             using var document = await JsonDocument.ParseAsync(
                 stream,
@@ -112,6 +108,10 @@ public sealed class LocalPlayerModerationHistoryReader(
         catch (JsonException)
         {
             return Failure(LocalReadStatus.Invalid, "Historique JSON incomplet ou invalide.", LastWrite(path));
+        }
+        catch (LocalFileAccessRefusedException)
+        {
+            return Failure(LocalReadStatus.AccessDenied, "Source d’historique local refusée.");
         }
         catch (UnauthorizedAccessException)
         {

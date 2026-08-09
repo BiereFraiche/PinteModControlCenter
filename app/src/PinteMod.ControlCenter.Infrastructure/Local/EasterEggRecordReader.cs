@@ -189,17 +189,17 @@ public sealed class EasterEggRecordReader : IEasterEggRecordReader, IDisposable
                 latest,
                 $"{catalog.Records.Count} Easter Egg Record(s) officiel(s) lu(s).");
         }
-        catch (UnauthorizedAccessException exception)
+        catch (UnauthorizedAccessException)
         {
-            return Failure(LocalReadStatus.AccessDenied, $"Accès refusé : {exception.Message}");
+            return Failure(LocalReadStatus.AccessDenied, "Accès aux Easter Egg Records refusé.");
         }
-        catch (IOException exception)
+        catch (IOException)
         {
-            return Failure(LocalReadStatus.IoError, $"Lecture impossible : {exception.Message}");
+            return Failure(LocalReadStatus.IoError, "Lecture des Easter Egg Records impossible.");
         }
-        catch (InvalidOperationException exception)
+        catch (InvalidOperationException)
         {
-            return Failure(LocalReadStatus.AccessDenied, $"Source locale refusée : {exception.Message}");
+            return Failure(LocalReadStatus.AccessDenied, "Source locale Easter Egg refusée.");
         }
     }
 

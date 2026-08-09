@@ -5,18 +5,18 @@
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-285%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-292%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current release candidate:** v2.2.0-rc.1, built from the independently validated MVP Preview 13 baseline.
-> Debug and Release builds complete with **0 warnings, 0 errors and 285/285 tests passing**.
+> **Current release candidate:** v2.2.0-rc.2, containing the four final security and packaging corrections requested after Preview 13.
+> Debug and Release builds complete with **0 warnings, 0 errors and 292/292 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download v2.2.0-rc.1](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.1)
+[Download v2.2.0-rc.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.2)
 
 ![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
 
@@ -137,18 +137,18 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-The complete V1 source and portable package have passed independent global review with no mandatory correction. The current operator baseline has:
+The corrected V1 candidate has completed its automated validation. The final independent closure review of RC2 is still pending:
 
 ```text
 Debug build     PASS — 0 warnings, 0 errors
 Release build   PASS — 0 warnings, 0 errors
-Debug tests     PASS — 285/285
-Release tests   PASS — 285/285
-ZIP audit       PASS — no PDB, secret, server file or unsafe path
-Global review   PASS — V1 codebase cleared for closure
+Debug tests     PASS — 292/292
+Release tests   PASS — 292/292
+ZIP audit       PASS — no PDB, private build path, forbidden XUID, secret, server file or unsafe path
+Global review   PENDING — RC2 closure review required
 ```
 
-The release candidate is the exact package covered by that review. A final grouped field validation remains the operational gate before promoting it to the stable `v2.2.0` tag. No test should be performed while players could be disrupted.
+RC1 was withdrawn after the stricter review. RC2 is the only candidate to review or test. A final grouped field validation remains the operational gate before promoting it to the stable `v2.2.0` tag. No test should be performed while players could be disrupted.
 
 ## Related project
 

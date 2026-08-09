@@ -257,3 +257,16 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — La revue autorise explicitement la clôture du code V1 en conservant simulés changement/redémarrage de carte, boss et événements génériques.
 - **Terminé** — Candidate `v2.2.0-rc.1` créée et contrôlée à partir des octets exacts de la Preview 13 auditée, puis préparée pour publication GitHub avec archive et SHA-256.
 - **À valider** — Effectuer la validation terrain groupée restante avant de promouvoir la candidate vers le tag stable `v2.2.0`.
+
+## Candidate V1 RC2 — corrections finales de la seconde revue
+
+- **Terminé** — Retirer la RC1 de la publication active après le verdict plus strict et la remplacer par une RC2 recompilée.
+- **Terminé** — Remplacer tous les XUID simulés/exemples par des identifiants réservés fictifs et ajouter le contrôle de régression des sources/contrats.
+- **Terminé** — Désactiver les symboles Release, appliquer une cartographie déterministe des chemins et scanner les assemblies applicatives du paquet.
+- **Terminé** — Fermer les messages publics des lecteurs : aucune exception système brute ne peut atteindre les métadonnées ou ViewModels.
+- **Terminé** — Vérifier par handle la cible réellement ouverte avant toute lecture PinteMod, conserver le support UNC explicite et dégrader les refus sans crash.
+- **Terminé** — Rendre `RconDiagnosticService` conservateur après le début du transport, sans retry ni élargissement de liste blanche.
+- **Terminé** — Compiler et tester Debug/Release : 0 avertissement, 0 erreur, 292/292 tests dans chaque configuration.
+- **Terminé** — Publier et auditer `PinteMod-ControlCenter-v2.2.0-rc.2-win-x64.zip` : 466 entrées, aucun fichier interdit, ancien XUID interdit ou chemin privé de compilation.
+- **À valider** — Soumettre uniquement la RC2 et son SHA-256 à la revue indépendante finale de clôture.
+- **À valider** — Après verdict RC2 sans blocage, conserver la validation terrain groupée comme dernier jalon avant `v2.2.0` stable.

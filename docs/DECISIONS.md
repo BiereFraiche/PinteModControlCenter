@@ -635,3 +635,17 @@ Dernière mise à jour : 2026-08-02
 **Traçabilité.** L’empreinte SHA-256 recalculée par la revue correspond exactement à `8ED173DEF5D67B14791433AAE1B60EBD136BA6F3963D972CE59E5D5D59D205F5`. Renommer la copie de distribution ne change pas cette empreinte ; la Preview 13 reste la provenance auditée.
 
 **Jalon stable.** La revue de code ne remplace pas l’observation terrain des mutations qui n’ont pas toutes été déclenchées sur un serveur réel. La candidate peut être distribuée pour cette validation groupée, mais le tag stable `v2.2.0` attend son résultat. Les fonctions sans contrat PinteMod sûr restent simulées et ne bloquent ni la candidate ni la V1.
+
+## ADR-086 — La seconde revue stricte retire RC1 et impose une ouverture vérifiée par handle
+
+**Décision.** Le verdict plus strict reçu après la première promotion prévaut pour la clôture. `v2.2.0-rc.1` est retirée et ne doit plus être distribuée. Une nouvelle `v2.2.0-rc.2` est compilée depuis les sources corrigées et doit recevoir sa propre revue finale.
+
+**Confidentialité du paquet.** Les identifiants de simulation et contrats utilisent uniquement le préfixe réservé `000000000000000` avec un suffixe de test. Les builds Release sont déterministes, sans symboles, et cartographient les chemins de source. Le contrôle de paquet combine le scan des chaînes sources/contrats avec la recherche des valeurs explicitement interdites et des racines privées dans les assemblies applicatives ; les jetons techniques .NET ne sont pas interprétés comme des XUID.
+
+**Messages publics.** Les erreurs de lecture renvoient uniquement des états et messages fermés (`AccessDenied`, `IoError`, `Invalid`, `Unavailable` ou équivalents existants). `Exception.Message` d’une exception système ne constitue jamais une donnée bindable. Les détails bruts ne sont pas ajoutés à un autre canal dans cette correction.
+
+**Confinement atomique.** Les politiques de chemin restent la première barrière. Le fichier est ensuite ouvert une seule fois en lecture avec partage contrôlé ; `GetFinalPathNameByHandle` vérifie la cible réellement obtenue avant toute lecture et le même handle vérifié alimente le `FileStream`. Une cible différente, un refus de politique ou une forme invalide devient un état local contrôlé. Les chemins UNC explicitement autorisés sont normalisés sans découverte automatique.
+
+**Diagnostic UDP.** Une commande de diagnostic inconnue est rejetée avant transport avec `CommandSent = false`. Dès que l’appel allowlisté à `IRconClient.SendAsync` va commencer, toute erreur de transport est traitée conservativement avec `CommandSent = true`, sans retry. Cette règle aligne les diagnostics sur les mutations déjà validées.
+
+**Portée.** Aucun contrat RCON, commande, fonction métier, lecteur de source supplémentaire, écriture PinteMod, processus, port, découverte réseau ou GSC n’est ajouté.

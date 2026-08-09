@@ -1,5 +1,7 @@
 # PinteMod Control Center v2.2.0-rc.1
 
+> **Candidate retirée.** Une revue ultérieure plus stricte a identifié quatre corrections obligatoires de confidentialité, confinement et sémantique RCON. Utiliser exclusivement `v2.2.0-rc.2`.
+
 Date : 2026-08-09.
 
 Cette candidate est une copie octet pour octet du paquet MVP Preview 13 soumis à la revue globale indépendante.

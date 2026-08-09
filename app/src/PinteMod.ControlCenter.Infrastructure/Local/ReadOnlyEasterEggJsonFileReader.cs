@@ -26,7 +26,15 @@ internal sealed class ReadOnlyEasterEggJsonFileReader
         CancellationToken cancellationToken)
         where T : class
     {
-        var authorizedPath = pathValidator(path);
+        string authorizedPath;
+        try
+        {
+            authorizedPath = pathValidator(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return Failure<T>(LocalReadStatus.AccessDenied, "Source locale refusée.");
+        }
         LocalJsonFileResult<T>? lastFailure = null;
 
         for (var attempt = 1; attempt <= MaximumAttempts; attempt++)
@@ -52,12 +60,8 @@ internal sealed class ReadOnlyEasterEggJsonFileReader
                 }
                 else
                 {
-                    await using var stream = new FileStream(
+                    await using var stream = VerifiedReadOnlyFile.Open(
                         authorizedPath,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.ReadWrite | FileShare.Delete,
-                        4096,
                         FileOptions.Asynchronous | FileOptions.SequentialScan);
                     using var memory = new MemoryStream((int)Math.Min(before.Length, maximumFileSizeBytes));
                     await stream.CopyToAsync(memory, cancellationToken);
@@ -88,23 +92,27 @@ internal sealed class ReadOnlyEasterEggJsonFileReader
             }
             catch (LocalJsonValidationException exception)
             {
-                lastFailure = Failure<T>(exception.Status, exception.Message, TryGetLastWriteTimeUtc(authorizedPath));
+                lastFailure = Failure<T>(exception.Status, exception.PublicMessage, TryGetLastWriteTimeUtc(authorizedPath));
                 if (exception.Status == LocalReadStatus.UnsupportedSchema)
                 {
                     return lastFailure;
                 }
             }
-            catch (JsonException exception)
+            catch (JsonException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.Invalid, $"JSON incomplet ou invalide : {exception.Message}", TryGetLastWriteTimeUtc(authorizedPath));
+                lastFailure = Failure<T>(LocalReadStatus.Invalid, "JSON incomplet ou invalide.", TryGetLastWriteTimeUtc(authorizedPath));
             }
-            catch (UnauthorizedAccessException exception)
+            catch (LocalFileAccessRefusedException)
             {
-                return Failure<T>(LocalReadStatus.AccessDenied, $"Accès refusé : {exception.Message}", TryGetLastWriteTimeUtc(authorizedPath));
+                return Failure<T>(LocalReadStatus.AccessDenied, "Source locale refusée.");
             }
-            catch (IOException exception)
+            catch (UnauthorizedAccessException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.IoError, $"Lecture impossible : {exception.Message}", TryGetLastWriteTimeUtc(authorizedPath));
+                return Failure<T>(LocalReadStatus.AccessDenied, "Accès refusé.", TryGetLastWriteTimeUtc(authorizedPath));
+            }
+            catch (IOException)
+            {
+                lastFailure = Failure<T>(LocalReadStatus.IoError, "Lecture impossible.", TryGetLastWriteTimeUtc(authorizedPath));
             }
 
             if (attempt < MaximumAttempts)

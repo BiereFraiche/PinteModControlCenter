@@ -64,12 +64,8 @@ public sealed partial class CommunityPauseStatusReader : ICommunityPauseStatusRe
                     }
                     else
                     {
-                        await using var stream = new FileStream(
+                        await using var stream = VerifiedReadOnlyFile.Open(
                             path,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.ReadWrite | FileShare.Delete,
-                            4096,
                             FileOptions.Asynchronous | FileOptions.SequentialScan);
                         using var memory = new MemoryStream((int)before.Length);
                         await stream.CopyToAsync(memory, cancellationToken).ConfigureAwait(false);
@@ -103,7 +99,11 @@ public sealed partial class CommunityPauseStatusReader : ICommunityPauseStatusRe
                 catch (PauseStatusValidationException exception)
                 {
                     failure = LocalReadStatus.Invalid;
-                    failureMessage = exception.Message;
+                    failureMessage = exception.PublicMessage;
+                }
+                catch (LocalFileAccessRefusedException)
+                {
+                    return FromFailure(LocalReadStatus.AccessDenied, source, "Source Community Pause refusée.", failureTimestamp);
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -334,5 +334,8 @@ public sealed partial class CommunityPauseStatusReader : ICommunityPauseStatusRe
     [GeneratedRegex(@"^(?<kind>pause|resume) \| YES=(?<yes>\d+) \| NO=(?<no>\d+) \| majority=(?<majority>\d+)$", RegexOptions.CultureInvariant)]
     private static partial Regex VoteLine();
 
-    private sealed class PauseStatusValidationException(string message) : Exception(message);
+    private sealed class PauseStatusValidationException(string message) : Exception(message)
+    {
+        public string PublicMessage { get; } = message;
+    }
 }

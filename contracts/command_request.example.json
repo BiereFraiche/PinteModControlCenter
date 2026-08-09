@@ -2,7 +2,7 @@
   "schema_version": 1,
   "request_id": "example-001",
   "action": "give_perk",
-  "target_xuid": "1111111111111111",
+  "target_xuid": "0000000000000001",
   "arguments": {
     "perk": "jug"
   },

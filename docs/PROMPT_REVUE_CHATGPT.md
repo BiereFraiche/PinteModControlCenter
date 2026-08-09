@@ -5,8 +5,9 @@ Effectue une revue globale et bloquante de PinteMod Control Center v2.2 à parti
 
 Contexte validé :
 - application locale Windows C#/.NET 8/WPF ;
-- baseline Preview 13 ;
-- 285/285 tests réussis en Debug et Release, 0 avertissement et 0 erreur ;
+- candidate corrigée v2.2.0-rc.2, remplaçant la RC1 retirée ;
+- 292/292 tests réussis en Debug et Release, 0 avertissement et 0 erreur ;
+- quatre blocages de la seconde revue traités : identifiants/chemins du paquet, messages d’exception publics, TOCTOU des points de réanalyse et `CommandSent` diagnostic conservateur ;
 - lecture locale hybride seulement après configuration explicite ;
 - aucune découverte automatique, aucun serveur web et aucun port entrant ;
 - RCON uniquement sur action humaine explicite vers une IP numérique locale/privée autorisée ;
@@ -33,7 +34,10 @@ Vérifie en priorité :
 10. validité XAML, navigation, responsivité et lisibilité ;
 11. cohérence du catalogue de cartes hybride sans lecture automatique de server_zm.cfg ;
 12. absence de données brutes dans les fonctions de copie ;
-13. conformité du ZIP et de son manifeste SHA-256.
+13. conformité du ZIP et de son manifeste SHA-256 ;
+14. absence de XUID réel ou non réservé dans les données simulées/contrats et absence de chemin privé de compilation dans les assemblies applicatives ;
+15. vérification de la cible réellement ouverte par handle avant lecture, avec refus contrôlé en cas d’écart ;
+16. `CommandSent = true` pour toute erreur de diagnostic survenue après le début de l’appel de transport, sans retry.
 
 Ne demande pas d’activer les fonctions volontairement simulées sans identifier d’abord un contrat sûr dans les sources stables. Ne transforme pas une préférence graphique facultative en blocage.
 

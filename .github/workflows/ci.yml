@@ -34,3 +34,18 @@ jobs:
 
       - name: Test
         run: dotnet test .\app\PinteMod.ControlCenter.sln -c ${{ matrix.configuration }} --no-build --no-restore
+
+      - name: Restore Windows x64 publish
+        if: matrix.configuration == 'Release'
+        run: dotnet restore .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -r win-x64 --configfile .\app\NuGet.Config
+
+      - name: Publish Windows x64
+        if: matrix.configuration == 'Release'
+        run: dotnet publish .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Release -r win-x64 --self-contained true --no-restore -o .\app\artifacts\ci-publish
+
+      - name: Audit published package
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path .\app\artifacts\ci-publish\* -DestinationPath .\app\artifacts\ci-package.zip
+          .\app\packaging\Test-PublishedPackage.ps1 -PackagePath .\app\artifacts\ci-package.zip -ForbiddenText $env:GITHUB_WORKSPACE

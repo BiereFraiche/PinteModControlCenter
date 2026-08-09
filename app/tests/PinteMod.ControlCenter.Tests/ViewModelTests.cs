@@ -89,7 +89,7 @@ public sealed class ViewModelTests
         dashboard.SimulatePlayerActionCommand.Execute(SimulationAction.KickPlayer);
 
         Assert.IsNotNull(capture.LastRequest);
-        Assert.AreEqual("2222222222222222", capture.LastRequest.TargetXuid);
+        Assert.AreEqual("0000000000000003", capture.LastRequest.TargetXuid);
         Assert.AreNotEqual("Mason", capture.LastRequest.TargetXuid);
         Assert.AreEqual("Mason", dashboard.LastSimulationResult?.TargetDisplay);
         Assert.AreEqual("false", dashboard.LastSimulationResult?.CommandSent);

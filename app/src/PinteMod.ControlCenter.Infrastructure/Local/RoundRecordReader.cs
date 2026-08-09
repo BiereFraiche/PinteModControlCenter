@@ -164,13 +164,17 @@ public sealed class RoundRecordReader : IRoundRecordReader, IDisposable
                 latest,
                 $"{catalog.Records.Count} record(s) lu(s) dans {validDocuments} fichier(s).");
         }
-        catch (UnauthorizedAccessException exception)
+        catch (UnauthorizedAccessException)
         {
-            return Failure(LocalReadStatus.AccessDenied, $"Accès refusé : {exception.Message}");
+            return Failure(LocalReadStatus.AccessDenied, "Accès aux records de manches refusé.");
         }
-        catch (IOException exception)
+        catch (IOException)
         {
-            return Failure(LocalReadStatus.IoError, $"Lecture impossible : {exception.Message}");
+            return Failure(LocalReadStatus.IoError, "Lecture des records de manches impossible.");
+        }
+        catch (InvalidOperationException)
+        {
+            return Failure(LocalReadStatus.AccessDenied, "Source locale de records refusée.");
         }
     }
 

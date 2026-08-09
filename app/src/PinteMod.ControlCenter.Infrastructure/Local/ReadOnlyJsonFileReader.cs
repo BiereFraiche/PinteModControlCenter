@@ -14,6 +14,8 @@ internal sealed class LocalJsonValidationException(LocalReadStatus status, strin
     : Exception(message)
 {
     public LocalReadStatus Status { get; } = status;
+
+    public string PublicMessage { get; } = message;
 }
 
 internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
@@ -60,12 +62,8 @@ internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
                 }
                 else
                 {
-                    await using var stream = new FileStream(
+                    await using var stream = VerifiedReadOnlyFile.Open(
                         path,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.ReadWrite | FileShare.Delete,
-                        4096,
                         FileOptions.Asynchronous | FileOptions.SequentialScan);
                     using var memory = new MemoryStream((int)Math.Min(before.Length, MaximumFileSizeBytes));
                     await stream.CopyToAsync(memory, cancellationToken);
@@ -96,23 +94,27 @@ internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
             }
             catch (LocalJsonValidationException exception)
             {
-                lastFailure = Failure<T>(exception.Status, exception.Message, TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(exception.Status, exception.PublicMessage, TryGetLastWriteTimeUtc(path));
                 if (exception.Status == LocalReadStatus.UnsupportedSchema)
                 {
                     return lastFailure;
                 }
             }
-            catch (JsonException exception)
+            catch (JsonException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.Invalid, $"JSON incomplet ou invalide : {exception.Message}", TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(LocalReadStatus.Invalid, "JSON incomplet ou invalide.", TryGetLastWriteTimeUtc(path));
             }
-            catch (UnauthorizedAccessException exception)
+            catch (LocalFileAccessRefusedException)
             {
-                return Failure<T>(LocalReadStatus.AccessDenied, $"Accès refusé : {exception.Message}", TryGetLastWriteTimeUtc(path));
+                return Failure<T>(LocalReadStatus.AccessDenied, "Source locale refusée.");
             }
-            catch (IOException exception)
+            catch (UnauthorizedAccessException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.IoError, $"Lecture impossible : {exception.Message}", TryGetLastWriteTimeUtc(path));
+                return Failure<T>(LocalReadStatus.AccessDenied, "Accès refusé.", TryGetLastWriteTimeUtc(path));
+            }
+            catch (IOException)
+            {
+                lastFailure = Failure<T>(LocalReadStatus.IoError, "Lecture impossible.", TryGetLastWriteTimeUtc(path));
             }
 
             if (attempt < MaximumAttempts)
