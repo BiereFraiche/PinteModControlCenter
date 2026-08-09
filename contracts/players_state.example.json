@@ -4,7 +4,7 @@
   "players": [
     {
       "client": 0,
-      "xuid": "9cf34426f668fb8b",
+      "xuid": "0000000000000001",
       "display_name": "BiereFraiche",
       "role": "owner",
       "language": "fr",
@@ -15,7 +15,7 @@
     },
     {
       "client": 1,
-      "xuid": "1111111111111111",
+      "xuid": "0000000000000002",
       "display_name": "PlayerTwo",
       "role": "user",
       "language": "en",

@@ -64,13 +64,13 @@ public sealed class SimulatedControlCenterDataProvider(
 
     private static IReadOnlyList<PlayerState> CreatePlayers() =>
     [
-        new(0, "9cf34426f668fb8b", "BiereFraiche", "owner", "fr", "LOCAL",
+        new(0, "0000000000000001", "BiereFraiche", "owner", "fr", "LOCAL",
             PlayerLifeState.Alive, 12_500, TimeSpan.FromSeconds(2_538), false, false),
-        new(1, "1111111111111111", "Léonie", "admin", "fr", "FR",
+        new(1, "0000000000000002", "Léonie", "admin", "fr", "FR",
             PlayerLifeState.Alive, 8_900, TimeSpan.FromSeconds(1_862), false, false),
-        new(2, "2222222222222222", "Mason", "user", "en", "GB",
+        new(2, "0000000000000003", "Mason", "user", "en", "GB",
             PlayerLifeState.Downed, 3_200, TimeSpan.FromSeconds(932), false, false),
-        new(3, "3333333333333333", "Nox", "helper", "es", "ES",
+        new(3, "0000000000000004", "Nox", "helper", "es", "ES",
             PlayerLifeState.Spectator, 1_250, TimeSpan.FromSeconds(530), true, false)
     ];
 

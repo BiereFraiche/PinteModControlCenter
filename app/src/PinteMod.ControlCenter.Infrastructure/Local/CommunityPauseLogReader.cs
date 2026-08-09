@@ -99,6 +99,7 @@ public sealed partial class CommunityPauseLogReader : ICommunityPauseLogReader, 
         {
             var status = exception switch
             {
+                LocalFileAccessRefusedException => LocalReadStatus.AccessDenied,
                 UnauthorizedAccessException => LocalReadStatus.AccessDenied,
                 InvalidOperationException => LocalReadStatus.Invalid,
                 _ => LocalReadStatus.IoError
@@ -142,12 +143,8 @@ public sealed partial class CommunityPauseLogReader : ICommunityPauseLogReader, 
         }
 
         var buffer = new byte[(int)available];
-        await using var stream = new FileStream(
+        await using var stream = VerifiedReadOnlyFile.Open(
             path,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            4096,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
         stream.Position = cursor.Position;
         var bytesRead = await stream.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -326,12 +323,8 @@ public sealed partial class CommunityPauseLogReader : ICommunityPauseLogReader, 
         }
 
         var buffer = new byte[length];
-        await using var stream = new FileStream(
+        await using var stream = VerifiedReadOnlyFile.Open(
             path,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            4096,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
         var read = await stream.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
         return SHA256.HashData(buffer.AsSpan(0, read));

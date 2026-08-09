@@ -6,11 +6,11 @@ PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WP
 
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
 
-> **Candidate actuelle :** v2.2.0-rc.1, issue de la baseline MVP Preview 13 validée par revue indépendante.
-> Debug et Release : **0 avertissement, 0 erreur et 285/285 tests réussis**.
+> **Candidate actuelle :** v2.2.0-rc.2, intégrant les quatre corrections finales de sécurité et de packaging demandées après la Preview 13.
+> Debug et Release : **0 avertissement, 0 erreur et 292/292 tests réussis**.
 > Sans configuration explicite, l’application démarre toujours en simulation complète.
 
-[Télécharger v2.2.0-rc.1](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.1)
+[Télécharger v2.2.0-rc.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.2)
 
 ![Direction graphique validée de PinteMod Control Center](design/pintemod-control-center-reference.png)
 
@@ -127,13 +127,13 @@ Les builds, paquets portables, configurations locales, secrets DPAPI, copies ser
 ```text
 Compilation Debug     PASS — 0 avertissement, 0 erreur
 Compilation Release   PASS — 0 avertissement, 0 erreur
-Tests Debug           PASS — 285/285
-Tests Release         PASS — 285/285
-Contrôle du ZIP       PASS — aucun PDB, secret ou fichier serveur
-Revue globale         PASS — code V1 autorisé à la clôture
+Tests Debug           PASS — 292/292
+Tests Release         PASS — 292/292
+Contrôle du ZIP       PASS — aucun PDB, chemin privé de build, XUID interdit, secret ou fichier serveur
+Revue globale         EN ATTENTE — revue de clôture RC2 requise
 ```
 
-La candidate correspond exactement au paquet couvert par cette revue. Une dernière validation terrain groupée reste le jalon opérationnel avant la promotion vers le tag stable `v2.2.0`. Aucun essai ne doit déranger des joueurs.
+La RC1 a été retirée après la revue plus stricte. La RC2 est la seule candidate à revoir ou tester. Une dernière validation terrain groupée reste le jalon opérationnel avant la promotion vers le tag stable `v2.2.0`. Aucun essai ne doit déranger des joueurs.
 
 ## Projet associé
 

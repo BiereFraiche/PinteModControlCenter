@@ -161,13 +161,17 @@ public sealed class RankProfileReader : IRankProfileReader, IDisposable
                     ? $"{profiles.Count} profil(s) lu(s)."
                     : $"{profiles.Count} profil(s) lu(s), {skipped} fichier(s) ignoré(s).");
         }
-        catch (UnauthorizedAccessException exception)
+        catch (UnauthorizedAccessException)
         {
-            return Failure(LocalReadStatus.AccessDenied, $"Accès refusé : {exception.Message}");
+            return Failure(LocalReadStatus.AccessDenied, "Accès aux profils Ranks refusé.");
         }
-        catch (IOException exception)
+        catch (IOException)
         {
-            return Failure(LocalReadStatus.IoError, $"Lecture impossible : {exception.Message}");
+            return Failure(LocalReadStatus.IoError, "Lecture des profils Ranks impossible.");
+        }
+        catch (InvalidOperationException)
+        {
+            return Failure(LocalReadStatus.AccessDenied, "Source locale Ranks refusée.");
         }
     }
 

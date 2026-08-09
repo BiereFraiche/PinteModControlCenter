@@ -19,6 +19,7 @@ public sealed class SimulatedProviderTests
         Assert.AreEqual(RankedStatus.Ranked, snapshot.Server.RankedStatus);
         Assert.IsTrue(snapshot.Services.All(service => service.Health == ServiceHealth.Healthy));
         Assert.IsTrue(snapshot.Players.All(player => XuidValidator.IsValid(player.Xuid)));
+        Assert.IsTrue(snapshot.Players.All(player => player.Xuid.StartsWith("000000000000000", StringComparison.Ordinal)));
         Assert.AreEqual(snapshot.Players.Count, snapshot.Players.Select(player => player.Xuid).Distinct().Count());
     }
 

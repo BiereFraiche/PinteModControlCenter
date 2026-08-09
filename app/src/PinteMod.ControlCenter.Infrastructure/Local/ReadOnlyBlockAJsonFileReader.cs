@@ -44,12 +44,8 @@ internal sealed class ReadOnlyBlockAJsonFileReader
                 }
                 else
                 {
-                    await using var stream = new FileStream(
+                    await using var stream = VerifiedReadOnlyFile.Open(
                         path,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.ReadWrite | FileShare.Delete,
-                        4096,
                         FileOptions.Asynchronous | FileOptions.SequentialScan);
                     using var memory = new MemoryStream((int)Math.Min(before.Length, MaximumFileSizeBytes));
                     await stream.CopyToAsync(memory, cancellationToken);
@@ -71,19 +67,23 @@ internal sealed class ReadOnlyBlockAJsonFileReader
             }
             catch (LocalJsonValidationException exception)
             {
-                lastFailure = Failure<T>(exception.Status, exception.Message, TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(exception.Status, exception.PublicMessage, TryGetLastWriteTimeUtc(path));
                 if (exception.Status == LocalReadStatus.UnsupportedSchema)
                 {
                     return lastFailure;
                 }
             }
-            catch (JsonException exception)
+            catch (JsonException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.Invalid, $"JSON incomplet ou invalide : {exception.Message}", TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(LocalReadStatus.Invalid, "JSON incomplet ou invalide.", TryGetLastWriteTimeUtc(path));
             }
             catch (InvalidOperationException)
             {
                 lastFailure = Failure<T>(LocalReadStatus.Invalid, "Structure JSON inattendue.", TryGetLastWriteTimeUtc(path));
+            }
+            catch (LocalFileAccessRefusedException)
+            {
+                return Failure<T>(LocalReadStatus.AccessDenied, "Source locale refusée.");
             }
             catch (UnauthorizedAccessException)
             {

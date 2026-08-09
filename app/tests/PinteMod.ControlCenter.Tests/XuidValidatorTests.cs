@@ -9,7 +9,7 @@ public sealed class XuidValidatorTests
     [TestMethod]
     public void IsValid_AcceptsSixteenHexadecimalCharacters()
     {
-        Assert.IsTrue(XuidValidator.IsValid("9cf34426f668fb8b"));
+        Assert.IsTrue(XuidValidator.IsValid("0000000000000001"));
     }
 
     [DataTestMethod]
@@ -26,6 +26,6 @@ public sealed class XuidValidatorTests
     [TestMethod]
     public void Abbreviate_HidesTheMiddleOfTheXuid()
     {
-        Assert.AreEqual("9cf3…fb8b", XuidValidator.Abbreviate("9cf34426f668fb8b"));
+        Assert.AreEqual("0000…0001", XuidValidator.Abbreviate("0000000000000001"));
     }
 }

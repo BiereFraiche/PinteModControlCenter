@@ -38,12 +38,24 @@ public sealed class RconDiagnosticService(
             return Result(command, RconExecutionStatus.SecretMissing, "Enregistrez d’abord le secret RCON local.", false);
         }
 
+        string commandText;
         try
         {
+            commandText = CommandText(command);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return Result(command, RconExecutionStatus.TransportError, "Diagnostic non autorisé.", false);
+        }
+
+        var commandSent = false;
+        try
+        {
+            commandSent = true;
             var response = await client.SendAsync(
                 endpoint,
                 password,
-                CommandText(command),
+                commandText,
                 cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(response))
             {
@@ -76,7 +88,7 @@ public sealed class RconDiagnosticService(
         }
         catch (Exception exception) when (exception is SocketException or IOException or ArgumentException)
         {
-            return Result(command, RconExecutionStatus.TransportError, "Échec du transport RCON.", false);
+            return Result(command, RconExecutionStatus.TransportError, "Échec du transport RCON · envoi potentiellement effectué.", commandSent);
         }
     }
 

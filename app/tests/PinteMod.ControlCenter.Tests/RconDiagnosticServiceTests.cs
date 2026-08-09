@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
@@ -248,6 +249,23 @@ public sealed class RconDiagnosticServiceTests
     }
 
     [TestMethod]
+    public async Task SocketFailureDuringDiagnosticCall_IsConservativelyMarkedAsPossiblySent()
+    {
+        var client = new ThrowingRconClient(new SocketException());
+        var service = new RconDiagnosticService(
+            client,
+            new MemorySecretStore("safe-secret"),
+            new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.ExecuteAsync(RconDiagnosticCommand.HealthFull, Endpoint);
+
+        Assert.AreEqual(RconExecutionStatus.TransportError, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        Assert.AreEqual(1, client.CallCount);
+        StringAssert.Contains(result.DisplayResponse, "envoi potentiellement effectué");
+    }
+
+    [TestMethod]
     public void OperatorActivity_IsInMemoryBoundedAndNeutralized()
     {
         var store = new InMemoryOperatorActivityStore();
@@ -360,11 +378,17 @@ public sealed class RconDiagnosticServiceTests
 
     private sealed class ThrowingRconClient(Exception exception) : IRconClient
     {
+        public int CallCount { get; private set; }
+
         public Task<string> SendAsync(
             RconEndpoint endpoint,
             string password,
             string command,
-            CancellationToken cancellationToken = default) => Task.FromException<string>(exception);
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromException<string>(exception);
+        }
     }
 
     private sealed class BlockingFirstCallClient : IRconClient

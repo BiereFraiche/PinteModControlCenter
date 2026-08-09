@@ -2873,3 +2873,59 @@ La Preview 11 est désormais remplacée par la Preview 13 (`app/artifacts/mvp-pr
 - Le runtime .NET système ne contenait initialement aucun SDK ; l’installation officielle durable 8.0.423 a corrigé ce point sans modification du projet.
 - Aucune capture supplémentaire n’est produite, puisque le code et le rendu sont strictement ceux du paquet déjà revu.
 - La validation terrain groupée des mutations restantes demeure nécessaire avant le tag stable `v2.2.0` ; elle n’est pas remplacée par la revue statique.
+
+## 2026-08-09 — Corrections bloquantes finales et candidate v2.2.0-rc.2
+
+### Objectif de la passe
+
+Traiter en une livraison unique les quatre blocages de la seconde revue Preview 13 : données/chemins sensibles dans le paquet, messages système exposables, fenêtre TOCTOU des points de réanalyse et faux négatif `CommandSent` des diagnostics RCON.
+
+### Réalisé
+
+- La RC1 a été immédiatement retirée de la publication active ; elle est historiquement documentée comme candidate retirée.
+- Les XUID simulés et exemples ont été remplacés par quatre identifiants réservés fictifs. Les tests refusent tout littéral XUID non réservé dans les sources de production et les contrats.
+- Le profil Release supprime les symboles, active le build déterministe et cartographie les chemins de source.
+- Tous les lecteurs PinteMod concernés ouvrent désormais le fichier par un handle read-only, résolvent la cible réellement ouverte avant lecture et réutilisent ce même handle. Une divergence devient un refus local contrôlé ; la normalisation UNC explicite est conservée.
+- Les messages publics de lecture utilisent des libellés fermés. Aucun `Exception.Message` système n’est présent dans les lecteurs publics.
+- `RconDiagnosticService` résout d’abord sa liste blanche, puis considère l’envoi comme potentiel dès le début de l’appel de transport. Timeout, socket ou I/O après ce point conservent `CommandSent = true`, sans retry.
+- Le workflow CI publie un Windows x64 Release et exécute le nouveau contrôle de paquet.
+- Le ZIP RC2 a été créé puis audité avec sa racine de build et l’ancien identifiant interdits explicitement.
+
+### Fichiers créés ou modifiés
+
+- build/CI : `.github/workflows/ci.yml`, `app/Directory.Build.props` ;
+- packaging : `app/packaging/LISEZ-MOI.txt`, `app/packaging/Test-PublishedPackage.ps1`, `app/src/PinteMod.ControlCenter/PinteMod.ControlCenter.csproj` ;
+- confinement local : `VerifiedReadOnlyFile.cs`, `ReadOnlyJsonFileReader.cs`, `ReadOnlyRankJsonFileReader.cs`, `ReadOnlyEasterEggJsonFileReader.cs`, `ReadOnlyBlockAJsonFileReader.cs`, `StructuredLogReader.cs`, `CommunityPauseLogReader.cs`, `CommunityPauseStatusReader.cs`, `LocalPlayerModerationHistoryReader.cs`, `RankProfileReader.cs`, `RoundRecordReader.cs`, `EasterEggRecordReader.cs` ;
+- RCON : `RconDiagnosticService.cs` ;
+- simulation/contrats : `SimulatedControlCenterDataProvider.cs`, `contracts/command_request.example.json`, `contracts/command_result.example.json`, `contracts/players_state.example.json` ;
+- tests : `FinalPrivacyRegressionTests.cs`, `VerifiedReadOnlyFileTests.cs`, `RconDiagnosticServiceTests.cs`, `SimulatedProviderTests.cs`, `ViewModelTests.cs`, `XuidValidatorTests.cs` ;
+- documentation : `README.md`, `README_FR.md`, `app/README.md`, `docs/RELEASE_NOTES_v2.2.0-rc.1.md`, `docs/RELEASE_NOTES_v2.2.0-rc.2.md`, `docs/PROMPT_REVUE_CHATGPT.md`, `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Fonctionnalités et garanties
+
+- Fonctionnalités opérateur et listes blanches inchangées.
+- Simulation par défaut, actions simulées et `CommandSent = false` inchangés.
+- Aucun serveur BOIII, BAT, EXE serveur ou transport RCON réel lancé.
+- Aucune écriture PinteMod, modification GSC, découverte réseau, port entrant ou secret lu.
+
+### Compilation et tests
+
+- Debug : 0 avertissement, 0 erreur, 292/292 tests réussis.
+- Release : 0 avertissement, 0 erreur, 292/292 tests réussis.
+- Une première relance a rencontré un ancien fichier Debug verrouillé par des processus .NET extérieurs ; la validation a été exécutée dans `app/artifacts/final-validation/` sans fermer le Control Center ni toucher à BOIII.
+- L’unique échec initial était l’attente historique de l’ancien XUID simulé dans `ViewModelTests`; l’attente a été remplacée par l’identifiant réservé puis les deux suites complètes ont réussi.
+
+### Publication et contrôle
+
+- Dossier publié : `app/artifacts/v1-rc2-win-x64/`.
+- Exécutable : `app/artifacts/v1-rc2-win-x64/PinteMod.ControlCenter.exe`.
+- ZIP : `app/artifacts/PinteMod-ControlCenter-v2.2.0-rc.2-win-x64.zip`.
+- Manifeste : `app/artifacts/PinteMod-ControlCenter-v2.2.0-rc.2-win-x64.zip.sha256`.
+- SHA-256 : `2C30BB4BBB3F73DB15588D78518F94914FAB87B2EDA34364B9CEB8E8B5C58124`.
+- Audit : 466 entrées ; aucun PDB, secret, configuration opérateur, fichier serveur/runtime, chemin ZIP dangereux, ancienne valeur XUID interdite ou racine privée de compilation.
+
+### Problèmes, validation humaine et captures
+
+- Aucun blocage technique connu ne reste dans les quatre corrections demandées.
+- Validation humaine requise : transmettre exclusivement la RC2 et son manifeste à ChatGPT pour le verdict final de clôture ; ne plus transmettre ni utiliser la RC1.
+- Aucune capture produite : aucun changement visuel n’a été effectué.
