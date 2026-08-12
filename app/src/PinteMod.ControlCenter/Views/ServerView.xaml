@@ -20,10 +20,10 @@
                     <StackPanel><TextBlock Text="CARTE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding MapName}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="{Binding MapCode}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
-                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{StaticResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="INFÉRÉE DES LOGS SI DISPONIBLE" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{StaticResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="{Binding RoundSource}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
-                    <StackPanel><TextBlock Text="PINTE MOD" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PinteModVersion}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="VERSION DU SNAPSHOT" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="PINTE MOD" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PinteModVersion}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap"><Run Text="COURANT " /><Run Text="{Binding PowerStateText, Mode=OneWay}" /><Run Text=" · PAP " /><Run Text="{Binding PackAPunchStateText, Mode=OneWay}" /></TextBlock></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>

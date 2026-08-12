@@ -133,6 +133,42 @@ public sealed class PlayerAdministrationViewModelTests
     }
 
     [TestMethod]
+    public async Task FreshRuntimeSnapshot_AuthorizesXuidActionWhenLogPresenceIsUnavailable()
+    {
+        var snapshot = HybridSnapshot(true);
+        var source = snapshot.DataContext.SessionSource;
+        var runtimePlayer = new RuntimePlayerSnapshot(
+            Xuid, "Alice", 0, "connected", PlayerLifeState.Alive, RuntimeGodModeState.Off,
+            1000, 100, 100, "ray_gun", RuntimeWeaponPackAPunchState.Base, 20, 100,
+            [], false, []);
+        var runtime = new ControlCenterRuntimeSnapshot(
+            1, "2.1.1", "session", 1, 1000, null, "session_gettime_and_file_mtime", "zm_tomb",
+            5, 0, TimeSpan.FromMinutes(2), RankedStatus.Ranked, RuntimePowerState.Unknown,
+            RuntimePackAPunchState.Unknown, 1, 18, 1, 0, false, [runtimePlayer]);
+        snapshot = snapshot with
+        {
+            LocalObservation = snapshot.LocalObservation with
+            {
+                Logs = snapshot.LocalObservation.Logs with
+                {
+                    Source = LocalSourceMetadata.Unavailable("Logs absents.")
+                },
+                RuntimeSnapshot = new(runtime, source, DateTimeOffset.UtcNow)
+            }
+        };
+        var store = new SnapshotStore(snapshot, snapshot);
+        var service = new CapturingPlayerAdministrationService();
+        var viewModel = CreatePlayers(store, service, new OperatorMutationSafetyState(), new OperatorRconOperationCoordinator());
+        await viewModel.InitializeAsync();
+
+        viewModel.PlayerActionCommand.Execute(SimulationAction.RefillAmmo);
+        await WaitForCommandAsync(viewModel.PlayerActionCommand);
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual(Xuid, service.Request?.TargetXuid);
+    }
+
+    [TestMethod]
     public async Task PowerUpAction_UsesSelectedClosedAliasAndXuidTarget()
     {
         var snapshot = HybridSnapshot(true);

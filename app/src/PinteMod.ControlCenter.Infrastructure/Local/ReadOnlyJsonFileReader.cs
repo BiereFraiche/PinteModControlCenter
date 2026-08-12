@@ -18,7 +18,9 @@ internal sealed class LocalJsonValidationException(LocalReadStatus status, strin
     public string PublicMessage { get; } = message;
 }
 
-internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
+internal sealed class ReadOnlyJsonFileReader(
+    LocalPinteModOptions options,
+    Action<string>? afterReadBeforeVerification = null)
 {
     private const int MaximumFileSizeBytes = 1024 * 1024;
     private const int MaximumAttempts = 3;
@@ -28,11 +30,29 @@ internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
         Func<JsonElement, T> parser,
         CancellationToken cancellationToken = default)
         where T : class =>
-        Task.Run(() => ReadOnWorkerAsync(file, parser, cancellationToken), cancellationToken);
+        ReadAsync(file, parser, MaximumFileSizeBytes, cancellationToken);
+
+    public Task<LocalJsonFileResult<T>> ReadAsync<T>(
+        LocalPinteModFile file,
+        Func<JsonElement, T> parser,
+        int maximumFileSizeBytes,
+        CancellationToken cancellationToken = default)
+        where T : class
+    {
+        if (maximumFileSizeBytes <= 0 || maximumFileSizeBytes > MaximumFileSizeBytes)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumFileSizeBytes));
+        }
+
+        return Task.Run(
+            () => ReadOnWorkerAsync(file, parser, maximumFileSizeBytes, cancellationToken),
+            cancellationToken);
+    }
 
     private async Task<LocalJsonFileResult<T>> ReadOnWorkerAsync<T>(
         LocalPinteModFile file,
         Func<JsonElement, T> parser,
+        int maximumFileSizeBytes,
         CancellationToken cancellationToken)
         where T : class
     {
@@ -56,7 +76,7 @@ internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
                 {
                     lastFailure = Failure<T>(LocalReadStatus.Empty, "Fichier vide.", before.LastWriteTimeUtc);
                 }
-                else if (before.Length > MaximumFileSizeBytes)
+                else if (before.Length > maximumFileSizeBytes)
                 {
                     return Failure<T>(LocalReadStatus.Invalid, "Fichier anormalement volumineux.", before.LastWriteTimeUtc);
                 }
@@ -65,10 +85,11 @@ internal sealed class ReadOnlyJsonFileReader(LocalPinteModOptions options)
                     await using var stream = VerifiedReadOnlyFile.Open(
                         path,
                         FileOptions.Asynchronous | FileOptions.SequentialScan);
-                    using var memory = new MemoryStream((int)Math.Min(before.Length, MaximumFileSizeBytes));
+                    using var memory = new MemoryStream((int)Math.Min(before.Length, maximumFileSizeBytes));
                     await stream.CopyToAsync(memory, cancellationToken);
+                    afterReadBeforeVerification?.Invoke(path);
 
-                    if (memory.Length > MaximumFileSizeBytes)
+                    if (memory.Length > maximumFileSizeBytes)
                     {
                         return Failure<T>(LocalReadStatus.Invalid, "Fichier anormalement volumineux.", before.LastWriteTimeUtc);
                     }

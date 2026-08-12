@@ -350,11 +350,18 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
     protected void ConfigurePlayerDataContext(DashboardSnapshot snapshot)
     {
         _isHybridLocal = snapshot.DataContext.Mode == ControlCenterDataMode.HybridLocal;
+        var runtimePlayerSourceReady =
+            snapshot.LocalObservation.RuntimeSnapshot.Value is not null &&
+            snapshot.LocalObservation.RuntimeSnapshot.Metadata.ReadStatus == LocalReadStatus.Success &&
+            snapshot.LocalObservation.RuntimeSnapshot.Metadata.Freshness == DataFreshness.Fresh &&
+            snapshot.LocalObservation.RuntimeSnapshot.Metadata.Provenance == DataProvenance.LocalFile;
+        var logPlayerSourceReady =
+            snapshot.LocalObservation.Logs.Source.ReadStatus == LocalReadStatus.Success &&
+            snapshot.LocalObservation.Logs.Source.Provenance == DataProvenance.LocalFile;
         _localPlayerSourceReady = _isHybridLocal &&
                                   snapshot.DataContext.SessionSource.ReadStatus == LocalReadStatus.Success &&
                                   snapshot.DataContext.SessionSource.Provenance == DataProvenance.LocalFile &&
-                                  snapshot.LocalObservation.Logs.Source.ReadStatus == LocalReadStatus.Success &&
-                                  snapshot.LocalObservation.Logs.Source.Provenance == DataProvenance.LocalFile;
+                                  (runtimePlayerSourceReady || logPlayerSourceReady);
         OnPropertyChanged(nameof(PlayerActionsBadge));
         OnPropertyChanged(nameof(PlayerActionsNotice));
         NotifyPlayerActionAuthorizationChanged();

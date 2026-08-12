@@ -39,6 +39,23 @@
                 <StackPanel Margin="0,0,0,8"><TextBlock Text="PRÉSENCE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.PresenceText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
             </controls:ResponsiveUniformGrid>
 
+            <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                    Visibility="{Binding SelectedPlayer.RuntimeDataAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="ÉTAT RUNTIME PINTE MOD · READ-ONLY" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
+                    <controls:ResponsiveUniformGrid MinItemWidth="125" MaxColumns="5">
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="VIE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.HealthText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="ARME ÉQUIPÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.EquippedWeaponText}" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="MUNITIONS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.AmmunitionText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="GODMODE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.GodModeText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="ATOUTS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.PerksText}" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
+                    </controls:ResponsiveUniformGrid>
+                    <TextBlock Text="{Binding SelectedPlayer.WeaponsText}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
             <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="5" Padding="12,10" Margin="0,0,0,16"
                     Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
                 <TextBlock Text="Choisissez une action. Elle sera évaluée localement sans aucune commande serveur."

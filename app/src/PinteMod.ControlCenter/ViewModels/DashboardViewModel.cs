@@ -70,6 +70,7 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
                 OnPropertyChanged(nameof(InstallationSummary));
                 OnPropertyChanged(nameof(InstallationHealth));
                 OnPropertyChanged(nameof(LogsSourceSummary));
+                OnPropertyChanged(nameof(RuntimeSourceLabel));
             }
         }
     }
@@ -94,9 +95,13 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
         ? Server.RankedStatus
         : RankedStatus.Unknown;
 
-    public string RuntimeSourceLabel => Server?.RuntimeValuesInferred == true
-        ? "INFÉRÉ DEPUIS LES LOGS"
-        : "DONNÉE SIMULÉE";
+    public string RuntimeSourceLabel => Server switch
+    {
+        { RuntimeValuesInferred: true } => "INFÉRÉ DEPUIS LES LOGS",
+        not null when LocalObservation.RuntimeSnapshot.Metadata.ReadStatus == LocalReadStatus.Success &&
+                      LocalObservation.RuntimeSnapshot.Metadata.Freshness == DataFreshness.Fresh => "RUNTIME PINTE MOD LOCAL",
+        _ => "DONNÉE SIMULÉE"
+    };
 
     public string InstallationSummary => LocalObservation.InstallationVerification.Value is { } report
         ? $"INSTALLATION · PASS {report.PassCount} · WARNING {report.WarningCount} · ERROR {report.ErrorCount}"

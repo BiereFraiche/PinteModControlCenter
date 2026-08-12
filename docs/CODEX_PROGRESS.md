@@ -2929,3 +2929,72 @@ Traiter en une livraison unique les quatre blocages de la seconde revue Preview 
 - Aucun blocage technique connu ne reste dans les quatre corrections demandées.
 - Validation humaine requise : transmettre exclusivement la RC2 et son manifeste à ChatGPT pour le verdict final de clôture ; ne plus transmettre ni utiliser la RC1.
 - Aucune capture produite : aucun changement visuel n’a été effectué.
+
+## 2026-08-12 — Intégration post-RC2 du heartbeat et du snapshot runtime PinteMod
+
+### Objectif de la passe
+
+Auditer PinteModReal sans le modifier, confirmer les contrats déjà produits par le bridge runtime v0.1.2, puis les consommer dans une branche Control Center créée exactement depuis la RC2 validée.
+
+### Audit et traçabilité
+
+- Base Control Center : `90d4922cb663e4b8d923ecfb1681483d78db5126`.
+- Branche locale : `codex/post-rc2-runtime-contracts`.
+- PinteModReal audité en lecture seule : `0b293b5371e4405805017bd3afff16cf28276043`.
+- Producteur confirmé : `custom_scripts/ezz_admin_control_center_runtime.gsc`, v0.1.2.
+- Heartbeat confirmé : `health/pintemod.json`, schéma 1, environ 5 secondes, 4096 octets.
+- Runtime confirmé : `runtime/control_center_snapshot.json`, schéma 1, environ 2 secondes, 32768 octets, maximum 4 joueurs et 8 armes par joueur.
+- Aucun fichier PinteModReal, serveur, GSC, tag ou asset RC2 n’a été modifié.
+
+### Réalisé
+
+- Ajout de deux chemins locaux explicitement autorisés et de deux lecteurs stricts versionnés.
+- Acceptation de `updated_at_utc` vide conformément au contrat réel ; fraîcheur calculée depuis le LastWriteTimeUtc du handle vérifié.
+- Cache borné et invalidé au changement de session ; refus des sessions/cartes différentes, fichiers futurs, `.tmp`, `.bak`, schémas et enums inconnus.
+- Overlay appliqué uniquement à une source locale réussie, fraîche et cohérente avec `current_session.json`.
+- État PinteMod réel : running frais sain, stopped frais hors ligne, error frais en erreur, expiré inconnu.
+- Runtime réel : carte, manche, durée, Ranked, joueurs/max, courant et Pack-a-Punch.
+- Joueurs réels : BOIII_XUID interne, pseudo informatif, client, vie, points, santé, Godmode, arme équipée, munitions, inventaire et atouts.
+- Rôle/langue/pays enrichis uniquement par BOIII_XUID ; état Mute non inventé.
+- Fiche joueur enrichie sans exposition du XUID complet.
+- Les logs, Ranks, records, Easter Egg Records, Community Pause et listes blanches RCON existants sont préservés.
+- ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés.
+
+### Fichiers créés ou modifiés
+
+- Core : nouveaux contrats heartbeat/runtime, modèles runtime, extensions non destructives de `ServerState`, `PlayerState` et `BlockALocalSnapshot`.
+- Infrastructure : chemins whitelistés, lecteur JSON à limite par contrat, `RuntimeJsonContract`, `PinteModHeartbeatReader`, `ControlCenterRuntimeSnapshotReader` et `PinteModRuntimeOverlayDataProvider`.
+- Présentation : composition root, Dashboard, Serveur, fiche joueur et états visuels runtime.
+- Tests : fixtures locales, lecteurs heartbeat/runtime, overlay, présentation, autorisation joueur runtime et garantie read-only.
+- Documentation : `app/README.md`, `docs/POST_RC2_PINTEMOD_RUNTIME_AUDIT.md`, `docs/PINTEMOD_REQUIREMENTS_NEXT.md`, `docs/TODO.md`, `docs/DECISIONS.md`, `docs/CODEX_PROGRESS.md`.
+
+### Fonctionnalités disponibles
+
+- Mode simulation toujours utilisé par défaut.
+- Mode hybride toujours explicite, local ou LAN read-only.
+- Le Dashboard n’affiche plus « aucun heartbeat dédié » lorsque le heartbeat PinteMod valide est présent.
+- Les valeurs inférées depuis les logs cèdent la priorité au snapshot runtime frais de la session active.
+- Les données runtime détaillées du joueur sont visibles sans modifier l’architecture générale ni les contrats RCON.
+
+### Compilation et tests
+
+- Tests ciblés runtime/UI/read-only : 125/125 réussis.
+- Debug : 0 avertissement, 0 erreur, 344/344 tests réussis.
+- Release : 0 avertissement, 0 erreur, 344/344 tests réussis.
+- Aucun serveur BOIII, BAT, EXE serveur ou transport RCON n’a été lancé.
+- Aucune écriture n’a été effectuée dans PinteModReal ou une racine PinteModData.
+
+### Problèmes rencontrés
+
+- Un avertissement nullable dans un nouveau test de présentation a été corrigé avant la validation finale.
+- Aucun blocage technique restant dans le périmètre des deux contrats existants.
+
+### Validation humaine
+
+- Après extraction du paquet post-RC2, ouvrir une source Local/LAN read-only contenant les deux fichiers actifs.
+- Vérifier visuellement l’état PinteMod, la manche/durée/Ranked et la fiche runtime d’un joueur.
+- Aucun test RCON ni action serveur n’est nécessaire pour cette validation de lecture.
+
+### Captures
+
+- Aucune capture automatique produite ; une capture Dashboard et une capture fiche joueur pourront être réalisées pendant la validation humaine sur une source runtime réelle.

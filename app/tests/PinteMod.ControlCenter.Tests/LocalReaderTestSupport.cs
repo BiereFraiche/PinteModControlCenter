@@ -69,6 +69,94 @@ internal sealed class TemporaryServerRoot : IDisposable
         return Write(file, json);
     }
 
+    public string WritePinteModHeartbeat(
+        DateTimeOffset fileTimestampUtc,
+        string sessionId = "session-local-001",
+        string state = "running",
+        long sequence = 7,
+        long generatedGetTime = 123456,
+        int schemaVersion = 1,
+        string updatedAtUtc = "")
+    {
+        var path = Write(LocalPinteModFile.PinteModHeartbeat, $$"""
+            {
+              "schema_version": {{schemaVersion}},
+              "module_version": "2.1.1",
+              "session_id": "{{sessionId}}",
+              "declared_state": "{{state}}",
+              "last_error_code": "",
+              "sequence": {{sequence}},
+              "generated_gettime": {{generatedGetTime}},
+              "updated_at_utc": "{{updatedAtUtc}}",
+              "time_authority": "session_gettime_and_file_mtime"
+            }
+            """);
+        File.SetLastWriteTimeUtc(path, fileTimestampUtc.UtcDateTime);
+        return path;
+    }
+
+    public string WriteRuntimeSnapshot(
+        DateTimeOffset fileTimestampUtc,
+        string? contents = null,
+        string sessionId = "session-local-001",
+        string mapCode = "zm_tomb")
+    {
+        contents ??= RuntimeSnapshotJson(sessionId, mapCode);
+        var path = Write(LocalPinteModFile.ControlCenterRuntimeSnapshot, contents);
+        File.SetLastWriteTimeUtc(path, fileTimestampUtc.UtcDateTime);
+        return path;
+    }
+
+    public static string RuntimeSnapshotJson(
+        string sessionId = "session-local-001",
+        string mapCode = "zm_tomb",
+        string xuid = "0000000000000001",
+        string displayName = "Joueur fictif") => $$"""
+        {
+          "schema_version": 1,
+          "module_version": "2.1.1",
+          "session_id": "{{sessionId}}",
+          "sequence": 9,
+          "generated_gettime": 123456,
+          "updated_at_utc": "",
+          "time_authority": "session_gettime_and_file_mtime",
+          "map_code": "{{mapCode}}",
+          "round": 12,
+          "session_started_gettime": 1000,
+          "session_elapsed_ms": 122456,
+          "ranked_status": "ranked",
+          "power_state": "unknown",
+          "pack_a_punch_state": "available",
+          "connected_players": 1,
+          "max_players": 18,
+          "observable_players": 1,
+          "identity_unavailable_players": 0,
+          "players_truncated": 0,
+          "player_1_xuid": "{{xuid}}",
+          "player_1_display_name": "{{displayName}}",
+          "player_1_client_number": 0,
+          "player_1_presence": "connected",
+          "player_1_life_state": "alive",
+          "player_1_godmode_state": "off",
+          "player_1_points": 12500,
+          "player_1_health": 100,
+          "player_1_max_health": 100,
+          "player_1_equipped_weapon": "ray_gun",
+          "player_1_equipped_weapon_pap_state": "upgraded",
+          "player_1_equipped_ammo_clip": 20,
+          "player_1_equipped_ammo_reserve": 160,
+          "player_1_weapon_count": 1,
+          "player_1_weapons_truncated": 0,
+          "player_1_weapon_1_id": "ray_gun",
+          "player_1_weapon_1_pap_state": "upgraded",
+          "player_1_weapon_1_ammo_clip": 20,
+          "player_1_weapon_1_ammo_reserve": 160,
+          "player_1_perk_count": 2,
+          "player_1_perk_1": "jug",
+          "player_1_perk_2": "speed"
+        }
+        """;
+
     public string Write(LocalPinteModFile file, string contents)
     {
         var path = Options.ResolvePath(file);

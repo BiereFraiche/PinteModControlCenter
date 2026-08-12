@@ -170,6 +170,9 @@ public sealed class ServerViewModel : PageViewModel
                 OnPropertyChanged(nameof(MapName));
                 OnPropertyChanged(nameof(MapCode));
                 OnPropertyChanged(nameof(PinteModVersion));
+                OnPropertyChanged(nameof(RoundSource));
+                OnPropertyChanged(nameof(PowerStateText));
+                OnPropertyChanged(nameof(PackAPunchStateText));
             }
         }
     }
@@ -178,6 +181,7 @@ public sealed class ServerViewModel : PageViewModel
     {
         null => "INCONNU",
         { ServerRunningAvailable: false } => "INCONNU",
+        { ObservedServerHealth: ServiceHealth.Error } => "ERREUR",
         { ServerRunning: true } => "EN LIGNE",
         _ => "ARRÊTÉ"
     };
@@ -186,6 +190,7 @@ public sealed class ServerViewModel : PageViewModel
     {
         null => ServiceHealth.Unknown,
         { ServerRunningAvailable: false } => ServiceHealth.Unknown,
+        { ObservedServerHealth: ServiceHealth.Error } => ServiceHealth.Error,
         { ServerRunning: true } => ServiceHealth.Healthy,
         _ => ServiceHealth.Offline
     };
@@ -199,8 +204,29 @@ public sealed class ServerViewModel : PageViewModel
     public string PinteModVersion => Server?.PinteModVersion ?? "—";
 
     public string ServerStatusSource => Server?.ServerRunningAvailable == true
-        ? "ISSU DU SNAPSHOT"
+        ? "HEARTBEAT PINTE MOD LOCAL"
         : "AUCUNE SOURCE PROCESSUS — ÉTAT INCONNU";
+
+    public string RoundSource => Server?.RuntimeValuesInferred == false &&
+                                 Server.RuntimeSource.Freshness == DataFreshness.Fresh
+        ? "RUNTIME PINTE MOD LOCAL"
+        : "INFÉRÉE DES LOGS SI DISPONIBLE";
+
+    public string PowerStateText => Server?.PowerState switch
+    {
+        RuntimePowerState.On => "ACTIF",
+        RuntimePowerState.Off => "INACTIF",
+        RuntimePowerState.NotApplicable => "NON APPLICABLE",
+        _ => "INCONNU"
+    };
+
+    public string PackAPunchStateText => Server?.PackAPunchState switch
+    {
+        RuntimePackAPunchState.Available => "DISPONIBLE",
+        RuntimePackAPunchState.Unavailable => "INDISPONIBLE",
+        RuntimePackAPunchState.NotApplicable => "NON APPLICABLE",
+        _ => "INCONNU"
+    };
 
     public string DiagnosticsPreview => LocalObservation.InstallationVerification.Value is { } report
         ? $"Rapport local : PASS {report.PassCount} · WARNING {report.WarningCount} · ERROR {report.ErrorCount}"

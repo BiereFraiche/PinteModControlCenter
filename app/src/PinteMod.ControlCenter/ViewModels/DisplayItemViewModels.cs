@@ -39,12 +39,28 @@ public sealed class PlayerItemViewModel
         Presence = player.Presence;
         PresenceText = player.PresenceAvailable ? DurationDisplay.Format(player.Presence) : "NON DISPONIBLE";
         Provenance = DisplayText.Provenance(player.Provenance);
-        ModerationStatus = player.IsBanned
+        ModerationStatus = !player.ModerationStateAvailable
+            ? "INCONNU"
+            : player.IsBanned
             ? "BANNI"
             : player.IsMuted
                 ? "MUTE"
                 : "OK";
         IsMuted = player.IsMuted;
+        RuntimeDataAvailable = player.RuntimeDetails is not null;
+        HealthText = FormatHealth(player.RuntimeDetails);
+        EquippedWeaponText = FormatEquippedWeapon(player.RuntimeDetails);
+        AmmunitionText = FormatAmmunition(player.RuntimeDetails);
+        WeaponsText = FormatWeapons(player.RuntimeDetails);
+        PerksText = player.RuntimeDetails is { Perks.Count: > 0 } runtime
+            ? string.Join(" · ", runtime.Perks.Select(perk => perk.ToUpperInvariant()))
+            : "AUCUN / NON DISPONIBLE";
+        GodModeText = player.RuntimeDetails?.GodModeState switch
+        {
+            RuntimeGodModeState.On => "ACTIF",
+            RuntimeGodModeState.Off => "INACTIF",
+            _ => "INCONNU"
+        };
     }
 
     public int ClientNumber { get; }
@@ -78,6 +94,70 @@ public sealed class PlayerItemViewModel
     public string ModerationStatus { get; }
 
     public bool IsMuted { get; }
+
+    public bool RuntimeDataAvailable { get; }
+
+    public string HealthText { get; }
+
+    public string EquippedWeaponText { get; }
+
+    public string AmmunitionText { get; }
+
+    public string WeaponsText { get; }
+
+    public string PerksText { get; }
+
+    public string GodModeText { get; }
+
+    private static string FormatHealth(RuntimePlayerSnapshot? runtime) => runtime switch
+    {
+        { Health: not null, MaximumHealth: not null } => $"{runtime.Health:N0} / {runtime.MaximumHealth:N0}",
+        { Health: not null } => runtime.Health.Value.ToString("N0"),
+        _ => "NON DISPONIBLE"
+    };
+
+    private static string FormatEquippedWeapon(RuntimePlayerSnapshot? runtime)
+    {
+        if (runtime is null)
+        {
+            return "NON DISPONIBLE";
+        }
+
+        var pap = runtime.EquippedWeaponPackAPunchState switch
+        {
+            RuntimeWeaponPackAPunchState.Upgraded => "PAP",
+            RuntimeWeaponPackAPunchState.Base => "BASE",
+            RuntimeWeaponPackAPunchState.NotApplicable => "NON PAP",
+            _ => "ÉTAT INCONNU"
+        };
+        return $"{runtime.EquippedWeapon} · {pap}";
+    }
+
+    private static string FormatAmmunition(RuntimePlayerSnapshot? runtime) => runtime switch
+    {
+        { EquippedAmmoClip: not null, EquippedAmmoReserve: not null } =>
+            $"{runtime.EquippedAmmoClip:N0} / {runtime.EquippedAmmoReserve:N0}",
+        _ => "NON DISPONIBLE"
+    };
+
+    private static string FormatWeapons(RuntimePlayerSnapshot? runtime)
+    {
+        if (runtime is null)
+        {
+            return "NON DISPONIBLE";
+        }
+
+        if (runtime.Weapons.Count == 0)
+        {
+            return runtime.WeaponsTruncated ? "INVENTAIRE TRONQUÉ" : "AUCUNE ARME OBSERVÉE";
+        }
+
+        var text = string.Join(" · ", runtime.Weapons.Select(weapon =>
+            weapon.PackAPunchState == RuntimeWeaponPackAPunchState.Upgraded
+                ? $"{weapon.Id} [PAP]"
+                : weapon.Id));
+        return runtime.WeaponsTruncated ? text + " · …" : text;
+    }
 }
 
 public sealed class ServiceItemViewModel(ServiceStatus service)
@@ -119,6 +199,7 @@ internal static class DisplayText
     {
         PlayerLifeState.Alive => "EN VIE",
         PlayerLifeState.Downed => "À TERRE",
+        PlayerLifeState.Dead => "MORT",
         PlayerLifeState.Spectator => "SPECTATEUR",
         _ => "INCONNU"
     };

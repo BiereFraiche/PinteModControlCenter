@@ -1,6 +1,6 @@
 # Décisions — PinteMod Control Center
 
-Dernière mise à jour : 2026-08-02
+Dernière mise à jour : 2026-08-12
 
 ## ADR-001 — Architecture en quatre projets
 
@@ -649,3 +649,17 @@ Dernière mise à jour : 2026-08-02
 **Diagnostic UDP.** Une commande de diagnostic inconnue est rejetée avant transport avec `CommandSent = false`. Dès que l’appel allowlisté à `IRconClient.SendAsync` va commencer, toute erreur de transport est traitée conservativement avec `CommandSent = true`, sans retry. Cette règle aligne les diagnostics sur les mutations déjà validées.
 
 **Portée.** Aucun contrat RCON, commande, fonction métier, lecteur de source supplémentaire, écriture PinteMod, processus, port, découverte réseau ou GSC n’est ajouté.
+
+## 2026-08-12 — Overlay runtime post-RC2 sans modification PinteMod
+
+**Décision.** Le heartbeat global et le snapshot runtime ne sont pas recréés : ils existent dans PinteModReal via `ezz_admin_control_center_runtime.gsc` v0.1.2. Le Control Center ajoute deux lecteurs dédiés et un overlay final, placé après les providers déjà validés, afin que les logs ne puissent pas écraser une valeur runtime fraîche et autoritaire.
+
+**Autorité.** `current_session.json` reste l’identité de session. Le heartbeat PinteMod prouve uniquement l’état global lorsqu’il est frais et lié à cette session. Le snapshot runtime remplace uniquement les champs qu’il fournit lorsqu’il est lu avec succès, frais et cohérent avec la session et la carte actives. Les logs restent le repli inféré et la source des événements.
+
+**Temps.** `updated_at_utc` vide est conforme au producteur GSC. La fraîcheur repose sur le LastWriteTimeUtc du fichier réellement ouvert et vérifié : Fresh jusqu’à 15 secondes, Stale jusqu’à 45 secondes, Expired au-delà. Un heartbeat expiré devient Inconnu, jamais automatiquement Hors ligne.
+
+**Cache et confinement.** Le cache est invalidé lors d’un changement de session. `.tmp` et `.bak` restent exclus. Les deux fichiers passent par `VerifiedReadOnlyFile`, le contrôle de taille, la détection de modification pendant lecture et trois tentatives. Aucun mécanisme d’écriture PinteMod n’est ajouté.
+
+**Joueurs.** Le snapshot runtime devient la source de présence, client, vie, points et inventaire. Rôle, langue et pays sont enrichis uniquement par BOIII_XUID. L’état Mute n’étant pas autoritaire dans le contrat, il reste Inconnu. Les ViewModels ne reçoivent que le XUID abrégé.
+
+**Alternatives rejetées.** Modifier PinteMod, recréer les mêmes fichiers sous un autre schéma, utiliser l’horodatage UTC vide comme erreur, réutiliser une ancienne session en cache ou activer ChangeMap/RestartMap/événements/boss sans contrat fermé ont été rejetés.

@@ -61,21 +61,27 @@ public sealed class ReadOnlyGuaranteeTests
     }
 
     [TestMethod]
-    public async Task ReadingAllFiveAuthorizedFiles_DoesNotChangeSizeDateOrHash()
+    public async Task ReadingAllAuthorizedSessionHeartbeatAndRuntimeFiles_DoesNotChangeSizeDateOrHash()
     {
         using var root = new TemporaryServerRoot();
         var paths = new List<string> { root.WriteSession() };
         paths.AddRange(Enum.GetValues<LocalServiceKind>().Select(kind => root.WriteHeartbeat(kind, Now)));
+        paths.Add(root.WritePinteModHeartbeat(Now.AddSeconds(-2)));
+        paths.Add(root.WriteRuntimeSnapshot(Now.AddSeconds(-2)));
         var before = paths.ToDictionary(path => path, TemporaryServerRoot.Fingerprint);
         var clock = new FakeClock(Now);
         using var sessionReader = new SessionManifestReader(root.Options, clock);
         using var heartbeatReader = new ServiceHeartbeatReader(root.Options, clock);
+        using var pinteModHeartbeatReader = new PinteModHeartbeatReader(root.Options, clock);
+        using var runtimeReader = new ControlCenterRuntimeSnapshotReader(root.Options, clock);
 
         await sessionReader.ReadAsync();
         foreach (var service in Enum.GetValues<LocalServiceKind>())
         {
             await heartbeatReader.ReadAsync(service);
         }
+        await pinteModHeartbeatReader.ReadAsync("session-local-001");
+        await runtimeReader.ReadAsync("session-local-001", "zm_tomb");
 
         foreach (var path in paths)
         {

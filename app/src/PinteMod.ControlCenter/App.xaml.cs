@@ -58,6 +58,8 @@ public partial class App : Application
                     var clock = new SystemClock();
                     var sessionReader = new SessionManifestReader(localOptions, clock);
                     var heartbeatReader = new ServiceHeartbeatReader(localOptions, clock);
+                    var pinteModHeartbeatReader = new PinteModHeartbeatReader(localOptions, clock);
+                    var runtimeSnapshotReader = new ControlCenterRuntimeSnapshotReader(localOptions, clock);
                     var rankProfileReader = new RankProfileReader(localOptions, clock);
                     var roundRecordReader = new RoundRecordReader(localOptions, clock);
                     var easterEggRecordReader = new EasterEggRecordReader(localOptions, clock);
@@ -69,6 +71,8 @@ public partial class App : Application
                     var communityPauseLogReader = new CommunityPauseLogReader(localOptions, clock);
                     _disposables.Add(sessionReader);
                     _disposables.Add(heartbeatReader);
+                    _disposables.Add(pinteModHeartbeatReader);
+                    _disposables.Add(runtimeSnapshotReader);
                     _disposables.Add(rankProfileReader);
                     _disposables.Add(roundRecordReader);
                     _disposables.Add(easterEggRecordReader);
@@ -99,6 +103,10 @@ public partial class App : Application
                         logReader,
                         communityPauseStatusReader,
                         communityPauseLogReader);
+                    dataProvider = new PinteModRuntimeOverlayDataProvider(
+                        dataProvider,
+                        pinteModHeartbeatReader,
+                        runtimeSnapshotReader);
                 }
             }
             catch (Exception exception) when (usingSavedDataSource &&

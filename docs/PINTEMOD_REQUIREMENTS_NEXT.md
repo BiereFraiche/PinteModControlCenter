@@ -1,50 +1,59 @@
-# Besoins PinteMod pour terminer les fonctions avancées du Control Center
+# État des contrats PinteMod nécessaires au Control Center
 
-Date : 2026-08-09.
+Dernier audit : 2026-08-12 — PinteModReal `0b293b5371e4405805017bd3afff16cf28276043`.
 
 Ces évolutions doivent être développées et validées sur une copie de test ou une branche dédiée. Ne jamais modifier directement le serveur de production.
 
-## Priorité 1 — heartbeat global PinteMod
+## Priorité 1 — heartbeat global PinteMod — EXISTE ET CONSOMMÉ
 
-Créer un heartbeat dédié, par exemple :
+Le bridge PinteMod v0.1.2 produit déjà :
 
 `boiii/scriptdata/pintemod/health/pintemod.json`
 
-Champs minimaux recommandés :
+Champs confirmés :
 
 ```json
 {
   "schema_version": 1,
-  "updated_at_utc": "2026-08-09T12:00:00Z",
+  "updated_at_utc": "",
   "declared_state": "running",
   "module_version": "2.1.1",
   "session_id": "identifiant-de-session",
-  "last_error_code": null
+  "last_error_code": null,
+  "sequence": 1,
+  "generated_gettime": 1000,
+  "time_authority": "session_gettime_and_file_mtime"
 }
 ```
 
-Règles : écriture atomique `.tmp` puis remplacement, fréquence documentée, `running|stopped|error` fermé, aucun chemin, IP, secret ou texte d’exception libre. Cela permettra de remplacer « État inconnu — aucun heartbeat dédié » par un état réellement autoritaire.
+Fréquence : environ 5 secondes. Limite : 4096 octets. `updated_at_utc` vide est valide : le Control Center utilise le LastWriteTimeUtc du handle vérifié. Le producteur emploie `write_json_safe` avec validation `.tmp`/actif et sauvegarde `.bak`, sans prétendre à un remplacement atomique OS.
 
-## Priorité 2 — snapshot runtime serveur et joueurs
+Le lot post-RC2 consomme cette source. Un fichier expiré reste Inconnu ; seul un `stopped` frais devient Hors ligne.
 
-Créer un snapshot JSON read-only consommable, versionné et lié à la session active, par exemple :
+## Priorité 2 — snapshot runtime serveur et joueurs — EXISTE ET CONSOMMÉ
+
+Le bridge PinteMod v0.1.2 produit déjà :
 
 `boiii/scriptdata/pintemod/runtime/control_center_snapshot.json`
 
-Champs serveur utiles :
+Champs serveur confirmés :
 
 - `schema_version` ;
+- `module_version` ;
 - `updated_at_utc` ;
+- `time_authority` ;
 - `session_id` ;
+- `sequence` et `generated_gettime` ;
 - `map_code` ;
 - `round` ;
-- `session_started_at_utc` ou durée autoritaire ;
+- `session_started_gettime` et `session_elapsed_ms` lorsqu’ils sont disponibles ;
 - `ranked_status` ;
-- `power_on` ;
+- `power_state` ;
 - `pack_a_punch_state` ;
-- `connected_players` et `max_players`.
+- `connected_players` et `max_players` ;
+- `observable_players`, `identity_unavailable_players` et `players_truncated`.
 
-Pour chaque joueur, ciblé par BOIII_XUID :
+Champs joueur confirmés lorsqu’ils sont disponibles :
 
 - `xuid` complet, réservé au traitement interne ;
 - `display_name`, uniquement informatif ;
@@ -55,9 +64,9 @@ Pour chaque joueur, ciblé par BOIII_XUID :
 - niveau/état Pack-a-Punch de chaque arme ;
 - munitions chargeur et réserve ;
 - liste des atouts par identifiant canonique ;
-- éventuels états Godmode/Mute uniquement s’ils sont réellement autoritaires.
+- état Godmode ; aucun état Mute n’est produit ou inventé.
 
-Règles : snapshot atomique, maximum raisonnable documenté, fréquence d’environ une à deux secondes ou écriture sur changement avec heartbeat, aucune donnée inventée, aucun ancien snapshot réutilisé après changement de `session_id`, aucun pseudo utilisé comme identité.
+Fréquence : environ 2 secondes. Limite : 32768 octets, 4 joueurs observables et 8 armes par joueur. La session, les bornes et les valeurs fermées sont contrôlées avant overlay. Une ancienne session ne peut pas réutiliser le cache précédent. Le pseudo reste informatif et la fusion des métadonnées se fait uniquement par BOIII_XUID.
 
 ## Priorité 3 — catalogue de capacités et cartes sans lire server_zm.cfg
 

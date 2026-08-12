@@ -3,6 +3,8 @@ namespace PinteMod.ControlCenter.Infrastructure.Local;
 public enum LocalPinteModFile
 {
     CurrentSession,
+    PinteModHeartbeat,
+    ControlCenterRuntimeSnapshot,
     SupervisorHeartbeat,
     BanServiceHeartbeat,
     GeoIpBridgeHeartbeat,
@@ -21,6 +23,8 @@ public sealed class LocalPinteModOptions
         new Dictionary<LocalPinteModFile, string>
         {
             [LocalPinteModFile.CurrentSession] = Path.Combine("logs", "current_session.json"),
+            [LocalPinteModFile.PinteModHeartbeat] = Path.Combine("health", "pintemod.json"),
+            [LocalPinteModFile.ControlCenterRuntimeSnapshot] = Path.Combine("runtime", "control_center_snapshot.json"),
             [LocalPinteModFile.SupervisorHeartbeat] = Path.Combine("health", "supervisor.json"),
             [LocalPinteModFile.BanServiceHeartbeat] = Path.Combine("health", "ban_service.json"),
             [LocalPinteModFile.GeoIpBridgeHeartbeat] = Path.Combine("health", "geoip_bridge.json"),

@@ -1,6 +1,6 @@
 # TODO — PinteMod Control Center
 
-Dernière mise à jour : 2026-08-09
+Dernière mise à jour : 2026-08-12
 
 ## Interface graphique
 
@@ -49,9 +49,9 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — Phase 2.3 validée localement : 1 profil officiel, 0 fichier/record officiel et aucun candidat affiché.
 - **Terminé** — Phase 2.3 clôturée sans condition restante après verdict externe.
 - **Terminé** — Bloc A : logs locaux structurés de la session active, lecture incrémentale, filtrage et cache borné.
-- **À faire** — Snapshots supplémentaires hors périmètre tant qu’aucun contrat runtime stable n’est disponible.
+- **Terminé** — Auditer et consommer le heartbeat global et le snapshot runtime désormais fournis par PinteModReal.
 - **Terminé** — Confirmer sur le commit GitHub stable qu’aucun snapshot local persistant ne fournit l’inventaire courant ; documenter l’instantané interne de réanimation comme non consommable.
-- **À faire** — Concevoir ultérieurement un snapshot GSC read-only d’inventaire par BOIII_XUID, seulement après validation humaine et sans réutiliser l’état interne de réanimation.
+- **Terminé** — Intégrer le snapshot GSC read-only d’inventaire par BOIII_XUID produit par le bridge runtime v0.1.2, sans modifier PinteMod.
 
 ## RCON diagnostics et commandes
 
@@ -268,5 +268,18 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — Rendre `RconDiagnosticService` conservateur après le début du transport, sans retry ni élargissement de liste blanche.
 - **Terminé** — Compiler et tester Debug/Release : 0 avertissement, 0 erreur, 292/292 tests dans chaque configuration.
 - **Terminé** — Publier et auditer `PinteMod-ControlCenter-v2.2.0-rc.2-win-x64.zip` : 466 entrées, aucun fichier interdit, ancien XUID interdit ou chemin privé de compilation.
-- **À valider** — Soumettre uniquement la RC2 et son SHA-256 à la revue indépendante finale de clôture.
+- **Terminé** — Soumettre uniquement la RC2 et son SHA-256 à la revue indépendante finale de clôture ; SHA et révision embarquée confirmés.
 - **À valider** — Après verdict RC2 sans blocage, conserver la validation terrain groupée comme dernier jalon avant `v2.2.0` stable.
+
+## Développement post-RC2 — runtime PinteMod existant
+
+- **Terminé** — Créer la branche locale `codex/post-rc2-runtime-contracts` depuis le commit RC2 exact `90d4922…` sans toucher au tag ni aux assets validés.
+- **Terminé** — Auditer en lecture seule PinteModReal `0b293b5…` et confirmer le bridge runtime v0.1.2.
+- **Terminé** — Whitelister et lire strictement `health/pintemod.json` et `runtime/control_center_snapshot.json`.
+- **Terminé** — Utiliser le LastWriteTimeUtc vérifié comme autorité de fraîcheur et accepter `updated_at_utc` vide.
+- **Terminé** — Remplacer l’état synthétique PinteMod et les valeurs runtime inférées seulement avec une source fraîche de la session active.
+- **Terminé** — Afficher vie, arme équipée, munitions, inventaire, atouts et Godmode sans exposer de XUID complet.
+- **À faire** — Intégrer ultérieurement `control_center_capabilities.json`, seulement lorsqu’un contrat PinteMod stable existe.
+- **Bloqué** — ChangeMap/RestartMap restent simulés faute de contrat fermé et de feedback local.
+- **Bloqué** — TriggerEvent/SpawnBoss restent simulés faute de capacités génériques par carte.
+- **À faire** — Intégrer ultérieurement le feedback unifié des mutations lorsqu’il sera produit par PinteMod.
