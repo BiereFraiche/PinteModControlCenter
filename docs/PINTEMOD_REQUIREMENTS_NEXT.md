@@ -86,6 +86,8 @@ Il devrait contenir :
 
 Ne jamais recopier le contenu complet de `server_zm.cfg`, les arguments de lancement, chemins, IP ou secrets.
 
+Ce contrat reste également nécessaire pour afficher localement les résultats détaillés de `ezzmapaudit full`, `ezzeventstatus` et `ezzpowerups`. Le Control Center sait désormais replier Carte, Courant, PAP, Manche et Joueurs sur le snapshot runtime, mais il n’invente aucun détail pour ces trois diagnostics sans source structurée.
+
 ## Priorité 4 — commandes carte sûres et accusé local
 
 Fournir des contrats GSC fermés et documentés pour :

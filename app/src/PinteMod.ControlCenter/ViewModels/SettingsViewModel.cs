@@ -19,6 +19,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly IMapCatalogService? _mapCatalogService;
     private readonly MapCatalogState? _mapCatalogState;
     private readonly ITextClipboardService? _clipboardService;
+    private readonly IControlCenterSnapshotStore? _snapshotStore;
     private string _selectedOperatorMode;
     private string _operatorServerRoot;
     private bool _activateDataSourceOnStartup;
@@ -59,7 +60,8 @@ public sealed class SettingsViewModel : PageViewModel
         IOperatorRconOperationCoordinator? rconOperations = null,
         IMapCatalogService? mapCatalogService = null,
         MapCatalogState? mapCatalogState = null,
-        ITextClipboardService? clipboardService = null)
+        ITextClipboardService? clipboardService = null,
+        IControlCenterSnapshotStore? snapshotStore = null)
         : base("Paramètres", "Configuration opérateur locale ou LAN · diagnostics RCON manuels")
     {
         _localDataSourceProbe = localDataSourceProbe;
@@ -71,6 +73,7 @@ public sealed class SettingsViewModel : PageViewModel
         _mapCatalogService = mapCatalogService;
         _mapCatalogState = mapCatalogState;
         _clipboardService = clipboardService;
+        _snapshotStore = snapshotStore;
         var configuration = initialConfiguration ?? OperatorConfiguration.Default;
         var configuredRoot = serverRoot ?? configuration.ServerRoot;
         _selectedOperatorMode = serverRoot is not null
@@ -707,6 +710,21 @@ public sealed class SettingsViewModel : PageViewModel
             command,
             endpoint);
         _operatorActivityStore?.RecordRconResult(result);
+        if (result.Status == RconExecutionStatus.EmptyResponse &&
+            result.CommandSent &&
+            _snapshotStore is not null)
+        {
+            var snapshot = await _snapshotStore.RefreshAsync();
+            if (LocalDiagnosticFallback.TryCreate(command, snapshot, out var fallback))
+            {
+                RconResponse = fallback.Message;
+                RconCommandSent = "Commande envoyée : Oui";
+                RconTestStatus = fallback.Status;
+                RconTestHealth = fallback.Health;
+                return;
+            }
+        }
+
         RconResponse = result.DisplayResponse;
         RconCommandSent = $"Commande envoyée : {(result.CommandSent ? "Oui" : "Non")}";
         RconTestStatus = result.Status switch

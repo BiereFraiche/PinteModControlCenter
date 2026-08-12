@@ -8,6 +8,7 @@ public sealed class PlayersViewModel : PlayerActionsViewModelBase
 {
     private string _sourceSummary = "Joueurs simulés";
     private bool _isHybridLocal;
+    private bool _runtimePlayersAvailable;
 
     public PlayersViewModel(
         IControlCenterSnapshotStore snapshotStore,
@@ -42,10 +43,12 @@ public sealed class PlayersViewModel : PlayerActionsViewModelBase
         private set => SetProperty(ref _sourceSummary, value);
     }
 
-    public string AlivePlayerCountDisplay => _isHybridLocal ? "—" : AlivePlayerCount.ToString();
+    public string AlivePlayerCountDisplay => !_isHybridLocal || _runtimePlayersAvailable
+        ? AlivePlayerCount.ToString()
+        : "—";
 
     public string EmptyMessage => _isHybridLocal
-        ? "Aucune présence JOIN/LEAVE active n’est disponible pour la session locale."
+        ? "Aucun joueur n’est disponible dans les sources locales de la session active."
         : "Le snapshot simulé ne contient aucun joueur connecté.";
 
     public override async Task InitializeAsync(CancellationToken cancellationToken = default)
@@ -55,8 +58,14 @@ public sealed class PlayersViewModel : PlayerActionsViewModelBase
         ConfigurePlayerDataContext(snapshot);
         ReplacePlayers(snapshot.Players);
         _isHybridLocal = snapshot.DataContext.Mode == ControlCenterDataMode.HybridLocal;
+        _runtimePlayersAvailable = snapshot.LocalObservation.RuntimeSnapshot.Value is not null &&
+                                   snapshot.LocalObservation.RuntimeSnapshot.Metadata.ReadStatus == LocalReadStatus.Success &&
+                                   snapshot.LocalObservation.RuntimeSnapshot.Metadata.Freshness == DataFreshness.Fresh &&
+                                   snapshot.LocalObservation.RuntimeSnapshot.Metadata.Provenance == DataProvenance.LocalFile;
         SourceSummary = _isHybridLocal
-            ? $"Présence inférée par JOIN/LEAVE · {snapshot.Players.Count} joueur(s) · XUID abrégés · points, vie et inventaire non disponibles"
+            ? _runtimePlayersAvailable
+                ? $"Runtime PinteMod local · {snapshot.Players.Count} joueur(s) · identité XUID abrégée · vie, points et inventaire observables"
+                : $"Présence locale de repli · {snapshot.Players.Count} joueur(s) · identité XUID abrégée · détails runtime indisponibles"
             : "Présence et fiches entièrement simulées";
         OnPropertyChanged(nameof(AlivePlayerCountDisplay));
         OnPropertyChanged(nameof(EmptyMessage));

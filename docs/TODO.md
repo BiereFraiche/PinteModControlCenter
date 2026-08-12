@@ -283,3 +283,15 @@ Dernière mise à jour : 2026-08-12
 - **Bloqué** — ChangeMap/RestartMap restent simulés faute de contrat fermé et de feedback local.
 - **Bloqué** — TriggerEvent/SpawnBoss restent simulés faute de capacités génériques par carte.
 - **À faire** — Intégrer ultérieurement le feedback unifié des mutations lorsqu’il sera produit par PinteMod.
+
+## Correctifs terrain et audit UX post-RC2 — 2026-08-12
+
+- **Terminé** — Centraliser les 19 armes standard/universelles et les catalogues spéciaux PinteMod Weapons v0.5.2 par carte.
+- **Terminé** — Afficher les armes spéciales uniquement avec un runtime local frais, de session et carte cohérentes.
+- **Terminé** — Ajouter le Pack-a-Punch de l’arme tenue par BOIII_XUID, sans option libre et avec le verrou opérateur existant.
+- **Terminé** — Ajouter le retrait ciblé d’un atout depuis la même liste fermée que l’attribution.
+- **Terminé** — Afficher un fallback local autoritaire pour Carte, Courant, PAP, Manche et Joueurs lorsque BOIII ne transporte pas le texte RCON.
+- **Terminé** — Ajouter Santé PinteMod au panneau Serveur et limiter son fallback à un résumé local distinct de `ezzhealth full`.
+- **Terminé** — Documenter dans `UX_FEATURE_AUDIT.md` les fonctions gardées, ajoutées, refusées et toujours simulées.
+- **À valider** — Terrain : plusieurs armes standard, une arme spéciale de la carte, PAP arme normale/déjà PAP/non compatible et cinq fallbacks diagnostics.
+- **À faire** — Futur contrat PinteMod capabilities/action feedback pour carte, événements, boss et diagnostics non structurés.

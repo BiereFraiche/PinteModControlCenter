@@ -175,7 +175,8 @@ public partial class App : Application
                 _rconOperations,
                 mapCatalogService,
                 mapCatalogState,
-                clipboardService);
+                clipboardService,
+                snapshotStore);
             var dashboard = new DashboardViewModel(
                 snapshotStore,
                 simulationService,

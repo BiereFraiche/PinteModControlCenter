@@ -25,7 +25,9 @@ public sealed class PlayerAdministrationCommandServiceTests
             new PlayerAdministrationRequest(PlayerAdministrationAction.RefillAmmo, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.ToggleGodMode, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GiveWeapon, Xuid, Option: "raygun"),
+            new PlayerAdministrationRequest(PlayerAdministrationAction.PackAPunchCurrentWeapon, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GivePerk, Xuid, Option: "jug"),
+            new PlayerAdministrationRequest(PlayerAdministrationAction.RemovePerk, Xuid, Option: "jug"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GiveAllPerks, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GivePowerUp, Xuid, Option: "maxammo"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.TeleportToOwnAim, Xuid),
@@ -52,7 +54,9 @@ public sealed class PlayerAdministrationCommandServiceTests
                 $"ammo {Xuid}",
                 $"godmode {Xuid}",
                 $"ezzweapon {Xuid} raygun",
+                $"ezzpapweapon {Xuid}",
                 $"ezzperk {Xuid} jug",
+                $"ezzremoveperk {Xuid} jug",
                 $"ezzallperks {Xuid}",
                 $"ezzpowerup {Xuid} maxammo",
                 $"ezztp {Xuid}",
@@ -72,7 +76,12 @@ public sealed class PlayerAdministrationCommandServiceTests
     {
         var client = new CapturingClient(string.Empty);
         var service = CreateService(client);
-        var weapons = new[] { "raygun", "raygunmk2", "kn44", "haymaker", "dingo" };
+        var weapons = PlayerWeaponCatalog.Standard
+            .Concat(new[] { "zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb" }
+                .SelectMany(PlayerWeaponCatalog.ForMap))
+            .Select(entry => entry.Alias)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
         var perks = new[] { "jug", "quick", "speed", "doubletap", "staminup", "deadshot", "mule", "cherry", "widows" };
         var durations = new[] { "30m", "2h", "7d", "4w", "perm" };
         var roles = new[] { "helper", "moderator", "admin" };
@@ -135,7 +144,10 @@ public sealed class PlayerAdministrationCommandServiceTests
             new PlayerAdministrationRequest(PlayerAdministrationAction.GrantPoints, Xuid, 0),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GrantPoints, Xuid, 1_000_000),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GiveWeapon, Xuid, Option: "raygun;quit"),
+            new PlayerAdministrationRequest(PlayerAdministrationAction.GiveWeapon, Xuid, Option: "ar_standard"),
+            new PlayerAdministrationRequest(PlayerAdministrationAction.PackAPunchCurrentWeapon, "Alice"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GivePerk, Xuid, Option: "unknown"),
+            new PlayerAdministrationRequest(PlayerAdministrationAction.RemovePerk, Xuid, Option: "unknown"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.GivePowerUp, Xuid, Option: "maxammo;quit"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.Ban, Xuid, Option: "forever;quit"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.SetRole, Xuid, Option: "owner"),

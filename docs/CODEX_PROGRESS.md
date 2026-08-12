@@ -2998,3 +2998,61 @@ Auditer PinteModReal sans le modifier, confirmer les contrats déjà produits pa
 ### Captures
 
 - Aucune capture automatique produite ; une capture Dashboard et une capture fiche joueur pourront être réalisées pendant la validation humaine sur une source runtime réelle.
+
+## 2026-08-12 — Correctifs terrain armes/PAP/diagnostics et audit UX post-RC2
+
+### Objectif de la passe
+
+Corriger en un seul lot le catalogue Give Weapon incomplet, ajouter le Pack-a-Punch de l’arme tenue, rendre les diagnostics utiles malgré les réponses RCON vides et vérifier systématiquement les fonctions PinteMod sûres encore absentes de l’interface.
+
+### Réalisé
+
+- Catalogue central Core de 19 armes standard/universelles et des spécialités officielles de chaque carte annoncées par PinteMod Weapons v0.5.2.
+- Affichage des spécialités uniquement avec un runtime local frais, de session et carte cohérentes ; carte inconnue ou source périmée : aucun alias spécial.
+- Nouvelle action réelle `ezzpapweapon <BOIII_XUID>` sans argument libre, confirmation, revalidation XUID, verrou transversal, zéro retry et acquittement manuel.
+- Nouvelle action réelle de retrait ciblé d’atout `ezzremoveperk <BOIII_XUID> <alias>`, limitée aux neuf alias existants.
+- PAP joueur désactivé lorsqu’aucune arme équipée n’est observable ou que l’état est explicitement amélioré ; PinteMod reste l’autorité de compatibilité.
+- Fallback local structuré après une réponse RCON vide pour Carte, Courant, PAP de carte, Manche et Joueurs ; provenance annoncée, XUID complets neutralisés.
+- Community Pause conserve son lecteur spécialisé. Health affiche au plus un résumé des services locaux et ne prétend jamais reproduire les 51 contrôles.
+- Audit carte, événements et power-ups signalent explicitement la limite de transport lorsqu’aucun texte n’est renvoyé ; aucun résultat n’est inventé.
+- Bouton Santé PinteMod ajouté aux diagnostics Serveur.
+- Audit complet des boutons et commandes documenté dans `docs/UX_FEATURE_AUDIT.md`. Warn, AFK, commandes libres, toggle/clear perks, états musicaux libres, ChangeMap/RestartMap/Event/Boss réels n’ont pas été ajoutés.
+
+### Fichiers créés ou modifiés
+
+- Core : `PlayerWeaponCatalog.cs`, `PlayerAdministrationModels.cs`, `SimulationModels.cs`.
+- Infrastructure : `PlayerAdministrationCommandService.cs`, `SimulationActionService.cs`.
+- Présentation : `LocalDiagnosticFallback.cs`, `PlayerActionsViewModelBase.cs`, `DisplayItemViewModels.cs`, `ServerViewModel.cs`, `SettingsViewModel.cs`, `PlayerDetailsControl.xaml`, `ServerView.xaml`, `App.xaml.cs`.
+- Tests : `PlayerWeaponCatalogTests.cs`, `PlayerWeaponActionsViewModelTests.cs`, `ServerDiagnosticFallbackTests.cs`, `PlayerAdministrationCommandServiceTests.cs`, `SimulationActionServiceTests.cs`.
+- Documentation : `UX_FEATURE_AUDIT.md`, `CODEX_PROGRESS.md`, `TODO.md`, `DECISIONS.md`, `PINTEMOD_REQUIREMENTS_NEXT.md`, `app/README.md`.
+
+### Fonctionnalités disponibles
+
+- Give Weapon complet, fermé et contextuel à la carte.
+- Pack-a-Punch de l’arme tenue et retrait ciblé d’un atout.
+- Diagnostics Serveur lisibles sans consulter la console pour les cinq états couverts par le runtime frais.
+- Santé PinteMod accessible dans Serveur, sans faux résultat `PASS=51`.
+- Toutes les baselines post-RC2, listes blanches, simulations et protections opérateur restent actives.
+
+### Compilation et tests
+
+- Tests ciblés armes/PAP/diagnostics/UX : 70/70 réussis.
+- Debug : 0 avertissement, 0 erreur, 377/377 tests réussis.
+- Release : 0 avertissement, 0 erreur, 377/377 tests réussis.
+- Les tests complets ont été exécutés séquentiellement avec le profil Windows afin de permettre au test DPAPI `CurrentUser` de fonctionner.
+
+### Problèmes rencontrés
+
+- Une première exécution parallèle Debug/Release dans le bac à sable a privé le test DPAPI du profil utilisateur Windows : 376 tests réussis et ce seul test en erreur d’environnement. Aucun code produit n’était en cause. Les deux relances séquentielles avec le profil Windows ont obtenu 377/377.
+- Aucun blocage fonctionnel connu ne reste.
+
+### Validation humaine nécessaire
+
+- Give Weapon : plusieurs armes standard puis une spécialité de la carte active.
+- PAP arme tenue : arme normale, arme déjà PAP et arme non compatible si disponible.
+- Diagnostics : vérifier Carte, Courant, PAP, Manche et Joueurs avec réponse RCON vide ; le Control Center doit indiquer la provenance locale et ne plus imposer la lecture de la console.
+- Vérifier que Santé ne présente jamais le résumé local comme le résultat complet `ezzhealth full`.
+
+### Captures
+
+- Aucune capture automatique : les données pertinentes exigent une source runtime terrain réelle. Captures à produire pendant la validation humaine minimale.

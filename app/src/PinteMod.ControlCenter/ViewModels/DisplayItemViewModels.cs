@@ -61,6 +61,8 @@ public sealed class PlayerItemViewModel
             RuntimeGodModeState.Off => "INACTIF",
             _ => "INCONNU"
         };
+        CanPackAPunchCurrentWeapon = HasObservableEquippedWeapon(player.RuntimeDetails) &&
+                                    player.RuntimeDetails?.EquippedWeaponPackAPunchState != RuntimeWeaponPackAPunchState.Upgraded;
     }
 
     public int ClientNumber { get; }
@@ -108,6 +110,8 @@ public sealed class PlayerItemViewModel
     public string PerksText { get; }
 
     public string GodModeText { get; }
+
+    public bool CanPackAPunchCurrentWeapon { get; }
 
     private static string FormatHealth(RuntimePlayerSnapshot? runtime) => runtime switch
     {
@@ -157,6 +161,17 @@ public sealed class PlayerItemViewModel
                 ? $"{weapon.Id} [PAP]"
                 : weapon.Id));
         return runtime.WeaponsTruncated ? text + " · …" : text;
+    }
+
+    private static bool HasObservableEquippedWeapon(RuntimePlayerSnapshot? runtime)
+    {
+        if (string.IsNullOrWhiteSpace(runtime?.EquippedWeapon))
+        {
+            return false;
+        }
+
+        return runtime.EquippedWeapon.Trim().ToLowerInvariant() is not
+            ("none" or "weapon_none" or "weaponnone" or "fists" or "zm_fists");
     }
 }
 
@@ -420,7 +435,9 @@ public sealed class SimulationResultItemViewModel
             SimulationAction.GrantPoints => "Points",
             SimulationAction.RefillAmmo => "Munitions",
             SimulationAction.GiveWeapon => "Arme",
+            SimulationAction.PackAPunchCurrentWeapon => "Pack-a-Punch arme tenue",
             SimulationAction.GivePerk => "Atout",
+            SimulationAction.RemovePerk => "Retrait d’atout",
             SimulationAction.GiveAllPerks => "Tous les atouts",
             SimulationAction.GivePowerUpPlayer => "Power-up",
             SimulationAction.TeleportPlayer => "Téléportation",

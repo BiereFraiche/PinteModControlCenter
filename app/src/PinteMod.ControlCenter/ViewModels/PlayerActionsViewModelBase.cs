@@ -16,7 +16,9 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         SimulationAction.RefillAmmo,
         SimulationAction.ToggleGodmode,
         SimulationAction.GiveWeapon,
+        SimulationAction.PackAPunchCurrentWeapon,
         SimulationAction.GivePerk,
+        SimulationAction.RemovePerk,
         SimulationAction.GiveAllPerks,
         SimulationAction.GivePowerUpPlayer,
         SimulationAction.TeleportPlayer,
@@ -43,7 +45,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
     private bool _isHybridLocal;
     private bool _localPlayerSourceReady;
     private string _playerAdministrationStatus = "AUCUNE ACTION JOUEUR RÉELLE";
-    private string _playerAdministrationMessage = "Sélectionnez un joueur issu des logs locaux, puis confirmez une action.";
+    private string _playerAdministrationMessage = "Sélectionnez un joueur issu des sources locales, puis confirmez une action.";
     private string _playerAdministrationCommandSent = "Commande envoyée : Non";
     private ServiceHealth _playerAdministrationHealth = ServiceHealth.Unknown;
     private bool _hasPlayerAdministrationResult;
@@ -58,6 +60,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
     private string _playerHistoryCounters = "—";
     private string _playerHistoryLastAction = "Sélectionnez un joueur puis chargez son historique local.";
     private ServiceHealth _playerHistoryHealth = ServiceHealth.Unknown;
+    private string _weaponCatalogStatus = "19 ARMES STANDARD · CARTE SPÉCIALE NON OBSERVÉE";
 
     protected PlayerActionsViewModelBase(
         string title,
@@ -87,14 +90,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         _selectionState.SelectionChanged += SelectionState_SelectionChanged;
         _mutationSafety.Changed += (_, _) => NotifyPlayerActionAuthorizationChanged();
 
-        WeaponOptions =
-        [
-            new("raygun", "Ray Gun"),
-            new("raygunmk2", "Ray Gun Mark II"),
-            new("kn44", "KN-44"),
-            new("haymaker", "Haymaker"),
-            new("dingo", "Dingo")
-        ];
+        ReplaceWeaponOptions(PlayerWeaponCatalog.Standard, null);
         PerkOptions =
         [
             new("jug", "Juggernog"),
@@ -166,7 +162,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
 
     public ObservableCollection<PlayerItemViewModel> Players { get; } = [];
 
-    public IReadOnlyList<SelectionOption> WeaponOptions { get; }
+    public ObservableCollection<SelectionOption> WeaponOptions { get; } = [];
 
     public IReadOnlyList<SelectionOption> PerkOptions { get; }
 
@@ -208,6 +204,12 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
     {
         get => _selectedWeapon;
         set => SetProperty(ref _selectedWeapon, value);
+    }
+
+    public string WeaponCatalogStatus
+    {
+        get => _weaponCatalogStatus;
+        private set => SetProperty(ref _weaponCatalogStatus, value);
     }
 
     public SelectionOption SelectedPerk
@@ -362,6 +364,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
                                   snapshot.DataContext.SessionSource.ReadStatus == LocalReadStatus.Success &&
                                   snapshot.DataContext.SessionSource.Provenance == DataProvenance.LocalFile &&
                                   (runtimePlayerSourceReady || logPlayerSourceReady);
+        UpdateWeaponOptions(snapshot, runtimePlayerSourceReady);
         OnPropertyChanged(nameof(PlayerActionsBadge));
         OnPropertyChanged(nameof(PlayerActionsNotice));
         NotifyPlayerActionAuthorizationChanged();
@@ -437,6 +440,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         }
 
         return RealActionMappings.Contains(action) &&
+               (action != SimulationAction.PackAPunchCurrentWeapon || SelectedPlayer.CanPackAPunchCurrentWeapon) &&
                _localPlayerSourceReady &&
                _playerAdministrationService is not null &&
                _confirmationService is not null &&
@@ -463,6 +467,7 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         {
             SimulationAction.GrantPoints => $"+{SelectedPointsAmount:N0}",
             SimulationAction.GiveWeapon => SelectedWeapon.Key,
+            SimulationAction.RemovePerk => SelectedPerk.Key,
             SimulationAction.GivePerk => SelectedPerk.Key,
             SimulationAction.GivePowerUpPlayer => SelectedPowerUp.Key,
             SimulationAction.BanPlayer => SelectedBanDuration.Key,
@@ -565,7 +570,9 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
             SimulationAction.RefillAmmo => new(PlayerAdministrationAction.RefillAmmo, xuid),
             SimulationAction.ToggleGodmode => new(PlayerAdministrationAction.ToggleGodMode, xuid),
             SimulationAction.GiveWeapon => new(PlayerAdministrationAction.GiveWeapon, xuid, Option: SelectedWeapon.Key),
+            SimulationAction.PackAPunchCurrentWeapon => new(PlayerAdministrationAction.PackAPunchCurrentWeapon, xuid),
             SimulationAction.GivePerk => new(PlayerAdministrationAction.GivePerk, xuid, Option: SelectedPerk.Key),
+            SimulationAction.RemovePerk => new(PlayerAdministrationAction.RemovePerk, xuid, Option: SelectedPerk.Key),
             SimulationAction.GiveAllPerks => new(PlayerAdministrationAction.GiveAllPerks, xuid),
             SimulationAction.GivePowerUpPlayer => new(PlayerAdministrationAction.GivePowerUp, xuid, Option: SelectedPowerUp.Key),
             SimulationAction.TeleportPlayer => new(PlayerAdministrationAction.TeleportToOwnAim, xuid),
@@ -593,7 +600,9 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
             PlayerAdministrationAction.RefillAmmo => new("Confirmer les munitions", $"Remplir réellement les munitions de l’arme équipée de {target} ?"),
             PlayerAdministrationAction.ToggleGodMode => new("Confirmer le Godmode", $"Basculer réellement le Godmode de {target} ? L’état actuel n’est pas connu du Control Center."),
             PlayerAdministrationAction.GiveWeapon => new("Confirmer l’arme", $"Donner réellement l’arme « {request.Option} » à {target} ?"),
+            PlayerAdministrationAction.PackAPunchCurrentWeapon => new("Confirmer le Pack-a-Punch", $"Pack-a-Punch réellement l’arme actuellement tenue par {target} ?\n\nPinteMod vérifiera que l’arme est compatible et pas déjà améliorée."),
             PlayerAdministrationAction.GivePerk => new("Confirmer l’atout", $"Donner réellement l’atout « {request.Option} » à {target} ?"),
+            PlayerAdministrationAction.RemovePerk => new("Confirmer le retrait d’atout", $"Retirer réellement l’atout « {request.Option} » à {target} ?"),
             PlayerAdministrationAction.GiveAllPerks => new("Confirmer tous les atouts", $"Donner réellement tous les atouts classiques à {target} ?"),
             PlayerAdministrationAction.GivePowerUp => new("Confirmer le power-up", $"Faire apparaître réellement le power-up « {request.Option} » au viseur de {target} ?\n\nLa disponibilité dépend de la carte active."),
             PlayerAdministrationAction.TeleportToOwnAim => new("Confirmer la téléportation", $"Téléporter réellement {target} vers la surface actuellement visée par ce même joueur ?\n\nLe joueur doit être vivant et viser une surface proche valide."),
@@ -693,6 +702,42 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         AcknowledgePlayerAdministrationCommand?.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(CanLoadPlayerHistory));
         LoadPlayerHistoryCommand?.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateWeaponOptions(DashboardSnapshot snapshot, bool runtimePlayerSourceReady)
+    {
+        var runtime = snapshot.LocalObservation.RuntimeSnapshot.Value;
+        var runtimeMapCode = runtimePlayerSourceReady &&
+                             runtime is not null &&
+                             string.Equals(runtime.SessionId, snapshot.Server.SessionId, StringComparison.Ordinal) &&
+                             string.Equals(runtime.MapCode, snapshot.Server.MapCode, StringComparison.OrdinalIgnoreCase)
+            ? runtime.MapCode
+            : null;
+        ReplaceWeaponOptions(PlayerWeaponCatalog.AvailableForMap(runtimeMapCode), runtimeMapCode);
+    }
+
+    private void ReplaceWeaponOptions(
+        IReadOnlyList<PlayerWeaponCatalogEntry> entries,
+        string? runtimeMapCode)
+    {
+        var selectedAlias = WeaponOptions.Count > 0 ? SelectedWeapon?.Key : null;
+        WeaponOptions.Clear();
+        foreach (var entry in entries)
+        {
+            var prefix = entry.IsMapSpecific ? "Spéciale · " : string.Empty;
+            WeaponOptions.Add(new SelectionOption(entry.Alias, prefix + entry.DisplayName));
+        }
+
+        _selectedWeapon = WeaponOptions.FirstOrDefault(option =>
+                              string.Equals(option.Key, selectedAlias, StringComparison.Ordinal))
+                          ?? WeaponOptions[0];
+        OnPropertyChanged(nameof(SelectedWeapon));
+        var specialCount = entries.Count(entry => entry.IsMapSpecific);
+        WeaponCatalogStatus = runtimeMapCode is null
+            ? "19 armes standard/universelles · armes spéciales masquées sans runtime frais"
+            : specialCount == 0
+                ? $"19 armes standard/universelles · aucun catalogue spécial officiel pour {runtimeMapCode}"
+                : $"19 armes standard/universelles · {specialCount} arme(s) spéciale(s) pour {runtimeMapCode}";
     }
 
     private string? GetPlayerXuid(PlayerItemViewModel? player) =>

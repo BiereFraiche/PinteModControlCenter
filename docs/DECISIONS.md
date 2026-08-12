@@ -663,3 +663,27 @@ Dernière mise à jour : 2026-08-12
 **Joueurs.** Le snapshot runtime devient la source de présence, client, vie, points et inventaire. Rôle, langue et pays sont enrichis uniquement par BOIII_XUID. L’état Mute n’étant pas autoritaire dans le contrat, il reste Inconnu. Les ViewModels ne reçoivent que le XUID abrégé.
 
 **Alternatives rejetées.** Modifier PinteMod, recréer les mêmes fichiers sous un autre schéma, utiliser l’horodatage UTC vide comme erreur, réutiliser une ancienne session en cache ou activer ChangeMap/RestartMap/événements/boss sans contrat fermé ont été rejetés.
+
+## ADR-088 — Le catalogue d’armes joueur est centralisé et filtré par le runtime
+
+**Décision.** Les 19 alias standard/universels et tous les alias spéciaux annoncés par PinteMod Weapons v0.5.2 résident dans `PlayerWeaponCatalog`, dans Core. Le ViewModel et le service RCON utilisent cette même autorité fermée afin d’éviter deux listes divergentes.
+
+**Contexte carte.** Les armes standard sont toujours visibles. Une arme spéciale n’est affichée que si le snapshot runtime est local, réussi, frais, de la session active et cohérent avec la carte. Une carte inconnue n’obtient aucune spécialité. Le service accepte seulement les alias canoniques fermés ; PinteMod vérifie ensuite leur disponibilité réelle sur la carte.
+
+**Alternative rejetée.** Une saisie libre, un identifiant moteur, un synonyme technique ou une lecture de sortie console `ezzweapons` ne devient jamais une option de commande.
+
+## ADR-089 — Le PAP de l’arme tenue et le retrait d’atout réutilisent la sûreté joueur existante
+
+**Décision.** `ezzpapweapon <BOIII_XUID>` devient l’action typée `PackAPunchCurrentWeapon`. `ezzremoveperk <BOIII_XUID> <alias>` devient `RemovePerk` avec les neuf alias déjà bornés. Les deux passent par la confirmation, la revalidation XUID post-confirmation, le verrou transversal et l’acquittement manuel existants.
+
+**État runtime.** L’interface désactive le PAP si aucune arme équipée n’est observable ou si son état est explicitement `upgraded`. Elle ne prétend pas connaître `can_upgrade_weapon` : PinteMod reste l’autorité finale et peut refuser proprement une arme incompatible.
+
+**Alternative rejetée.** `ezzperktoggle` n’est pas exposé car une même action peut donner ou retirer selon un état devenu obsolète. `ezzclearperks` n’est pas ajouté : il est destructif, redondant et n’apporte pas assez de valeur quotidienne.
+
+## ADR-090 — Une réponse RCON vide peut céder la présentation à une source locale autoritaire
+
+**Décision.** Une réponse RCON normale reste prioritaire. Pour Carte, Courant, PAP de carte, Manche et Joueurs, une réponse vide peut afficher le runtime uniquement s’il est local, frais, de la session active et cohérent avec la carte. Le texte précise qu’il s’agit d’un état local autoritaire, jamais de la sortie console exacte.
+
+**Confidentialité.** Le fallback Joueurs n’expose ni XUID complet, ni chemin, IP ou GUID. Les pseudos passent par le filtre de confidentialité. Community Pause conserve son feedback spécialisé. Health peut montrer un résumé des heartbeats frais, avec la mention explicite qu’il ne remplace pas les 51 contrôles de `ezzhealth full`.
+
+**Absence de contrat.** Audit carte, événements et catalogue power-ups indiquent seulement que la commande a été exécutée mais que la sortie console n’a pas été transportée. Aucun scraping de console, lecture arbitraire de log, port ou transport supplémentaire n’est ajouté.

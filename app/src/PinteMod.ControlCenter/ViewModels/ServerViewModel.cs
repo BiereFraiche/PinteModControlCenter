@@ -101,6 +101,9 @@ public sealed class ServerViewModel : PageViewModel
             () => _rconOperations.RunExclusiveAsync(_ => RefreshPauseStatusCoreAsync()),
             null,
             ReportError);
+        HealthDiagnosticCommand = CreateServerDiagnosticCommand(
+            RconDiagnosticCommand.HealthFull,
+            "Le diagnostic Santé PinteMod n’a pas pu être terminé.");
         MapDiagnosticCommand = CreateServerDiagnosticCommand(
             RconDiagnosticCommand.MapInfo,
             "Le diagnostic Carte n’a pas pu être terminé.");
@@ -546,6 +549,8 @@ public sealed class ServerViewModel : PageViewModel
 
     public AsyncRelayCommand RefreshPauseStatusCommand { get; }
 
+    public AsyncRelayCommand HealthDiagnosticCommand { get; }
+
     public AsyncRelayCommand MapDiagnosticCommand { get; }
 
     public AsyncRelayCommand PowerDiagnosticCommand { get; }
@@ -951,6 +956,17 @@ public sealed class ServerViewModel : PageViewModel
 
         var result = await _rconDiagnosticService.ExecuteAsync(command, endpoint);
         _operatorActivityStore?.RecordRconResult(result);
+        if (result.Status == RconExecutionStatus.EmptyResponse && result.CommandSent)
+        {
+            var refreshed = await _snapshotStore.RefreshAsync();
+            ApplySnapshot(refreshed);
+            if (LocalDiagnosticFallback.TryCreate(command, refreshed, out var fallback))
+            {
+                SetServerDiagnosticResult(fallback.Status, fallback.Message, true, fallback.Health);
+                return;
+            }
+        }
+
         SetServerDiagnosticResult(
             result.Status switch
             {
