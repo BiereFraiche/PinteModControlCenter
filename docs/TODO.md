@@ -300,4 +300,6 @@ Dernière mise à jour : 2026-08-12
 
 - **Terminé** — Séparer Armes, Atouts et Power-ups en grilles responsives autonomes sans largeur fixe sur les sélecteurs.
 - **Terminé** — Ajouter une régression XAML garantissant que de nouveaux boutons restent confinés à leur groupe responsive.
-- **À valider** — Vérifier visuellement le panneau dans une fenêtre étroite puis large et produire une capture corrigée.
+- **Terminé** — Validation humaine du panneau responsive dans la preview `b57db391`.
+- **En cours** — Produire et transmettre le paquet global de revue ChatGPT du lot post-RC2.
+- **À valider** — Après verdict ChatGPT sans blocage, effectuer la validation terrain groupée des armes, PAP, retrait d’atout, power-up et fallbacks diagnostics.

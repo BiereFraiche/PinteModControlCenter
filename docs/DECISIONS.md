@@ -697,3 +697,13 @@ Dernière mise à jour : 2026-08-12
 **Lisibilité.** Les commandes longues utilisent un libellé centré avec retour à la ligne. Les marges restent identiques entre sélecteurs et boutons afin de conserver une hiérarchie stable dans les fenêtres petites comme en 1920×1080.
 
 **Alternative rejetée.** Un unique `WrapPanel` mélange les familles selon la place restante et rend la disposition dépendante de la longueur des libellés. Ajouter des largeurs fixes supplémentaires aurait seulement déplacé le défaut vers d’autres dimensions de fenêtre.
+
+## ADR-092 — La revue post-RC2 utilise une preuve globale et laisse la RC2 intacte
+
+**Décision.** Le heartbeat et snapshot runtime, les correctifs terrain armes/PAP/diagnostics et le correctif responsive sont regroupés dans une seule revue post-RC2. La base `90d4922cb663e4b8d923ecfb1681483d78db5126` reste la RC2 validée ; aucun tag ni asset RC2 n’est remplacé.
+
+**Preuves.** L’archive de revue contient les sources suivies exactes, le diff RC2 vers la tête de revue, la liste des commits, les résultats Debug/Release, la procédure terrain restante, le paquet Windows autonome déjà audité et un manifeste SHA-256 couvrant chaque élément.
+
+**Périmètre.** La revue doit rechercher uniquement les régressions concrètes et les risques des ajouts post-RC2. ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés ; les futurs contrats PinteMod `capabilities` et `action_feedback` ne sont pas anticipés.
+
+**Alternative rejetée.** Modifier ou republier la RC2 pour y intégrer ces extensions brouillerait la baseline déjà validée. Une série de micro-revues isolées masquerait les interactions entre lecteurs runtime, autorisations joueur, diagnostics et interface.
