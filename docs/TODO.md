@@ -295,3 +295,9 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Documenter dans `UX_FEATURE_AUDIT.md` les fonctions gardées, ajoutées, refusées et toujours simulées.
 - **À valider** — Terrain : plusieurs armes standard, une arme spéciale de la carte, PAP arme normale/déjà PAP/non compatible et cinq fallbacks diagnostics.
 - **À faire** — Futur contrat PinteMod capabilities/action feedback pour carte, événements, boss et diagnostics non structurés.
+
+## Responsivité des actions joueur — 2026-08-12
+
+- **Terminé** — Séparer Armes, Atouts et Power-ups en grilles responsives autonomes sans largeur fixe sur les sélecteurs.
+- **Terminé** — Ajouter une régression XAML garantissant que de nouveaux boutons restent confinés à leur groupe responsive.
+- **À valider** — Vérifier visuellement le panneau dans une fenêtre étroite puis large et produire une capture corrigée.

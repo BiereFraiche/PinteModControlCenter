@@ -3056,3 +3056,48 @@ Corriger en un seul lot le catalogue Give Weapon incomplet, ajouter le Pack-a-Pu
 ### Captures
 
 - Aucune capture automatique : les données pertinentes exigent une source runtime terrain réelle. Captures à produire pendant la validation humaine minimale.
+
+## 2026-08-12 — Mise en page responsive des actions Armes, Atouts et Power-ups
+
+### Objectif de la passe
+
+Corriger le décalage visuel provoqué par l’ajout de boutons dans la fiche joueur et rendre ce panneau durablement adaptable aux prochains ajouts.
+
+### Réalisé
+
+- Remplacement du flux unique `WrapPanel` par trois grilles responsives indépendantes : Arme, Atout et Power-up joueur.
+- Suppression des largeurs fixes des trois sélecteurs ; chaque contrôle occupe désormais la cellule calculée selon la largeur disponible.
+- Retour à la ligne centré pour les deux libellés longs Pack-a-Punch et Power-up.
+- Ajout d’un test de régression vérifiant la séparation des groupes, l’absence de `WrapPanel` et de largeur fixe sur les sélecteurs.
+
+### Fichiers créés ou modifiés
+
+- `app/src/PinteMod.ControlCenter/Controls/PlayerDetailsControl.xaml`.
+- `app/tests/PinteMod.ControlCenter.Tests/ViewModelTests.cs`.
+- `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Fonctionnalités disponibles
+
+- À largeur réduite, chaque groupe passe automatiquement de plusieurs colonnes à une seule sans mélanger ses actions avec le groupe suivant.
+- À grande largeur, les actions reprennent automatiquement trois colonnes pour les armes, quatre pour les atouts et deux pour les power-ups.
+- Ajouter ultérieurement un bouton dans l’un des trois groupes provoquera un retour à la ligne local à ce groupe.
+
+### Compilation et tests
+
+- Test ciblé responsive : 1/1 réussi.
+- Debug : 0 avertissement, 0 erreur, 378/378 tests réussis.
+- Release : 0 avertissement, 0 erreur, 378/378 tests réussis.
+
+### Problèmes rencontrés
+
+- La première assertion du nouveau test confondait la largeur minimale responsive avec une ancienne largeur fixe de sélecteur ; l’assertion a été ciblée sur les propriétés `Width` des ComboBox avant la validation finale.
+- Aucun blocage technique connu ne reste.
+
+### Validation humaine nécessaire
+
+- Vérifier visuellement la fiche joueur dans une fenêtre étroite puis large, en particulier les trois groupes Armes, Atouts et Power-ups.
+
+### Captures
+
+- Capture source du défaut fournie par l’opérateur : `C:\Users\flori\Pictures\Screenshots\Capture d'écran 2026-08-12 180011.png`.
+- Aucune nouvelle capture automatique produite ; la capture corrigée reste à réaliser pendant la validation humaine.

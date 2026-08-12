@@ -398,6 +398,26 @@ public sealed class ViewModelTests
     }
 
     [TestMethod]
+    public void PlayerWeaponPerkAndPowerUpActions_UseIndependentResponsiveGrids()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var source = File.ReadAllText(Path.Combine(presentationRoot, "Controls", "PlayerDetailsControl.xaml"));
+        var sectionStart = source.IndexOf("Text=\"ARMES &amp; ATOUTS\"", StringComparison.Ordinal);
+        var sectionEnd = source.IndexOf("Text=\"MODÉRATION &amp; IDENTITÉ\"", sectionStart, StringComparison.Ordinal);
+        var section = source[sectionStart..sectionEnd];
+
+        StringAssert.Contains(section, "x:Name=\"WeaponActionGrid\"");
+        StringAssert.Contains(section, "x:Name=\"PerkActionGrid\"");
+        StringAssert.Contains(section, "x:Name=\"PowerUpActionGrid\"");
+        Assert.AreEqual(3, CountOccurrences(section, "<controls:ResponsiveUniformGrid"));
+        Assert.IsFalse(section.Contains("<WrapPanel", StringComparison.Ordinal));
+        Assert.IsFalse(section.Contains("SelectedWeapon}\" Width=", StringComparison.Ordinal));
+        Assert.IsFalse(section.Contains("SelectedPerk}\" Width=", StringComparison.Ordinal));
+        Assert.IsFalse(section.Contains("SelectedPowerUp}\" Width=", StringComparison.Ordinal));
+        Assert.AreEqual(2, CountOccurrences(section, "TextWrapping=\"Wrap\" TextAlignment=\"Center\""));
+    }
+
+    [TestMethod]
     public void DurationsOverTwentyFourHours_DisplayTotalHoursWithoutWrapping()
     {
         var converter = new DurationConverter();

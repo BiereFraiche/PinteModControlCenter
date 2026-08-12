@@ -687,3 +687,13 @@ Dernière mise à jour : 2026-08-12
 **Confidentialité.** Le fallback Joueurs n’expose ni XUID complet, ni chemin, IP ou GUID. Les pseudos passent par le filtre de confidentialité. Community Pause conserve son feedback spécialisé. Health peut montrer un résumé des heartbeats frais, avec la mention explicite qu’il ne remplace pas les 51 contrôles de `ezzhealth full`.
 
 **Absence de contrat.** Audit carte, événements et catalogue power-ups indiquent seulement que la commande a été exécutée mais que la sortie console n’a pas été transportée. Aucun scraping de console, lecture arbitraire de log, port ou transport supplémentaire n’est ajouté.
+
+## ADR-091 — Les actions joueur extensibles sont regroupées dans des grilles responsives autonomes
+
+**Décision.** La carte « Armes & Atouts » utilise trois `ResponsiveUniformGrid` indépendantes pour les armes, les atouts et les power-ups. Chaque groupe possède son propre nombre maximal de colonnes et revient automatiquement à la ligne selon la largeur réellement disponible. Les sélecteurs n’ont plus de largeur fixe.
+
+**Extensibilité.** Un futur bouton est ajouté à la grille de sa famille. Il occupe une nouvelle cellule ou passe à la ligne dans ce seul groupe, sans modifier l’ordre visuel des sélecteurs et actions des autres familles.
+
+**Lisibilité.** Les commandes longues utilisent un libellé centré avec retour à la ligne. Les marges restent identiques entre sélecteurs et boutons afin de conserver une hiérarchie stable dans les fenêtres petites comme en 1920×1080.
+
+**Alternative rejetée.** Un unique `WrapPanel` mélange les familles selon la place restante et rend la disposition dépendante de la longueur des libellés. Ajouter des largeurs fixes supplémentaires aurait seulement déplacé le défaut vers d’autres dimensions de fenêtre.

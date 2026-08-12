@@ -114,19 +114,37 @@
             <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                 <StackPanel>
                     <TextBlock Text="ARMES &amp; ATOUTS" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
-                    <WrapPanel>
-                        <ComboBox ItemsSource="{Binding WeaponOptions}" SelectedItem="{Binding SelectedWeapon}" Width="210" Margin="0,0,8,8" />
-                        <Button Content="DONNER L’ARME" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GiveWeapon}" />
-                        <Button Content="PACK-A-PUNCH ARME TENUE" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
-                                CommandParameter="{x:Static core:SimulationAction.PackAPunchCurrentWeapon}"
-                                ToolTip="Utilise exclusivement l’arme actuellement tenue et le BOIII_XUID du joueur" />
-                        <ComboBox ItemsSource="{Binding PerkOptions}" SelectedItem="{Binding SelectedPerk}" Width="145" Margin="0,0,8,8" />
-                        <Button Content="DONNER L’ATOUT" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GivePerk}" />
-                        <Button Content="RETIRER L’ATOUT" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RemovePerk}" />
-                        <Button Content="TOUS LES ATOUTS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GiveAllPerks}" />
-                        <ComboBox ItemsSource="{Binding PowerUpOptions}" SelectedItem="{Binding SelectedPowerUp}" Width="145" Margin="0,0,8,8" />
-                        <Button Content="FAIRE APPARAÎTRE LE POWER-UP" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GivePowerUpPlayer}" />
-                    </WrapPanel>
+                    <TextBlock Text="ARME" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,2" />
+                    <controls:ResponsiveUniformGrid x:Name="WeaponActionGrid" MinItemWidth="145" MaxColumns="3" Margin="-4,0,-4,6">
+                        <ComboBox ItemsSource="{Binding WeaponOptions}" SelectedItem="{Binding SelectedWeapon}" Margin="4" />
+                        <Button Content="DONNER L’ARME" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GiveWeapon}" Margin="4" />
+                        <Button Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.PackAPunchCurrentWeapon}" Margin="4"
+                                ToolTip="Utilise exclusivement l’arme actuellement tenue et le BOIII_XUID du joueur">
+                            <TextBlock Text="PACK-A-PUNCH ARME TENUE" TextWrapping="Wrap" TextAlignment="Center" />
+                        </Button>
+                    </controls:ResponsiveUniformGrid>
+
+                    <TextBlock Text="ATOUT" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,2" />
+                    <controls:ResponsiveUniformGrid x:Name="PerkActionGrid" MinItemWidth="125" MaxColumns="4" Margin="-4,0,-4,6">
+                        <ComboBox ItemsSource="{Binding PerkOptions}" SelectedItem="{Binding SelectedPerk}" Margin="4" />
+                        <Button Content="DONNER L’ATOUT" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GivePerk}" Margin="4" />
+                        <Button Content="RETIRER L’ATOUT" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.RemovePerk}" Margin="4" />
+                        <Button Content="TOUS LES ATOUTS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GiveAllPerks}" Margin="4" />
+                    </controls:ResponsiveUniformGrid>
+
+                    <TextBlock Text="POWER-UP JOUEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,2" />
+                    <controls:ResponsiveUniformGrid x:Name="PowerUpActionGrid" MinItemWidth="145" MaxColumns="2" Margin="-4,0,-4,6">
+                        <ComboBox ItemsSource="{Binding PowerUpOptions}" SelectedItem="{Binding SelectedPowerUp}" Margin="4" />
+                        <Button Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GivePowerUpPlayer}" Margin="4">
+                            <TextBlock Text="FAIRE APPARAÎTRE LE POWER-UP" TextWrapping="Wrap" TextAlignment="Center" />
+                        </Button>
+                    </controls:ResponsiveUniformGrid>
                     <TextBlock Text="{Binding WeaponCatalogStatus}" Foreground="{StaticResource AccentBrightBrush}"
                                FontSize="9" TextWrapping="Wrap" Margin="0,3,0,0" />
                     <TextBlock Text="Listes fermées issues des alias stables PinteMod · aucune saisie de commande libre"
