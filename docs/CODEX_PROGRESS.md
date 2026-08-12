@@ -3101,3 +3101,10 @@ Corriger le décalage visuel provoqué par l’ajout de boutons dans la fiche jo
 
 - Capture source du défaut fournie par l’opérateur : `C:\Users\flori\Pictures\Screenshots\Capture d'écran 2026-08-12 180011.png`.
 - Aucune nouvelle capture automatique produite ; la capture corrigée reste à réaliser pendant la validation humaine.
+
+### Paquet testable
+
+- Commit applicatif : `b57db3917693df2f73d895ba3ff0c1a6fb387829`.
+- Archive autonome Windows x64 : `app/artifacts/post-rc2-responsive-b57db391-preview-win-x64/PinteMod-ControlCenter-post-RC2-responsive-preview-b57db391-win-x64.zip`.
+- Audit du paquet : `PASS`, 466 entrées.
+- SHA-256 : `BBE71D3C32FAA4F55D2839E4761C00E3EEEDDBB6DFB6CED1C833B9A7771A2A61`.
