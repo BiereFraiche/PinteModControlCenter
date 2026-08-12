@@ -3108,3 +3108,53 @@ Corriger le décalage visuel provoqué par l’ajout de boutons dans la fiche jo
 - Archive autonome Windows x64 : `app/artifacts/post-rc2-responsive-b57db391-preview-win-x64/PinteMod-ControlCenter-post-RC2-responsive-preview-b57db391-win-x64.zip`.
 - Audit du paquet : `PASS`, 466 entrées.
 - SHA-256 : `BBE71D3C32FAA4F55D2839E4761C00E3EEEDDBB6DFB6CED1C833B9A7771A2A61`.
+
+## 2026-08-12 — Paquet global de revue ChatGPT post-RC2
+
+### Objectif de la passe
+
+Regrouper en une seule preuve auditable les trois lots post-RC2 : overlay runtime, correctifs terrain armes/PAP/diagnostics et interface responsive.
+
+### Réalisé
+
+- Ajout d’un prompt ChatGPT spécifique au diff post-RC2, sans remettre en cause la baseline RC2 validée.
+- Production de trois patches applicatifs ordonnés depuis `90d4922` jusqu’à `b57db391`.
+- Production d’une archive de 229 entrées contenant uniquement la solution, les sources, tests, contrats et scripts de packaging nécessaires à la revue.
+- Inclusion du paquet Windows x64 autonome déjà audité, de son manifeste, des rapports de tests et de la procédure terrain groupée.
+- Création d’un manifeste SHA-256 interne couvrant chaque fichier puis d’un manifeste externe pour le ZIP global.
+
+### Fichiers créés ou modifiés
+
+- `docs/PROMPT_REVUE_CHATGPT_POST_RC2.md`.
+- `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+- Artefacts ignorés sous `app/artifacts/post-rc2-global-review-0bcc4a5f/`.
+- ZIP final : `app/artifacts/PinteMod-ControlCenter-post-RC2-global-review-0bcc4a5f.zip`.
+
+### Compilation et tests
+
+- Aucune source applicative modifiée après les validations finales.
+- Debug conservé : 0 avertissement, 0 erreur, 378/378 tests réussis.
+- Release conservé : 0 avertissement, 0 erreur, 378/378 tests réussis.
+- Audit source : PASS, 229 entrées.
+- Audit binaire : PASS, 466 entrées.
+- Scan des chaînes privées connues : PASS.
+
+### Problèmes rencontrés
+
+- `app/README.md` contient historiquement un exemple de chemin absolu du workspace. Il a été exclu de l’archive des sources et des patches de revue ; le code, les projets, les tests et les contrats restent complets pour l’analyse.
+- Aucun blocage connu ne reste dans la préparation de la revue.
+
+### Validation humaine nécessaire
+
+- Envoyer le ZIP global à ChatGPT et lui demander d’utiliser `PROMPT_CHATGPT_POST_RC2.md`.
+- Après un verdict sans blocage, suivre une seule fois `VALIDATION_TERRAIN_GROUPEE.md`.
+
+### Captures
+
+- Aucune nouvelle capture requise pour la revue de code ; la correction responsive a déjà été confirmée par l’opérateur.
+
+### Empreinte de livraison
+
+- ZIP global : `PinteMod-ControlCenter-post-RC2-global-review-0bcc4a5f.zip`.
+- SHA-256 : `38DA3EA2CFBBDAD66F39B6D210E11D297776C886C64447C89AF042EF8AF8C85B`.
+- Contenu racine : 13 entrées, manifeste interne présent et aucun chemin ZIP dangereux.
