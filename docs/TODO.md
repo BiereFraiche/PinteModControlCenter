@@ -350,3 +350,4 @@ Dernière mise à jour : 2026-08-12
 - [Packaging] Candidate terrain Windows x64 autonome auditée : 471 entrées, SHA-256 `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.
 - [Terrain] Copie Server3 de test sauvegardée et préparée en LAN-only sur le port 27121 avec les deux GSC candidats ; aucun serveur lancé.
 - [Terrain] Compilation/chargement GSC confirmé humainement sans erreur signalée sur la copie Server3 isolée.
+- [Terrain] Lecture hybride locale validée visuellement : session/runtime/PinteMod frais ; services auxiliaires non lancés correctement présentés comme arrêtés ou périmés.

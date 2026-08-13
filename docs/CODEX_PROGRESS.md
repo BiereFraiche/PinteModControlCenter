@@ -3420,6 +3420,16 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - aucune mutation Control Center n’a encore été exécutée ;
 - prochaine barrière : connexion locale `127.0.0.1:27121`, lecture des quatre contrats et capture avant toute action.
 
+### Validation read-only du Control Center
+
+- capture humaine : `C:\Users\flori\Pictures\Screenshots\Capture d'écran 2026-08-14 015645.png` ;
+- onglet `Serveur 2` en mode hybride local ;
+- session locale fraîche, carte `zm_castle`, manche/runtime joueur observés ;
+- heartbeat PinteMod frais et connecté ;
+- Supervisor arrêté et autres services périmés/inconnus, comportement attendu avec le lancement isolé par `Server.bat` ;
+- bannière conforme : seules Change Map, événements génériques et définition du mot de passe restent simulés ;
+- aucune commande RCON ou mutation exécutée à ce stade.
+
 ### Fichiers modifiés
 
 - `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
