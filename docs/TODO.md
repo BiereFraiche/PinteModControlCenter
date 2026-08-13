@@ -348,3 +348,4 @@ Dernière mise à jour : 2026-08-12
 - [Correctif revue] Conserver `ENVOYÉ · NON CONFIRMÉ` et le verrou humain lorsqu’aucune preuve locale corrélée n’arrive.
 - [Tests] Contre-revue transport incertain : 418/418 tests Debug et Release, 0 avertissement, 0 erreur.
 - [Revue] Contre-revue ciblée validée sans blocage ; validation terrain groupée autorisée.
+- [Packaging] Candidate terrain Windows x64 autonome auditée : 471 entrées, SHA-256 `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.

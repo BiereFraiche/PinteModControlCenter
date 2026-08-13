@@ -3377,6 +3377,16 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - observation après `DeliveryUnknown`/`TransportError`, absence de retry et verrou sans preuve confirmés ;
 - autorisation accordée pour l’unique validation terrain groupée, exclusivement sur la copie de test et après compilation GSC réussie.
 
+### Candidate terrain préparée
+
+- publication Windows x64 autonome, non exécutée ;
+- révision embarquée : `e27e0b55bd0757f893310d78d1ff89df3bce94a7` ;
+- version produit : `2.2.0-post-rc2-contracts.e27e0b5` ;
+- exécutable : `app/artifacts/post-rc2-contracts-terrain-e27e0b5-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contracts-terrain-e27e0b5-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées, 0 PDB, 4 schémas contractuels ;
+- SHA-256 : `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.
+
 ### Fichiers modifiés
 
 - `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
