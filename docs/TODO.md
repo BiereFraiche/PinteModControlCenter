@@ -332,7 +332,6 @@ Dernière mise à jour : 2026-08-12
 ### À valider
 
 - [Interface graphique] Vérifier le rendu responsive de la nouvelle carte Identité et du sélecteur Boss.
-- [Intégration PinteMod] Compiler les GSC candidats dans un environnement compatible.
 - [Intégration PinteMod] Valider en une seule passe terrain Restart Map, Spawn Boss, Set Hostname et Clear Join Password.
 
 ### Terminé
@@ -350,3 +349,4 @@ Dernière mise à jour : 2026-08-12
 - [Revue] Contre-revue ciblée validée sans blocage ; validation terrain groupée autorisée.
 - [Packaging] Candidate terrain Windows x64 autonome auditée : 471 entrées, SHA-256 `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.
 - [Terrain] Copie Server3 de test sauvegardée et préparée en LAN-only sur le port 27121 avec les deux GSC candidats ; aucun serveur lancé.
+- [Terrain] Compilation/chargement GSC confirmé humainement sans erreur signalée sur la copie Server3 isolée.

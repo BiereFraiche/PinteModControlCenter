@@ -3413,6 +3413,13 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - arrêter immédiatement en cas d’`unresolved external` ou d’erreur GSC ;
 - seulement après cette preuve, connecter la candidate Control Center à `127.0.0.1:27121` et effectuer la validation groupée.
 
+### Résultat du premier démarrage
+
+- confirmation humaine reçue : la copie de test a chargé sans erreur signalée ;
+- le module `Control Center Contracts v0.1.1` est considéré comme compilé/chargé sur la copie isolée ;
+- aucune mutation Control Center n’a encore été exécutée ;
+- prochaine barrière : connexion locale `127.0.0.1:27121`, lecture des quatre contrats et capture avant toute action.
+
 ### Fichiers modifiés
 
 - `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
