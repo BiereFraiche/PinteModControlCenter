@@ -3345,3 +3345,34 @@ Intégrer sur la branche post-RC2 les quatre contrats Control Center v1 validés
 - rapport : `docs/CONTROL_CENTER_CONTRACTS_INTEGRATION_REPORT.md` ;
 - prompt de revue : `docs/PROMPT_CHATGPT_CONTROL_CENTER_CONTRACTS_REVIEW.md` ;
 - `UI_FEEDBACK.md` n’a pas été modifié.
+
+## 2026-08-14 — Contre-revue ciblée : transport RCON incertain
+
+### Objectif
+
+Corriger l’unique blocage de revue : poursuivre l’observation des contrats locaux après toute action contractuelle potentiellement envoyée, même lorsque la réponse UDP se termine par `DeliveryUnknown` ou `TransportError`.
+
+### Réalisé
+
+- `ExecuteServerAdministrationCoreAsync` lance désormais l’observation locale dès que `CommandSent = true`, sans dépendre du statut de transport ;
+- une exception non normalisée pendant une action contractuelle suit également le chemin conservateur d’observation, sans nouvel envoi ;
+- une preuve fraîche et corrélée peut confirmer Restart Map, Spawn Boss, Set Hostname ou Clear Join Password malgré une réponse UDP perdue ;
+- en l’absence de preuve, le résultat reste exactement `ENVOYÉ · NON CONFIRMÉ`, avertissement et verrou anti-répétition ;
+- aucun retry RCON et aucune commande supplémentaire ;
+- le tooltip utilise désormais « mot de passe joueur » sans exposer le nom technique de la dvar.
+
+### Tests et compilation
+
+- tests ViewModel ciblés : 13/13 réussis ;
+- Debug : 0 avertissement, 0 erreur, 418/418 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 418/418 tests réussis ;
+- cinq régressions ajoutées : Restart avec preuve, Restart sans preuve, Boss, Hostname et Clear Password après transport incertain ;
+- aucun serveur, BAT, EXE BOIII ou RCON réel lancé ;
+- validation terrain toujours suspendue jusqu’au verdict de contre-revue.
+
+### Fichiers modifiés
+
+- `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
+- `app/src/PinteMod.ControlCenter/Views/ServerView.xaml` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractViewModelTests.cs` ;
+- documents de suivi et prompt de contre-revue.

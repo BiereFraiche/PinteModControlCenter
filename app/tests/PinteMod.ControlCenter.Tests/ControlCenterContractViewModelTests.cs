@@ -148,6 +148,127 @@ public sealed class ControlCenterContractViewModelTests
     }
 
     [TestMethod]
+    public async Task RestartMap_DeliveryUnknown_IsConfirmedByActiveTransitionAndNewSession()
+    {
+        var baseline = Snapshot();
+        CapturingService? service = null;
+        var refresh = 0;
+        var store = new DynamicSnapshotStore(baseline, _ =>
+        {
+            refresh++;
+            if (refresh == 1 || service?.Request is null)
+            {
+                return baseline;
+            }
+
+            return Snapshot(
+                sessionId: "session-local-002",
+                feedback: Feedback(
+                    service.Request,
+                    ControlCenterFeedbackStatus.Applied,
+                    "success",
+                    "session-local-002"),
+                transition: Transition(
+                    service.Request,
+                    ControlCenterTransitionStatus.Active,
+                    "success",
+                    "session-local-002"));
+        });
+        service = new CapturingService(ServerAdministrationExecutionStatus.DeliveryUnknown);
+        var viewModel = CreateViewModel(store, service);
+        await viewModel.InitializeAsync();
+
+        viewModel.RestartMapCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.RestartMapCommand);
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual("APPLIQUÉ · CONFIRMÉ LOCALEMENT", viewModel.ServerAdministrationStatus);
+        Assert.AreEqual(ServiceHealth.Healthy, viewModel.ServerAdministrationHealth);
+    }
+
+    [TestMethod]
+    public async Task RestartMap_DeliveryUnknownWithoutLocalProof_RemainsUnconfirmedAndLocked()
+    {
+        var baseline = Snapshot();
+        var service = new CapturingService(ServerAdministrationExecutionStatus.DeliveryUnknown);
+        var viewModel = CreateViewModel(new DynamicSnapshotStore(baseline, _ => baseline), service);
+        await viewModel.InitializeAsync();
+
+        viewModel.RestartMapCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.RestartMapCommand);
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual("ENVOYÉ · NON CONFIRMÉ", viewModel.ServerAdministrationStatus);
+        Assert.AreEqual(ServiceHealth.Warning, viewModel.ServerAdministrationHealth);
+        Assert.IsFalse(viewModel.CanRunServerAdministration);
+    }
+
+    [TestMethod]
+    public async Task SpawnBoss_TransportError_IsConfirmedByCorrelatedAppliedFeedback()
+    {
+        var baseline = Snapshot();
+        CapturingService? service = null;
+        var store = new DynamicSnapshotStore(baseline, _ => service?.Request is null
+            ? baseline
+            : Snapshot(feedback: Feedback(service.Request, ControlCenterFeedbackStatus.Applied, "success")));
+        service = new CapturingService(ServerAdministrationExecutionStatus.TransportError);
+        var selection = new PlayerSelectionState();
+        selection.Select(Xuid);
+        var viewModel = CreateViewModel(store, service, selection);
+        await viewModel.InitializeAsync();
+
+        viewModel.SpawnBossCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.SpawnBossCommand);
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual("APPLIQUÉ · CONFIRMÉ LOCALEMENT", viewModel.ServerAdministrationStatus);
+    }
+
+    [TestMethod]
+    public async Task SetHostname_TransportError_IsConfirmedByFeedbackAndNewerRevision()
+    {
+        var baseline = Snapshot();
+        CapturingService? service = null;
+        var store = new DynamicSnapshotStore(baseline, _ => service?.Request is null
+            ? baseline
+            : Snapshot(
+                feedback: Feedback(service.Request, ControlCenterFeedbackStatus.Applied, "success"),
+                identity: Identity("Nouveau Serveur", revision: 8, joinPasswordEnabled: true)));
+        service = new CapturingService(ServerAdministrationExecutionStatus.TransportError);
+        var viewModel = CreateViewModel(store, service);
+        await viewModel.InitializeAsync();
+        viewModel.RequestedHostname = "Nouveau Serveur";
+
+        viewModel.SetHostnameCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.SetHostnameCommand);
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual("APPLIQUÉ · CONFIRMÉ LOCALEMENT", viewModel.ServerAdministrationStatus);
+    }
+
+    [TestMethod]
+    public async Task ClearJoinPassword_DeliveryUnknown_IsConfirmedByFeedbackAndNewerRevision()
+    {
+        var baseline = Snapshot();
+        CapturingService? service = null;
+        var store = new DynamicSnapshotStore(baseline, _ => service?.Request is null
+            ? baseline
+            : Snapshot(
+                feedback: Feedback(service.Request, ControlCenterFeedbackStatus.Applied, "success"),
+                identity: Identity("PinteMod Test", revision: 8, joinPasswordEnabled: false)));
+        service = new CapturingService(ServerAdministrationExecutionStatus.DeliveryUnknown);
+        var viewModel = CreateViewModel(store, service);
+        await viewModel.InitializeAsync();
+
+        viewModel.ClearJoinPasswordCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.ClearJoinPasswordCommand);
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual("APPLIQUÉ · CONFIRMÉ LOCALEMENT", viewModel.ServerAdministrationStatus);
+        Assert.AreEqual(ServiceHealth.Healthy, viewModel.ServerAdministrationHealth);
+    }
+
+    [TestMethod]
     public async Task DuplicateRequestFeedback_IsPresentedAsConfirmedRefusalWithoutRetry()
     {
         var baseline = Snapshot();
@@ -340,7 +461,9 @@ public sealed class ControlCenterContractViewModelTests
         }
     }
 
-    private sealed class CapturingService : IServerAdministrationCommandService
+    private sealed class CapturingService(
+        ServerAdministrationExecutionStatus status = ServerAdministrationExecutionStatus.SentAwaitingManualVerification,
+        bool commandSent = true) : IServerAdministrationCommandService
     {
         public int CallCount { get; private set; }
         public ServerAdministrationRequest? Request { get; private set; }
@@ -354,9 +477,9 @@ public sealed class ControlCenterContractViewModelTests
             Request = request;
             return Task.FromResult(new ServerAdministrationExecutionResult(
                 request,
-                ServerAdministrationExecutionStatus.SentAwaitingManualVerification,
+                status,
                 "Commande transmise.",
-                true,
+                commandSent,
                 Now));
         }
     }

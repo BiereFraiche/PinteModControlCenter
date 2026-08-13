@@ -27,13 +27,15 @@ Source contractuelle : PinteModReal contre-revue `e279a59`
 
 ## Résultats automatisés
 
-- Debug : 0 avertissement, 0 erreur, 413/413 tests réussis ;
-- Release : 0 avertissement, 0 erreur, 413/413 tests réussis ;
+- Debug : 0 avertissement, 0 erreur, 418/418 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 418/418 tests réussis ;
 - XAML : 10/10 valides ;
 - schémas JSON : 4/4 valides ;
 - commandes interdites en production : 0 ;
 - bindings vers un XUID complet : 0 ;
 - lancement de processus ou écoute entrante : 0.
+
+La contre-revue initiale a identifié un défaut unique : l’observation locale n’était poursuivie qu’après `SentAwaitingManualVerification`. Le correctif étend cette observation à toute action contractuelle dont `CommandSent` vaut `true`, notamment `DeliveryUnknown` et `TransportError`, sans retry RCON. Sans preuve corrélée, le résultat reste `ENVOYÉ · NON CONFIRMÉ` avec verrou humain.
 
 ## Validation humaine restante
 

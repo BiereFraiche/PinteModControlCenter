@@ -15,7 +15,7 @@ Vérifie en priorité :
 9. Change Map et événements génériques toujours simulés, SET mot de passe toujours désactivé ;
 10. la préservation des garanties RC2 et post-RC2 déjà validées.
 
-Preuves annoncées : Debug et Release, 0 avertissement, 0 erreur, 413/413 tests dans chaque configuration ; 10 XAML et 4 schémas valides.
+Preuves finales après contre-revue ciblée : Debug et Release, 0 avertissement, 0 erreur, 418/418 tests dans chaque configuration ; 10 XAML et 4 schémas valides.
 
 Réponds uniquement avec :
 

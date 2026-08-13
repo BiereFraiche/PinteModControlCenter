@@ -777,3 +777,11 @@ Dernière mise à jour : 2026-08-12
 **Périmètre fermé.** Seules `ezzccrestartmap`, `ezzccboss`, `ezzccsethostname` et `ezzccclearjoinpassword` sont ajoutées. `change_map=false` maintient Change Map en simulation ; `ezzccevent` et `ezzccsetjoinpassword` sont absentes. La valeur de `g_password` n’est jamais lue, transportée ou affichée.
 
 **Alternative rejetée.** Déduire qu’une carte `supported` est installée, accepter un alias non publié, ou confirmer une action à partir de la seule réponse UDP contournerait l’autorité locale structurée et les garanties de revalidation déjà validées.
+
+## ADR-099 — Une incertitude UDP n’interrompt jamais l’observation locale d’une action contractuelle
+
+**Décision.** Pour les quatre actions Control Center v1, `CommandSent = true` suffit à démarrer la phase d’observation locale, quel que soit le statut final du transport (`SentAwaitingManualVerification`, `DeliveryUnknown` ou `TransportError`). Une exception non normalisée après le début possible du transport suit la même politique conservatrice.
+
+**Confirmation.** Le transport ne prouve jamais à lui seul l’application. Seuls le feedback frais/corrélé et, selon l’action, la transition de session ou la révision d’identité peuvent produire « appliqué, confirmé localement ».
+
+**Absence de preuve.** L’expiration de l’observation conserve « envoyé, non confirmé » et le verrou humain. Elle ne déclenche ni retry RCON, ni faux échec, ni déverrouillage automatique.

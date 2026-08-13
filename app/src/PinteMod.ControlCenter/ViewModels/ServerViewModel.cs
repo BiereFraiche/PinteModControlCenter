@@ -1349,6 +1349,12 @@ public sealed class ServerViewModel : PageViewModel
         }
         catch (Exception)
         {
+            if (contractBaseline is not null)
+            {
+                await ObserveContractResultAsync(request, contractBaseline);
+                return;
+            }
+
             SetServerAdministrationResult(
                 "RÉSULTAT INCERTAIN",
                 "Le transport s’est interrompu après le début possible de l’envoi. Vérifiez la console avant toute autre mutation.",
@@ -1359,9 +1365,7 @@ public sealed class ServerViewModel : PageViewModel
         }
 
         _operatorActivityStore?.RecordServerAdministrationResult(result);
-        if (contractBaseline is not null &&
-            result.Status == ServerAdministrationExecutionStatus.SentAwaitingManualVerification &&
-            result.CommandSent)
+        if (contractBaseline is not null && result.CommandSent)
         {
             await ObserveContractResultAsync(request, contractBaseline);
             return;
