@@ -787,3 +787,11 @@ Dernière mise à jour : 2026-08-12
 **Absence de preuve.** L’expiration de l’observation conserve « envoyé, non confirmé » et le verrou humain. Elle ne déclenche ni retry RCON, ni faux échec, ni déverrouillage automatique.
 
 **Validation.** La contre-revue indépendante du 2026-08-14 valide cette politique sans blocage. Le lot peut passer à une seule validation terrain groupée sur la copie de test, uniquement après compilation GSC réussie. Cette autorisation ne concerne ni le serveur de production ni un serveur occupé.
+
+## ADR-100 — La validation des contrats utilise une copie récente et isolée de Server3
+
+**Décision.** La copie obsolète n’est pas utilisée pour conclure sur les contrats v1. Une copie récente de Server3 est préparée sous `E:\Dev\servtest\Server3`, avec sauvegarde externe récupérable, réseau limité au LAN et port distinct `27121`.
+
+**Déploiement minimal.** Seuls `ezz_admin_events.gsc` et le nouveau `ezz_admin_control_center_contracts.gsc` proviennent de la candidate `e279a59`. La variante `ezz_admin_music.gsc` présente sur Server3 est conservée afin de ne pas écraser une évolution terrain sans rapport avec les contrats.
+
+**Barrière.** La copie ne doit être reliée au Control Center qu’après chargement GSC sans erreur. La préparation n’autorise aucune installation directe sur Server3 de production.

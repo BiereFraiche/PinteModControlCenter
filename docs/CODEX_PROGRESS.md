@@ -3387,6 +3387,32 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - audit packaging : PASS, 471 entrées, 0 PDB, 4 schémas contractuels ;
 - SHA-256 : `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.
 
+## 2026-08-14 — Préparation isolée de la copie Server3 de test
+
+### État constaté
+
+- l’ancienne copie `UnrankedServer` était obsolète ; elle a été remplacée humainement par une copie récente de Server3 sous `E:\Dev\servtest\Server3` ;
+- comparaison avec PinteModReal `e279a59` : 32 GSC identiques, `ezz_admin_events.gsc` à mettre à jour, module contrats absent et `ezz_admin_music.gsc` spécifique à Server3 ;
+- aucune modification du Server3 de production.
+
+### Préparation effectuée
+
+- sauvegarde récupérable : `E:\Dev\servtest\backups\Server3-before-cc-contracts-20260814` ;
+- remplacement ciblé de `ezz_admin_events.gsc` par la candidate validée ;
+- ajout de `ezz_admin_control_center_contracts.gsc` ;
+- conservation de la version Server3 de `ezz_admin_music.gsc` ;
+- `sv_lanonly=1` dans `server.cfg` et `server_zm.cfg` ;
+- port de test isolé `27121` dans `Server.bat`, confirmé libre au moment de la préparation ;
+- 5/5 imports du module contrats présents, 35 GSC au total ;
+- aucun secret lu, aucun port entrant ajouté et aucun BAT, EXE, serveur ou RCON lancé.
+
+### Validation humaine suivante
+
+- lancer manuellement la copie avec son `Server.bat` ;
+- confirmer la compilation GSC et la ligne `Control Center Contracts v0.1.1 loaded` ;
+- arrêter immédiatement en cas d’`unresolved external` ou d’erreur GSC ;
+- seulement après cette preuve, connecter la candidate Control Center à `127.0.0.1:27121` et effectuer la validation groupée.
+
 ### Fichiers modifiés
 
 - `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
