@@ -727,3 +727,11 @@ Dernière mise à jour : 2026-08-12
 **Étape suivante.** Une seule session terrain regroupe les fallbacks diagnostics, armes standard et spéciale, Pack-a-Punch de l’arme tenue, attribution/retrait d’atout et power-up joueur. Chaque mutation reste confirmée, sans retry, puis acquittée après vérification de la partie ou de la console.
 
 **Limite.** La modération réelle à deux comptes reste volontairement hors de cette validation. ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés jusqu’à l’existence de contrats PinteMod fermés et observables.
+
+## ADR-095 — La candidate post-RC2 est validée sur le terrain
+
+**Décision.** La validation terrain groupée est déclarée réussie par l’opérateur le 2026-08-13. La révision applicative `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac` ne présente plus de blocage connu dans le périmètre livré.
+
+**Publication.** La clôture technique n’autorise pas implicitement une mutation GitHub. Toute fusion, création de tag, release stable ou remplacement d’asset exige un ordre explicite. La RC2 historique reste intacte.
+
+**Extensions futures.** La modération à deux comptes et les fonctions sans contrat PinteMod stable ne sont pas transformées en dette bloquante de cette livraison. Elles feront l’objet de travaux distincts si les contrats nécessaires deviennent disponibles.

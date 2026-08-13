@@ -307,4 +307,5 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Utiliser la longueur et le LastWriteTimeUtc du même handle vérifié avant/après lecture, sans retour au chemin.
 - **Terminé** — Revalider 381/381 tests en Debug et Release et produire le ZIP de contre-revue audité `0e4e0928`.
 - **Terminé** — Contre-revue ChatGPT validée sans blocage le 2026-08-13 ; lot post-RC2 autorisé pour le terrain.
-- **À valider** — Après verdict ChatGPT sans blocage, effectuer la validation terrain groupée des armes, PAP, retrait d’atout, power-up et fallbacks diagnostics.
+- **Terminé** — Validation terrain groupée réussie le 2026-08-13 : armes, PAP, retrait d’atout, power-up et fallbacks diagnostics acceptés.
+- **À faire** — Sur ordre explicite uniquement, préparer la publication stable issue de la candidate `0e4e092` sans modifier la RC2 historique.

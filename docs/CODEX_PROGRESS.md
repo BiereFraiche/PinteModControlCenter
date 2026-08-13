@@ -3217,3 +3217,28 @@ Clore les deux blocages de la revue globale post-RC2 : lecture réellement born�
 - Les deux blocages du lecteur JSON partagé sont clôturés.
 - Le lot post-RC2 est autorisé à passer à la validation terrain groupée.
 - Aucun correctif de code ou nouveau packaging n’est requis avant cette validation.
+
+## 2026-08-13 — Validation terrain groupée post-RC2
+
+### Verdict humain
+
+- Validation terrain transmise par l’opérateur : **VALIDÉE**.
+- Les diagnostics locaux, actions joueur et retours opérateur du lot post-RC2 sont acceptés.
+- La mise en page responsive avait déjà été validée humainement.
+- Aucun bug ou correctif supplémentaire n’a été signalé.
+
+### État final du lot
+
+- Révision applicative candidate : `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac`.
+- Debug : 0 avertissement, 0 erreur, 381/381 tests réussis.
+- Release : 0 avertissement, 0 erreur, 381/381 tests réussis.
+- Binaire Windows x64 : audit PASS, 466 entrées.
+- SHA-256 du binaire : `FAB712771FABB95A548A862BE97C35B81593EA4D21174B52101C6786D52A5107`.
+- Revue ChatGPT et validation terrain : validées sans condition restante.
+- Aucun blocage connu ne reste dans le périmètre post-RC2.
+
+### Hors périmètre maintenu
+
+- Modération réelle à deux comptes volontairement non validée.
+- ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés faute de contrats PinteMod fermés et observables.
+- Aucune publication, fusion, création de tag ou modification de release GitHub effectuée pendant cette clôture.
