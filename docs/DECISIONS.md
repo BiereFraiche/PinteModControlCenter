@@ -719,3 +719,11 @@ Dernière mise à jour : 2026-08-12
 **Erreurs.** Après ouverture, les erreurs de contrat ou de JSON utilisent uniquement l’horodatage déjà acquis depuis le handle. Avant ouverture, un fichier ou dossier absent produit l’état `Missing` sans tentative de lire des métadonnées par le chemin.
 
 **Alternative rejetée.** Contrôler la taille avec `FileInfo` puis utiliser `CopyToAsync` jusqu’à EOF laisse une fenêtre de croissance non bornée. Relire ensuite `FileInfo(path)` peut associer les octets de l’ancien handle à la date d’un fichier de remplacement.
+
+## ADR-094 — Le lot post-RC2 validé passe à une unique validation terrain groupée
+
+**Décision.** La contre-revue du lecteur JSON est validée sans blocage le 2026-08-13. La révision applicative `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac` devient la candidate terrain du lot post-RC2.
+
+**Étape suivante.** Une seule session terrain regroupe les fallbacks diagnostics, armes standard et spéciale, Pack-a-Punch de l’arme tenue, attribution/retrait d’atout et power-up joueur. Chaque mutation reste confirmée, sans retry, puis acquittée après vérification de la partie ou de la console.
+
+**Limite.** La modération réelle à deux comptes reste volontairement hors de cette validation. ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés jusqu’à l’existence de contrats PinteMod fermés et observables.

@@ -3210,3 +3210,10 @@ Clore les deux blocages de la revue globale post-RC2 : lecture réellement born�
 - ZIP à transmettre : `app/artifacts/PinteMod-ControlCenter-post-RC2-handle-counter-review-0e4e0928.zip`.
 - SHA-256 du ZIP : `5451C4217823527A7E5810A466FD8F4EBB678A3972C505F3EFAA17B990F3D410`.
 - Contenu racine : 10 entrées, manifeste interne présent, aucun chemin dangereux ni chaîne privée connue détectée.
+
+### Verdict de contre-revue
+
+- Verdict humain transmis le 2026-08-13 : **VALIDÉ**.
+- Les deux blocages du lecteur JSON partagé sont clôturés.
+- Le lot post-RC2 est autorisé à passer à la validation terrain groupée.
+- Aucun correctif de code ou nouveau packaging n’est requis avant cette validation.

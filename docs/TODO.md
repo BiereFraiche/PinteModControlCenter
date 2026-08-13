@@ -306,5 +306,5 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Plafonner la lecture à la limite contractuelle + 1 et refuser un fichier qui grossit avant parsing.
 - **Terminé** — Utiliser la longueur et le LastWriteTimeUtc du même handle vérifié avant/après lecture, sans retour au chemin.
 - **Terminé** — Revalider 381/381 tests en Debug et Release et produire le ZIP de contre-revue audité `0e4e0928`.
-- **À valider** — Transmettre le paquet de contre-revue à ChatGPT et obtenir un verdict sans blocage.
+- **Terminé** — Contre-revue ChatGPT validée sans blocage le 2026-08-13 ; lot post-RC2 autorisé pour le terrain.
 - **À valider** — Après verdict ChatGPT sans blocage, effectuer la validation terrain groupée des armes, PAP, retrait d’atout, power-up et fallbacks diagnostics.
