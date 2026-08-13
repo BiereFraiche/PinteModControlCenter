@@ -3201,3 +3201,12 @@ Clore les deux blocages de la revue globale post-RC2 : lecture réellement born�
 ### Captures
 
 - Aucune capture nécessaire : le correctif concerne exclusivement la sûreté du lecteur local.
+
+### Paquet de contre-revue
+
+- Correctif applicatif : `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac`.
+- Binaire Windows x64 : audit PASS, 466 entrées, SHA-256 `FAB712771FABB95A548A862BE97C35B81593EA4D21174B52101C6786D52A5107`.
+- Sources de contre-revue : audit PASS, 229 entrées.
+- ZIP à transmettre : `app/artifacts/PinteMod-ControlCenter-post-RC2-handle-counter-review-0e4e0928.zip`.
+- SHA-256 du ZIP : `5451C4217823527A7E5810A466FD8F4EBB678A3972C505F3EFAA17B990F3D410`.
+- Contenu racine : 10 entrées, manifeste interne présent, aucun chemin dangereux ni chaîne privée connue détectée.
