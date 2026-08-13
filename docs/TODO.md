@@ -332,7 +332,6 @@ Dernière mise à jour : 2026-08-12
 ### À valider
 
 - [Interface graphique] Vérifier le rendu responsive de la nouvelle carte Identité et du sélecteur Boss.
-- [Revue] Faire la contre-revue ciblée de l’observation locale après transport RCON incertain.
 - [Intégration PinteMod] Compiler les GSC candidats dans un environnement compatible.
 - [Intégration PinteMod] Valider en une seule passe terrain Restart Map, Spawn Boss, Set Hostname et Clear Join Password.
 
@@ -348,3 +347,4 @@ Dernière mise à jour : 2026-08-12
 - [Correctif revue] Observer les quatre actions contractuelles après `DeliveryUnknown`/`TransportError` lorsque `CommandSent = true`, sans retry.
 - [Correctif revue] Conserver `ENVOYÉ · NON CONFIRMÉ` et le verrou humain lorsqu’aucune preuve locale corrélée n’arrive.
 - [Tests] Contre-revue transport incertain : 418/418 tests Debug et Release, 0 avertissement, 0 erreur.
+- [Revue] Contre-revue ciblée validée sans blocage ; validation terrain groupée autorisée.

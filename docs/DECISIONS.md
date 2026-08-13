@@ -785,3 +785,5 @@ Dernière mise à jour : 2026-08-12
 **Confirmation.** Le transport ne prouve jamais à lui seul l’application. Seuls le feedback frais/corrélé et, selon l’action, la transition de session ou la révision d’identité peuvent produire « appliqué, confirmé localement ».
 
 **Absence de preuve.** L’expiration de l’observation conserve « envoyé, non confirmé » et le verrou humain. Elle ne déclenche ni retry RCON, ni faux échec, ni déverrouillage automatique.
+
+**Validation.** La contre-revue indépendante du 2026-08-14 valide cette politique sans blocage. Le lot peut passer à une seule validation terrain groupée sur la copie de test, uniquement après compilation GSC réussie. Cette autorisation ne concerne ni le serveur de production ni un serveur occupé.
