@@ -3158,3 +3158,46 @@ Regrouper en une seule preuve auditable les trois lots post-RC2 : overlay runtim
 - ZIP global : `PinteMod-ControlCenter-post-RC2-global-review-0bcc4a5f.zip`.
 - SHA-256 : `38DA3EA2CFBBDAD66F39B6D210E11D297776C886C64447C89AF042EF8AF8C85B`.
 - Contenu racine : 13 entrées, manifeste interne présent et aucun chemin ZIP dangereux.
+
+## 2026-08-13 — Corrections de contre-revue du lecteur JSON partagé
+
+### Objectif de la passe
+
+Clore les deux blocages de la revue globale post-RC2 : lecture réellement bornée lorsqu’un fichier grossit et association des octets aux métadonnées du handle vérifié plutôt qu’au chemin remplaçable.
+
+### Réalisé
+
+- Ajout d’une lecture plafonnée à `maximumFileSizeBytes + 1` octets ; le dépassement est refusé avant callback, parsing ou nouvelle allocation.
+- Taille initiale, taille finale et `LastWriteTimeUtc` lus par `GetFileInformationByHandle` sur le même handle déjà validé par `VerifiedReadOnlyFile`.
+- Suppression de tout `FileInfo(path)` et `File.GetLastWriteTimeUtc(path)` du lecteur JSON partagé.
+- Fichier absent traité par les exceptions contrôlées `FileNotFoundException` et `DirectoryNotFoundException`, sans contrôle préalable vulnérable au remplacement.
+- Les erreurs de parsing et de validation utilisent uniquement la dernière date obtenue du handle vérifié.
+- Ajout de trois régressions : copie plafonnée exacte, croissance après le contrôle initial et remplacement du chemin avec conservation des octets/date du handle original.
+
+### Fichiers créés ou modifiés
+
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/ReadOnlyJsonFileReader.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/VerifiedReadOnlyFile.cs`.
+- `app/tests/PinteMod.ControlCenter.Tests/VerifiedReadOnlyFileTests.cs`.
+- `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Compilation et tests
+
+- Tests ciblés handle/heartbeat/runtime : 51/51 réussis.
+- Debug : 0 avertissement, 0 erreur, 381/381 tests réussis.
+- Release : 0 avertissement, 0 erreur, 381/381 tests réussis.
+
+### Garanties préservées
+
+- Aucun changement RCON, commande, ViewModel, XAML, GSC, réseau ou écriture PinteMod.
+- Limites heartbeat 4 Kio et runtime 32 Kio conservées, désormais appliquées pendant la consommation du flux.
+- L’ouverture read-only vérifiée par handle et le support UNC explicite sont conservés.
+- Aucun serveur BOIII, BAT, EXE serveur ou transport RCON lancé.
+
+### Validation humaine nécessaire
+
+- Aucune manipulation serveur : produire un paquet de contre-revue et faire vérifier uniquement ces deux corrections par ChatGPT.
+
+### Captures
+
+- Aucune capture nécessaire : le correctif concerne exclusivement la sûreté du lecteur local.

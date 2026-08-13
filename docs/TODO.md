@@ -302,5 +302,8 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Ajouter une régression XAML garantissant que de nouveaux boutons restent confinés à leur groupe responsive.
 - **Terminé** — Validation humaine du panneau responsive dans la preview `b57db391`.
 - **Terminé** — Produire le paquet global de revue ChatGPT du lot post-RC2, avec sources, patches, tests, binaire audité et manifestes SHA-256.
-- **À valider** — Transmettre le ZIP global à ChatGPT et obtenir un verdict sans blocage.
+- **Terminé** — Revue globale post-RC2 effectuée : deux blocages ciblés identifiés dans le lecteur JSON partagé.
+- **Terminé** — Plafonner la lecture à la limite contractuelle + 1 et refuser un fichier qui grossit avant parsing.
+- **Terminé** — Utiliser la longueur et le LastWriteTimeUtc du même handle vérifié avant/après lecture, sans retour au chemin.
+- **À valider** — Transmettre le paquet de contre-revue à ChatGPT et obtenir un verdict sans blocage.
 - **À valider** — Après verdict ChatGPT sans blocage, effectuer la validation terrain groupée des armes, PAP, retrait d’atout, power-up et fallbacks diagnostics.

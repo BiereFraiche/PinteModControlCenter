@@ -20,7 +20,8 @@ internal sealed class LocalJsonValidationException(LocalReadStatus status, strin
 
 internal sealed class ReadOnlyJsonFileReader(
     LocalPinteModOptions options,
-    Action<string>? afterReadBeforeVerification = null)
+    Action<string>? afterReadBeforeVerification = null,
+    Action<string>? afterMetadataBeforeRead = null)
 {
     private const int MaximumFileSizeBytes = 1024 * 1024;
     private const int MaximumAttempts = 3;
@@ -62,16 +63,15 @@ internal sealed class ReadOnlyJsonFileReader(
         for (var attempt = 1; attempt <= MaximumAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            DateTime? verifiedLastWriteTimeUtc = null;
 
             try
             {
-                if (!File.Exists(path))
-                {
-                    return Failure<T>(LocalReadStatus.Missing, "Fichier absent.");
-                }
-
-                var before = new FileInfo(path);
-                before.Refresh();
+                await using var stream = VerifiedReadOnlyFile.Open(
+                    path,
+                    FileOptions.Asynchronous | FileOptions.SequentialScan);
+                var before = VerifiedReadOnlyFile.GetMetadata(stream);
+                verifiedLastWriteTimeUtc = before.LastWriteTimeUtc;
                 if (before.Length == 0)
                 {
                     lastFailure = Failure<T>(LocalReadStatus.Empty, "Fichier vide.", before.LastWriteTimeUtc);
@@ -82,20 +82,18 @@ internal sealed class ReadOnlyJsonFileReader(
                 }
                 else
                 {
-                    await using var stream = VerifiedReadOnlyFile.Open(
-                        path,
-                        FileOptions.Asynchronous | FileOptions.SequentialScan);
                     using var memory = new MemoryStream((int)Math.Min(before.Length, maximumFileSizeBytes));
-                    await stream.CopyToAsync(memory, cancellationToken);
-                    afterReadBeforeVerification?.Invoke(path);
+                    afterMetadataBeforeRead?.Invoke(path);
+                    await CopyAtMostAsync(stream, memory, maximumFileSizeBytes + 1, cancellationToken);
 
                     if (memory.Length > maximumFileSizeBytes)
                     {
                         return Failure<T>(LocalReadStatus.Invalid, "Fichier anormalement volumineux.", before.LastWriteTimeUtc);
                     }
 
-                    var after = new FileInfo(path);
-                    after.Refresh();
+                    afterReadBeforeVerification?.Invoke(path);
+                    var after = VerifiedReadOnlyFile.GetMetadata(stream);
+                    verifiedLastWriteTimeUtc = after.LastWriteTimeUtc;
                     if (before.Length != after.Length || before.LastWriteTimeUtc != after.LastWriteTimeUtc)
                     {
                         lastFailure = Failure<T>(LocalReadStatus.Invalid, "Fichier modifié pendant la lecture.", after.LastWriteTimeUtc);
@@ -108,14 +106,14 @@ internal sealed class ReadOnlyJsonFileReader(
                         return new LocalJsonFileResult<T>(
                             value,
                             LocalReadStatus.Success,
-                            new DateTimeOffset(after.LastWriteTimeUtc, TimeSpan.Zero),
+                            new DateTimeOffset(DateTime.SpecifyKind(after.LastWriteTimeUtc, DateTimeKind.Utc)),
                             "Lecture réussie.");
                     }
                 }
             }
             catch (LocalJsonValidationException exception)
             {
-                lastFailure = Failure<T>(exception.Status, exception.PublicMessage, TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(exception.Status, exception.PublicMessage, verifiedLastWriteTimeUtc);
                 if (exception.Status == LocalReadStatus.UnsupportedSchema)
                 {
                     return lastFailure;
@@ -123,19 +121,27 @@ internal sealed class ReadOnlyJsonFileReader(
             }
             catch (JsonException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.Invalid, "JSON incomplet ou invalide.", TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(LocalReadStatus.Invalid, "JSON incomplet ou invalide.", verifiedLastWriteTimeUtc);
             }
             catch (LocalFileAccessRefusedException)
             {
                 return Failure<T>(LocalReadStatus.AccessDenied, "Source locale refusée.");
             }
+            catch (FileNotFoundException)
+            {
+                return Failure<T>(LocalReadStatus.Missing, "Fichier absent.");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return Failure<T>(LocalReadStatus.Missing, "Fichier absent.");
+            }
             catch (UnauthorizedAccessException)
             {
-                return Failure<T>(LocalReadStatus.AccessDenied, "Accès refusé.", TryGetLastWriteTimeUtc(path));
+                return Failure<T>(LocalReadStatus.AccessDenied, "Accès refusé.", verifiedLastWriteTimeUtc);
             }
             catch (IOException)
             {
-                lastFailure = Failure<T>(LocalReadStatus.IoError, "Lecture impossible.", TryGetLastWriteTimeUtc(path));
+                lastFailure = Failure<T>(LocalReadStatus.IoError, "Lecture impossible.", verifiedLastWriteTimeUtc);
             }
 
             if (attempt < MaximumAttempts)
@@ -145,6 +151,32 @@ internal sealed class ReadOnlyJsonFileReader(
         }
 
         return lastFailure ?? Failure<T>(LocalReadStatus.IoError, "Lecture locale impossible.");
+    }
+
+    internal static async Task CopyAtMostAsync(
+        Stream source,
+        Stream destination,
+        int maximumBytes,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(destination);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumBytes);
+
+        var buffer = new byte[Math.Min(81_920, maximumBytes)];
+        var copied = 0;
+        while (copied < maximumBytes)
+        {
+            var requested = Math.Min(buffer.Length, maximumBytes - copied);
+            var read = await source.ReadAsync(buffer.AsMemory(0, requested), cancellationToken);
+            if (read == 0)
+            {
+                break;
+            }
+
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+            copied += read;
+        }
     }
 
     private static LocalJsonFileResult<T> Failure<T>(
@@ -160,15 +192,4 @@ internal sealed class ReadOnlyJsonFileReader(
                 : new DateTimeOffset(DateTime.SpecifyKind(lastWriteTimeUtc.Value, DateTimeKind.Utc)),
             message);
 
-    private static DateTime? TryGetLastWriteTimeUtc(string path)
-    {
-        try
-        {
-            return File.Exists(path) ? File.GetLastWriteTimeUtc(path) : null;
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
 }

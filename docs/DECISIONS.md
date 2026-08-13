@@ -707,3 +707,15 @@ Dernière mise à jour : 2026-08-12
 **Périmètre.** La revue doit rechercher uniquement les régressions concrètes et les risques des ajouts post-RC2. ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés ; les futurs contrats PinteMod `capabilities` et `action_feedback` ne sont pas anticipés.
 
 **Alternative rejetée.** Modifier ou republier la RC2 pour y intégrer ces extensions brouillerait la baseline déjà validée. Une série de micro-revues isolées masquerait les interactions entre lecteurs runtime, autorisations joueur, diagnostics et interface.
+
+## ADR-093 — Limite et fraîcheur JSON proviennent du flux et du handle vérifié
+
+**Décision.** `ReadOnlyJsonFileReader` ouvre d’abord la cible avec `VerifiedReadOnlyFile`, puis obtient longueur et `LastWriteTimeUtc` avec `GetFileInformationByHandle`. Ces métadonnées sont relues sur le même handle après consommation. Aucun `FileInfo` ou accès au chemin ne participe à la fraîcheur, à la vérification avant/après ou au résultat public d’une lecture ouverte.
+
+**Borne mémoire.** Le flux est consommé par une boucle qui s’arrête à `maximumFileSizeBytes + 1`. La présence de cet octet supplémentaire suffit à classer la source comme anormalement volumineuse, avant parsing. La mémoire allouée ne peut donc pas croître jusqu’à l’EOF d’un producteur concurrent.
+
+**Remplacement du chemin.** Si le chemin autorisé est remplacé après l’ouverture, les octets parsés et les métadonnées restent ceux du handle initial vérifié. Le fichier nouvellement placé au même chemin sera considéré uniquement lors d’une lecture ultérieure.
+
+**Erreurs.** Après ouverture, les erreurs de contrat ou de JSON utilisent uniquement l’horodatage déjà acquis depuis le handle. Avant ouverture, un fichier ou dossier absent produit l’état `Missing` sans tentative de lire des métadonnées par le chemin.
+
+**Alternative rejetée.** Contrôler la taille avec `FileInfo` puis utiliser `CopyToAsync` jusqu’à EOF laisse une fenêtre de croissance non bornée. Relire ensuite `FileInfo(path)` peut associer les octets de l’ancien handle à la date d’un fichier de remplacement.
