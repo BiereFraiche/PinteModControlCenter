@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
+using PinteMod.ControlCenter.Core.Security;
 using PinteMod.ControlCenter.Core.Simulation;
 using PinteMod.ControlCenter.Services;
 using PinteMod.ControlCenter.State;
@@ -22,7 +23,11 @@ public sealed class ServerViewModel : PageViewModel
     private readonly IMapCatalogService? _mapCatalogService;
     private readonly MapCatalogState? _mapCatalogState;
     private readonly ITextClipboardService? _clipboardService;
+    private readonly PlayerSelectionState? _selectionState;
+    private readonly TimeSpan _contractObservationInterval;
+    private readonly int _contractObservationAttempts;
     private ServerState? _server;
+    private IReadOnlyList<PlayerState> _players = [];
     private SelectionOption? _selectedMap;
     private int _selectedRound = 20;
     private SimulationResultItemViewModel? _lastSimulationResult;
@@ -44,6 +49,8 @@ public sealed class ServerViewModel : PageViewModel
     private ServiceHealth _serverAdministrationHealth = ServiceHealth.Unknown;
     private bool _serverAdministrationMutationBlocked;
     private bool _mapSelectionInitialized;
+    private SelectionOption? _selectedBossAlias;
+    private string _requestedHostname = string.Empty;
 
     public ServerViewModel(
         IControlCenterSnapshotStore snapshotStore,
@@ -58,7 +65,10 @@ public sealed class ServerViewModel : PageViewModel
         OperatorMutationSafetyState? mutationSafety = null,
         IMapCatalogService? mapCatalogService = null,
         MapCatalogState? mapCatalogState = null,
-        ITextClipboardService? clipboardService = null)
+        ITextClipboardService? clipboardService = null,
+        PlayerSelectionState? selectionState = null,
+        TimeSpan? contractObservationInterval = null,
+        int contractObservationAttempts = 40)
         : base("Serveur", "Administration locale — commandes réelles confirmées et strictement listées")
     {
         _snapshotStore = snapshotStore;
@@ -74,7 +84,14 @@ public sealed class ServerViewModel : PageViewModel
         _mapCatalogService = mapCatalogService;
         _mapCatalogState = mapCatalogState;
         _clipboardService = clipboardService;
+        _selectionState = selectionState;
+        _contractObservationInterval = contractObservationInterval ?? TimeSpan.FromMilliseconds(250);
+        _contractObservationAttempts = Math.Max(1, contractObservationAttempts);
         _mutationSafety.Changed += (_, _) => NotifyAllMutationAuthorizationChanged();
+        if (_selectionState is not null)
+        {
+            _selectionState.SelectionChanged += (_, _) => NotifyContractAuthorizationChanged();
+        }
         if (_mapCatalogState is not null)
         {
             _mapCatalogState.Changed += (_, _) =>
@@ -153,6 +170,29 @@ public sealed class ServerViewModel : PageViewModel
             () => new ServerAdministrationRequest(ServerAdministrationAction.MakePowerUpsPermanent));
         RestorePowerUpTimeoutCommand = CreateServerAdministrationCommand(
             () => new ServerAdministrationRequest(ServerAdministrationAction.RestorePowerUpTimeout));
+        RestartMapCommand = CreateServerAdministrationCommand(
+            () => new ServerAdministrationRequest(
+                ServerAdministrationAction.RestartMap,
+                RequestId: CreateRequestId()),
+            () => CanRestartMap);
+        SpawnBossCommand = CreateServerAdministrationCommand(
+            () => new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: CreateRequestId(),
+                Option: SelectedBossAlias?.Key,
+                TargetXuid: SelectedBossTargetXuid),
+            () => CanSpawnBoss);
+        SetHostnameCommand = CreateServerAdministrationCommand(
+            () => new ServerAdministrationRequest(
+                ServerAdministrationAction.SetHostname,
+                RequestId: CreateRequestId(),
+                Option: RequestedHostname),
+            () => CanSetHostname);
+        ClearJoinPasswordCommand = CreateServerAdministrationCommand(
+            () => new ServerAdministrationRequest(
+                ServerAdministrationAction.ClearJoinPassword,
+                RequestId: CreateRequestId()),
+            () => CanClearJoinPassword);
         AcknowledgeServerAdministrationCommand = new AsyncRelayCommand(
             AcknowledgeServerAdministrationAsync,
             () => _serverAdministrationMutationBlocked,
@@ -176,6 +216,7 @@ public sealed class ServerViewModel : PageViewModel
                 OnPropertyChanged(nameof(RoundSource));
                 OnPropertyChanged(nameof(PowerStateText));
                 OnPropertyChanged(nameof(PackAPunchStateText));
+                NotifyContractAuthorizationChanged();
             }
         }
     }
@@ -477,6 +518,135 @@ public sealed class ServerViewModel : PageViewModel
         }
     }
 
+    public bool CanRestartMap =>
+        CanRunServerAdministration &&
+        CurrentIdentity is not null &&
+        CurrentCapabilities is { RestartMap: true } capabilities &&
+        string.Equals(capabilities.MapCode, Server?.MapCode, StringComparison.Ordinal) &&
+        capabilities.TransitionState is not ("accepted" or "transitioning");
+
+    public bool CanSpawnBoss =>
+        CanRunServerAdministration &&
+        CurrentIdentity is not null &&
+        CurrentCapabilities is { } capabilities &&
+        SelectedBossAlias is { } alias &&
+        capabilities.BossAliases.Contains(alias.Key, StringComparer.Ordinal) &&
+        ControlCenterCommandValidator.IsValidBossAlias(alias.Key) &&
+        SelectedBossTargetXuid is not null &&
+        capabilities.ActivePinteModBosses < capabilities.MaximumPinteModBosses;
+
+    public bool CanSetHostname =>
+        CanRunServerAdministration &&
+        CurrentCapabilities is { SetHostname: true } &&
+        CurrentIdentity is not null &&
+        ControlCenterCommandValidator.IsValidHostname(RequestedHostname) &&
+        !string.Equals(CurrentIdentity.PublicHostname, RequestedHostname, StringComparison.Ordinal);
+
+    public bool CanClearJoinPassword =>
+        CanRunServerAdministration &&
+        CurrentCapabilities is { ClearJoinPassword: true } &&
+        CurrentIdentity is { JoinPasswordEnabled: true };
+
+    public string ContractSourceSummary
+    {
+        get
+        {
+            var source = LocalObservation.ControlCenterContracts.Capabilities.Metadata;
+            return source.ReadStatus == LocalReadStatus.Success && source.Freshness == DataFreshness.Fresh
+                ? $"Contrat local v{CurrentCapabilities?.ContractModuleVersion ?? "—"} · session et carte vérifiées."
+                : source.Message;
+        }
+    }
+
+    public string ChangeMapContractNotice =>
+        "Change Map indisponible · supported ne signifie pas installed · catalogue local informatif uniquement.";
+
+    public string ServerIdentityText => CurrentIdentity switch
+    {
+        null => "Identité serveur locale indisponible",
+        { PublicHostnameState: PublicHostnameState.Empty } => "Hostname public vide",
+        { PublicHostnameState: PublicHostnameState.Neutralized } identity =>
+            $"{identity.PublicHostname} · observation neutralisée",
+        { } identity => identity.PublicHostname
+    };
+
+    public string JoinPasswordStatus => CurrentIdentity switch
+    {
+        null => "Mot de passe joueur : état inconnu",
+        { JoinPasswordEnabled: true } => "Mot de passe joueur : actif · valeur jamais lue",
+        _ => "Mot de passe joueur : désactivé"
+    };
+
+    public string SetJoinPasswordNotice =>
+        "Définir le mot de passe : Non disponible — validation confidentialité requise.";
+
+    public string BossTargetText
+    {
+        get
+        {
+            var xuid = SelectedBossTargetXuid;
+            var player = xuid is null
+                ? null
+                : _players.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Xuid, xuid, StringComparison.OrdinalIgnoreCase));
+            return player is null
+                ? "Cible : sélectionnez un joueur dans Dashboard ou Joueurs"
+                : $"Cible : {player.DisplayName} · {XuidValidator.Abbreviate(player.Xuid)}";
+        }
+    }
+
+    public string BossCapacityText => CurrentCapabilities is { } capabilities
+        ? $"Boss PinteMod actifs : {capabilities.ActivePinteModBosses}/{capabilities.MaximumPinteModBosses}"
+        : "Capacité boss inconnue";
+
+    public ObservableCollection<SelectionOption> BossAliasOptions { get; } = [];
+
+    public SelectionOption? SelectedBossAlias
+    {
+        get => _selectedBossAlias;
+        set
+        {
+            if (SetProperty(ref _selectedBossAlias, value))
+            {
+                NotifyContractAuthorizationChanged();
+            }
+        }
+    }
+
+    public string RequestedHostname
+    {
+        get => _requestedHostname;
+        set
+        {
+            if (SetProperty(ref _requestedHostname, value))
+            {
+                NotifyContractAuthorizationChanged();
+            }
+        }
+    }
+
+    private ControlCenterCapabilitiesSnapshot? CurrentCapabilities =>
+        IsFreshLocal(LocalObservation.ControlCenterContracts.Capabilities)
+            ? LocalObservation.ControlCenterContracts.Capabilities.Value
+            : null;
+
+    private ControlCenterServerIdentitySnapshot? CurrentIdentity =>
+        IsFreshLocal(LocalObservation.ControlCenterContracts.ServerIdentity)
+            ? LocalObservation.ControlCenterContracts.ServerIdentity.Value
+            : null;
+
+    private string? SelectedBossTargetXuid
+    {
+        get
+        {
+            var selected = _selectionState?.SelectedXuid;
+            return selected is not null && _players.Any(player =>
+                string.Equals(player.Xuid, selected, StringComparison.OrdinalIgnoreCase))
+                ? selected
+                : null;
+        }
+    }
+
     private bool PauseCommandInfrastructureAvailable =>
         _pauseCommandService is not null &&
         _confirmationService is not null &&
@@ -504,6 +674,7 @@ public sealed class ServerViewModel : PageViewModel
                 OnPropertyChanged(nameof(PauseModuleVersion));
                 OnPropertyChanged(nameof(PauseDetails));
                 OnPropertyChanged(nameof(PauseSourceSummary));
+                UpdateContractPresentation();
                 OnPropertyChanged(nameof(CanPauseServer));
                 OnPropertyChanged(nameof(CanResumeServer));
                 OnPropertyChanged(nameof(RealPauseControlsAvailable));
@@ -591,6 +762,14 @@ public sealed class ServerViewModel : PageViewModel
 
     public AsyncRelayCommand RestorePowerUpTimeoutCommand { get; }
 
+    public AsyncRelayCommand RestartMapCommand { get; }
+
+    public AsyncRelayCommand SpawnBossCommand { get; }
+
+    public AsyncRelayCommand SetHostnameCommand { get; }
+
+    public AsyncRelayCommand ClearJoinPasswordCommand { get; }
+
     public AsyncRelayCommand AcknowledgeServerAdministrationCommand { get; }
 
     public override async Task InitializeAsync(CancellationToken cancellationToken = default)
@@ -598,6 +777,7 @@ public sealed class ServerViewModel : PageViewModel
         ClearError();
         var snapshot = await _snapshotStore.GetSnapshotAsync(cancellationToken);
         Server = snapshot.Server;
+        _players = snapshot.Players;
         LocalObservation = snapshot.LocalObservation;
         await RefreshMapCatalogAsync(snapshot, cancellationToken);
         Services.Clear();
@@ -636,22 +816,77 @@ public sealed class ServerViewModel : PageViewModel
         _mapSelectionInitialized = true;
     }
 
-    private void ReplaceMapOptions(MapCatalogSnapshot catalog, string? preferredCode)
+    private void UpdateContractPresentation()
     {
-        MapOptions.Clear();
-        foreach (var entry in catalog.Entries)
+        var previous = SelectedBossAlias?.Key;
+        var aliases = CurrentCapabilities?.BossAliases
+            .Where(ControlCenterCommandValidator.IsValidBossAlias)
+            .Select(alias => new SelectionOption(alias, alias.Replace('_', ' ').ToUpperInvariant()))
+            .ToArray() ?? [];
+        if (!BossAliasOptions.SequenceEqual(aliases))
         {
-            var label = entry.IsOfficial
-                ? entry.DisplayName
-                : $"{entry.DisplayName} · CUSTOM";
-            MapOptions.Add(new SelectionOption(entry.Code, label));
+            BossAliasOptions.Clear();
+            foreach (var alias in aliases)
+            {
+                BossAliasOptions.Add(alias);
+            }
         }
 
-        if (MapOptions.Count == 0)
+        SelectedBossAlias = BossAliasOptions.FirstOrDefault(option =>
+                                string.Equals(option.Key, previous, StringComparison.Ordinal))
+                            ?? BossAliasOptions.FirstOrDefault();
+        if (RequestedHostname.Length == 0 && CurrentIdentity is { PublicHostname.Length: > 0 } identity)
         {
-            foreach (var entry in OfficialMapCatalog.Entries)
+            RequestedHostname = identity.PublicHostname;
+        }
+
+        NotifyContractAuthorizationChanged();
+    }
+
+    private void NotifyContractAuthorizationChanged()
+    {
+        OnPropertyChanged(nameof(CanRestartMap));
+        OnPropertyChanged(nameof(CanSpawnBoss));
+        OnPropertyChanged(nameof(CanSetHostname));
+        OnPropertyChanged(nameof(CanClearJoinPassword));
+        OnPropertyChanged(nameof(ContractSourceSummary));
+        OnPropertyChanged(nameof(ServerIdentityText));
+        OnPropertyChanged(nameof(JoinPasswordStatus));
+        OnPropertyChanged(nameof(BossTargetText));
+        OnPropertyChanged(nameof(BossCapacityText));
+        RestartMapCommand?.NotifyCanExecuteChanged();
+        SpawnBossCommand?.NotifyCanExecuteChanged();
+        SetHostnameCommand?.NotifyCanExecuteChanged();
+        ClearJoinPasswordCommand?.NotifyCanExecuteChanged();
+    }
+
+    private static bool IsFreshLocal<T>(LocalReadResult<T> result) where T : class =>
+        result.Value is not null &&
+        result.Metadata.ReadStatus == LocalReadStatus.Success &&
+        result.Metadata.Freshness == DataFreshness.Fresh &&
+        result.Metadata.Provenance == DataProvenance.LocalFile;
+
+    private void ReplaceMapOptions(MapCatalogSnapshot catalog, string? preferredCode)
+    {
+        var sourceEntries = catalog.Entries.Count > 0
+            ? catalog.Entries
+            : OfficialMapCatalog.Entries;
+        var desiredOptions = sourceEntries
+            .Select(entry =>
             {
-                MapOptions.Add(new SelectionOption(entry.Code, entry.DisplayName));
+                var label = entry.IsOfficial
+                    ? entry.DisplayName
+                    : $"{entry.DisplayName} · CUSTOM";
+                return new SelectionOption(entry.Code, label);
+            })
+            .ToArray();
+
+        if (!MapOptions.SequenceEqual(desiredOptions))
+        {
+            MapOptions.Clear();
+            foreach (var option in desiredOptions)
+            {
+                MapOptions.Add(option);
             }
         }
 
@@ -860,6 +1095,7 @@ public sealed class ServerViewModel : PageViewModel
     private void ApplySnapshot(DashboardSnapshot snapshot)
     {
         Server = snapshot.Server;
+        _players = snapshot.Players;
         LocalObservation = snapshot.LocalObservation;
         Services.Clear();
         foreach (var service in snapshot.Services)
@@ -1014,10 +1250,11 @@ public sealed class ServerViewModel : PageViewModel
     }
 
     private AsyncRelayCommand CreateServerAdministrationCommand(
-        Func<ServerAdministrationRequest> requestFactory) => new(
+        Func<ServerAdministrationRequest> requestFactory,
+        Func<bool>? canExecute = null) => new(
         () => _rconOperations.RunExclusiveAsync(
             _ => ExecuteServerAdministrationCoreAsync(requestFactory())),
-        () => CanRunServerAdministration,
+        () => canExecute?.Invoke() ?? CanRunServerAdministration,
         _ => SetServerAdministrationResult(
             "ERREUR",
             "L’opération n’a pas pu être préparée. Aucune commande n’est considérée comme envoyée.",
@@ -1036,6 +1273,20 @@ public sealed class ServerViewModel : PageViewModel
                 "Configurez l’adresse, le port et le secret RCON dans Paramètres.",
                 false,
                 ServiceHealth.Error,
+                blockMutations: false);
+            return;
+        }
+
+        var contractBaseline = IsContractAction(request.Action)
+            ? CaptureContractBaseline()
+            : null;
+        if (IsContractAction(request.Action) && contractBaseline is null)
+        {
+            SetServerAdministrationResult(
+                "CONTRAT LOCAL REQUIS",
+                "Les capabilities et l’identité locales doivent être fraîches et cohérentes avant cette action.",
+                false,
+                ServiceHealth.Warning,
                 blockMutations: false);
             return;
         }
@@ -1068,6 +1319,22 @@ public sealed class ServerViewModel : PageViewModel
             return;
         }
 
+        if (contractBaseline is not null)
+        {
+            var revalidated = await _snapshotStore.RefreshAsync();
+            ApplySnapshot(revalidated);
+            if (!IsContractRequestAllowed(request, contractBaseline))
+            {
+                SetServerAdministrationResult(
+                    "AUTORISATION EXPIRÉE",
+                    "La session, la carte, la capability ou la cible a changé depuis la confirmation. Aucune commande envoyée.",
+                    false,
+                    ServiceHealth.Warning,
+                    blockMutations: false);
+                return;
+            }
+        }
+
         SetServerAdministrationResult(
             "ENVOI EN COURS",
             "Attente de BOIII…",
@@ -1092,6 +1359,14 @@ public sealed class ServerViewModel : PageViewModel
         }
 
         _operatorActivityStore?.RecordServerAdministrationResult(result);
+        if (contractBaseline is not null &&
+            result.Status == ServerAdministrationExecutionStatus.SentAwaitingManualVerification &&
+            result.CommandSent)
+        {
+            await ObserveContractResultAsync(request, contractBaseline);
+            return;
+        }
+
         var status = result.Status switch
         {
             ServerAdministrationExecutionStatus.SentAwaitingManualVerification => "ENVOYÉ · À VÉRIFIER",
@@ -1108,6 +1383,215 @@ public sealed class ServerViewModel : PageViewModel
             result.CommandSent ? ServiceHealth.Warning : ServiceHealth.Error,
             blockMutations: result.CommandSent);
     }
+
+    private async Task ObserveContractResultAsync(
+        ServerAdministrationRequest request,
+        ContractActionBaseline baseline)
+    {
+        SetServerAdministrationResult(
+            "ENVOYÉ · VÉRIFICATION LOCALE",
+            "Commande potentiellement reçue par BOIII · attente du feedback corrélé par request_id.",
+            true,
+            ServiceHealth.Warning,
+            blockMutations: false);
+
+        for (var attempt = 0; attempt < _contractObservationAttempts; attempt++)
+        {
+            await Task.Delay(_contractObservationInterval);
+            var snapshot = await _snapshotStore.RefreshAsync();
+            ApplySnapshot(snapshot);
+            var contracts = LocalObservation.ControlCenterContracts;
+            var feedback = IsFeedbackPostAction(request, baseline, contracts.ActionFeedback)
+                ? contracts.ActionFeedback.Value
+                : null;
+            if (feedback is not null)
+            {
+                if (feedback.Status is ControlCenterFeedbackStatus.Rejected or ControlCenterFeedbackStatus.Failed)
+                {
+                    SetServerAdministrationResult(
+                        feedback.Status == ControlCenterFeedbackStatus.Rejected
+                            ? "REFUS CONFIRMÉ PAR PINTE MOD"
+                            : "ÉCHEC CONFIRMÉ PAR PINTE MOD",
+                        $"Résultat contractuel : {feedback.ResultCode}.",
+                        true,
+                        feedback.Status == ControlCenterFeedbackStatus.Rejected
+                            ? ServiceHealth.Warning
+                            : ServiceHealth.Error,
+                        blockMutations: false);
+                    return;
+                }
+
+                if (feedback.Status == ControlCenterFeedbackStatus.Applied &&
+                    IsAppliedContractStateObserved(request, baseline, contracts, snapshot))
+                {
+                    SetServerAdministrationResult(
+                        "APPLIQUÉ · CONFIRMÉ LOCALEMENT",
+                        ContractSuccessMessage(request.Action),
+                        true,
+                        ServiceHealth.Healthy,
+                        blockMutations: false);
+                    return;
+                }
+            }
+
+            if (request.Action == ServerAdministrationAction.RestartMap &&
+                IsFreshLocal(contracts.MapTransition) &&
+                contracts.MapTransition.Value is { } transition &&
+                string.Equals(transition.RequestId, request.RequestId, StringComparison.Ordinal) &&
+                IsTimestampAfter(contracts.MapTransition.SourceTimestampUtc, baseline.TransitionTimestampUtc) &&
+                transition.Status == ControlCenterTransitionStatus.Failed)
+            {
+                SetServerAdministrationResult(
+                    "ÉCHEC DE TRANSITION CONFIRMÉ",
+                    $"Résultat contractuel : {transition.ResultCode}.",
+                    true,
+                    ServiceHealth.Error,
+                    blockMutations: false);
+                return;
+            }
+        }
+
+        SetServerAdministrationResult(
+            "ENVOYÉ · NON CONFIRMÉ",
+            request.Action == ServerAdministrationAction.RestartMap
+                ? "La transition reste non confirmée. Elle n’est pas déclarée en échec : attendez la nouvelle session ou vérifiez la console avant toute répétition."
+                : "Aucun feedback local corrélé et frais n’a été observé. Vérifiez la console avant toute répétition.",
+            true,
+            ServiceHealth.Warning,
+            blockMutations: true);
+    }
+
+    private bool IsAppliedContractStateObserved(
+        ServerAdministrationRequest request,
+        ContractActionBaseline baseline,
+        ControlCenterContractSnapshot contracts,
+        DashboardSnapshot snapshot) => request.Action switch
+    {
+        ServerAdministrationAction.RestartMap =>
+            IsFreshLocal(contracts.MapTransition) &&
+            contracts.MapTransition.Value is { Status: ControlCenterTransitionStatus.Active } transition &&
+            string.Equals(transition.RequestId, request.RequestId, StringComparison.Ordinal) &&
+            IsTimestampAfter(contracts.MapTransition.SourceTimestampUtc, baseline.TransitionTimestampUtc) &&
+            string.Equals(transition.RequestedMap, baseline.MapCode, StringComparison.Ordinal) &&
+            !string.Equals(snapshot.Server.SessionId, baseline.SessionId, StringComparison.Ordinal) &&
+            string.Equals(transition.ResultingSessionId, snapshot.Server.SessionId, StringComparison.Ordinal),
+        ServerAdministrationAction.SpawnBoss => true,
+        ServerAdministrationAction.SetHostname =>
+            IsFreshLocal(contracts.ServerIdentity) &&
+            contracts.ServerIdentity.Value is { } hostnameIdentity &&
+            hostnameIdentity.Revision > baseline.IdentityRevision &&
+            string.Equals(hostnameIdentity.PublicHostname, request.Option, StringComparison.Ordinal),
+        ServerAdministrationAction.ClearJoinPassword =>
+            IsFreshLocal(contracts.ServerIdentity) &&
+            contracts.ServerIdentity.Value is { JoinPasswordEnabled: false } passwordIdentity &&
+            passwordIdentity.Revision > baseline.IdentityRevision,
+        _ => false
+    };
+
+    private bool IsContractRequestAllowed(
+        ServerAdministrationRequest request,
+        ContractActionBaseline baseline)
+    {
+        var capabilities = CurrentCapabilities;
+        var identity = CurrentIdentity;
+        if (capabilities is null || identity is null ||
+            !string.Equals(Server?.SessionId, baseline.SessionId, StringComparison.Ordinal) ||
+            !string.Equals(capabilities.SessionId, baseline.SessionId, StringComparison.Ordinal) ||
+            !string.Equals(identity.SessionId, baseline.SessionId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return request.Action switch
+        {
+            ServerAdministrationAction.RestartMap =>
+                capabilities.RestartMap &&
+                capabilities.TransitionState is not ("accepted" or "transitioning") &&
+                string.Equals(Server?.MapCode, baseline.MapCode, StringComparison.Ordinal) &&
+                string.Equals(capabilities.MapCode, baseline.MapCode, StringComparison.Ordinal),
+            ServerAdministrationAction.SpawnBoss =>
+                request.Option is not null &&
+                request.TargetXuid is not null &&
+                capabilities.BossAliases.Contains(request.Option, StringComparer.Ordinal) &&
+                ControlCenterCommandValidator.IsValidBossAlias(request.Option) &&
+                capabilities.ActivePinteModBosses < capabilities.MaximumPinteModBosses &&
+                string.Equals(Server?.MapCode, baseline.MapCode, StringComparison.Ordinal) &&
+                _players.Any(player => string.Equals(
+                    player.Xuid,
+                    request.TargetXuid,
+                    StringComparison.OrdinalIgnoreCase)),
+            ServerAdministrationAction.SetHostname =>
+                capabilities.SetHostname &&
+                ControlCenterCommandValidator.IsValidHostname(request.Option) &&
+                !string.Equals(identity.PublicHostname, request.Option, StringComparison.Ordinal),
+            ServerAdministrationAction.ClearJoinPassword =>
+                capabilities.ClearJoinPassword && identity.JoinPasswordEnabled,
+            _ => false
+        };
+    }
+
+    private ContractActionBaseline? CaptureContractBaseline()
+    {
+        var capabilities = CurrentCapabilities;
+        var identity = CurrentIdentity;
+        return capabilities is null || identity is null || Server is null
+            ? null
+            : new ContractActionBaseline(
+                Server.SessionId,
+                Server.MapCode,
+                identity.Revision,
+                LocalObservation.ControlCenterContracts.ActionFeedback.Value?.Sequence ?? -1,
+                LocalObservation.ControlCenterContracts.ActionFeedback.SourceTimestampUtc,
+                LocalObservation.ControlCenterContracts.MapTransition.SourceTimestampUtc);
+    }
+
+    private bool IsFeedbackPostAction(
+        ServerAdministrationRequest request,
+        ContractActionBaseline baseline,
+        LocalReadResult<ControlCenterActionFeedbackSnapshot> observation)
+    {
+        if (!IsFreshLocal(observation) || observation.Value is not { } feedback ||
+            !string.Equals(feedback.RequestId, request.RequestId, StringComparison.Ordinal) ||
+            feedback.Action != ContractActionFor(request.Action) ||
+            !IsTimestampAfter(observation.SourceTimestampUtc, baseline.FeedbackTimestampUtc))
+        {
+            return false;
+        }
+
+        return !string.Equals(feedback.SessionId, baseline.SessionId, StringComparison.Ordinal)
+            ? request.Action == ServerAdministrationAction.RestartMap &&
+              string.Equals(feedback.SessionId, Server?.SessionId, StringComparison.Ordinal)
+            : feedback.Sequence > baseline.FeedbackSequence;
+    }
+
+    private static bool IsTimestampAfter(DateTimeOffset? current, DateTimeOffset? previous) =>
+        current is not null && (previous is null || current > previous);
+
+    private static ControlCenterContractAction ContractActionFor(ServerAdministrationAction action) => action switch
+    {
+        ServerAdministrationAction.RestartMap => ControlCenterContractAction.RestartMap,
+        ServerAdministrationAction.SpawnBoss => ControlCenterContractAction.SpawnBoss,
+        ServerAdministrationAction.SetHostname => ControlCenterContractAction.SetHostname,
+        ServerAdministrationAction.ClearJoinPassword => ControlCenterContractAction.ClearJoinPassword,
+        _ => throw new ArgumentOutOfRangeException(nameof(action), action, "Action hors contrat Control Center.")
+    };
+
+    private static bool IsContractAction(ServerAdministrationAction action) => action is
+        ServerAdministrationAction.RestartMap or
+        ServerAdministrationAction.SpawnBoss or
+        ServerAdministrationAction.SetHostname or
+        ServerAdministrationAction.ClearJoinPassword;
+
+    private static string ContractSuccessMessage(ServerAdministrationAction action) => action switch
+    {
+        ServerAdministrationAction.RestartMap => "La nouvelle session confirme le redémarrage de la carte active.",
+        ServerAdministrationAction.SpawnBoss => "PinteMod confirme l’apparition du boss demandé.",
+        ServerAdministrationAction.SetHostname => "L’identité locale confirme le nouveau nom du serveur.",
+        ServerAdministrationAction.ClearJoinPassword => "L’identité locale confirme que le mot de passe joueur est désactivé.",
+        _ => "PinteMod confirme l’application de l’action."
+    };
+
+    private static string CreateRequestId() => Guid.NewGuid().ToString("N");
 
     private Task AcknowledgeServerAdministrationAsync()
     {
@@ -1157,6 +1641,18 @@ public sealed class ServerViewModel : PageViewModel
             ServerAdministrationAction.RestorePowerUpTimeout => new(
                 "Confirmer le délai normal",
                 "Restaurer le délai normal des futurs power-ups créés par PinteMod ?\n\nLes power-ups déjà actifs ne sont pas modifiés."),
+            ServerAdministrationAction.RestartMap => new(
+                "Confirmer le redémarrage de la carte",
+                "Redémarrer réellement la carte active ?\n\nSeule la carte runtime officielle actuelle sera redémarrée. La session en cours sera interrompue."),
+            ServerAdministrationAction.SpawnBoss => new(
+                "Confirmer l’apparition du boss",
+                $"Faire apparaître réellement le boss « {request.Option} » près du joueur ciblé par BOIII_XUID abrégé ?\n\nLa cible et la capability seront revérifiées après cette confirmation."),
+            ServerAdministrationAction.SetHostname => new(
+                "Confirmer le nouveau nom du serveur",
+                $"Appliquer réellement le hostname « {request.Option} » pour la session en cours ?\n\nAucune commande libre ne sera construite."),
+            ServerAdministrationAction.ClearJoinPassword => new(
+                "Confirmer la suppression du mot de passe joueur",
+                "Désactiver réellement le mot de passe d’accès des joueurs ?\n\nLa valeur actuelle ne sera jamais lue ni affichée. Cette action n’est pas annulable automatiquement."),
             _ => new("Action serveur refusée", "Cette action ne fait pas partie de la liste blanche.")
         };
 
@@ -1200,6 +1696,7 @@ public sealed class ServerViewModel : PageViewModel
         KillAllZombiesCommand.NotifyCanExecuteChanged();
         MakePowerUpsPermanentCommand.NotifyCanExecuteChanged();
         RestorePowerUpTimeoutCommand.NotifyCanExecuteChanged();
+        NotifyContractAuthorizationChanged();
         AcknowledgeServerAdministrationCommand.NotifyCanExecuteChanged();
     }
 
@@ -1208,4 +1705,12 @@ public sealed class ServerViewModel : PageViewModel
         NotifyPauseAuthorizationChanged();
         NotifyServerAdministrationAuthorizationChanged();
     }
+
+    private sealed record ContractActionBaseline(
+        string SessionId,
+        string MapCode,
+        long IdentityRevision,
+        long FeedbackSequence,
+        DateTimeOffset? FeedbackTimestampUtc,
+        DateTimeOffset? TransitionTimestampUtc);
 }

@@ -10,6 +10,11 @@
                     <TextBlock Text="Tester une racine PinteMod sur cette machine ou via un partage LAN explicite."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" TextWrapping="Wrap" />
 
+                    <TextBlock Text="NOM DE L’ONGLET SERVEUR" Style="{StaticResource EyebrowTextStyle}" />
+                    <TextBox Text="{Binding ProfileDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="48" Margin="0,7,0,12"
+                             ToolTip="Nom local d’affichage uniquement · ne modifie pas le nom public de BOIII" />
+
                     <TextBlock Text="EMPLACEMENT" Style="{StaticResource EyebrowTextStyle}" />
                     <ComboBox ItemsSource="{Binding OperatorModes}"
                               SelectedItem="{Binding SelectedOperatorMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

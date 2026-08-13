@@ -31,6 +31,22 @@ public sealed class PlayerWeaponActionsViewModelTests
     }
 
     [TestMethod]
+    public async Task UnchangedRuntimeCatalog_DoesNotRebuildOpenWeaponMenu()
+    {
+        var snapshot = Snapshot("zm_zod", RuntimeWeaponPackAPunchState.Base, "ray_gun");
+        var viewModel = CreateViewModel(snapshot, new CapturingService());
+        await viewModel.InitializeAsync();
+        var firstOption = viewModel.WeaponOptions[0];
+        var collectionChanges = 0;
+        viewModel.WeaponOptions.CollectionChanged += (_, _) => collectionChanges++;
+
+        await viewModel.InitializeAsync();
+
+        Assert.AreEqual(0, collectionChanges);
+        Assert.AreSame(firstOption, viewModel.WeaponOptions[0]);
+    }
+
+    [TestMethod]
     public async Task PackAPunchCurrentWeapon_UsesXuidAndLocksUntilManualAcknowledgement()
     {
         var snapshot = Snapshot("zm_tomb", RuntimeWeaponPackAPunchState.Base, "ray_gun");

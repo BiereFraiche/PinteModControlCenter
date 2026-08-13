@@ -15,4 +15,9 @@
     <ProjectReference Include="..\..\src\PinteMod.ControlCenter.Infrastructure\PinteMod.ControlCenter.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\contracts\control-center\v1\*.schema.json"
+             Link="contracts\control-center\v1\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

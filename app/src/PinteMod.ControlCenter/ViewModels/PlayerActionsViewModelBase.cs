@@ -721,11 +721,21 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         string? runtimeMapCode)
     {
         var selectedAlias = WeaponOptions.Count > 0 ? SelectedWeapon?.Key : null;
-        WeaponOptions.Clear();
-        foreach (var entry in entries)
+        var desiredOptions = entries
+            .Select(entry =>
+            {
+                var prefix = entry.IsMapSpecific ? "Spéciale · " : string.Empty;
+                return new SelectionOption(entry.Alias, prefix + entry.DisplayName);
+            })
+            .ToArray();
+
+        if (!WeaponOptions.SequenceEqual(desiredOptions))
         {
-            var prefix = entry.IsMapSpecific ? "Spéciale · " : string.Empty;
-            WeaponOptions.Add(new SelectionOption(entry.Alias, prefix + entry.DisplayName));
+            WeaponOptions.Clear();
+            foreach (var option in desiredOptions)
+            {
+                WeaponOptions.Add(option);
+            }
         }
 
         _selectedWeapon = WeaponOptions.FirstOrDefault(option =>

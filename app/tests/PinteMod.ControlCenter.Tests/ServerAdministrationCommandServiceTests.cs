@@ -59,6 +59,95 @@ public sealed class ServerAdministrationCommandServiceTests
     }
 
     [TestMethod]
+    public async Task ContractActions_UseOnlyFourClosedCommandsAndNeverExposeSetPasswordOrEvent()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+        var requests = new[]
+        {
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.RestartMap,
+                RequestId: "request_0001"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: "request_0002",
+                Option: "margwa",
+                TargetXuid: "0000000000000001"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SetHostname,
+                RequestId: "request_0003",
+                Option: "PinteMod Test [EU]"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.ClearJoinPassword,
+                RequestId: "request_0004")
+        };
+
+        foreach (var request in requests)
+        {
+            var result = await service.ExecuteAsync(request, Endpoint);
+            Assert.AreEqual(ServerAdministrationExecutionStatus.SentAwaitingManualVerification, result.Status);
+            Assert.IsTrue(result.CommandSent);
+        }
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "ezzccrestartmap request_0001",
+                "ezzccboss request_0002 margwa 0000000000000001",
+                "ezzccsethostname request_0003 PinteMod Test [EU]",
+                "ezzccclearjoinpassword request_0004"
+            },
+            client.Commands);
+        Assert.IsFalse(client.Commands.Any(command =>
+            command.Contains("ezzccmap", StringComparison.Ordinal) ||
+            command.Contains("ezzccevent", StringComparison.Ordinal) ||
+            command.Contains("ezzccsetjoinpassword", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task ContractInjectionAndUnpublishedBossAlias_AreRejectedBeforeSecretAndTransport()
+    {
+        var invalid = new[]
+        {
+            new ServerAdministrationRequest(ServerAdministrationAction.RestartMap, RequestId: "bad id;map"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: "request_0002",
+                Option: "custom;boss",
+                TargetXuid: "0000000000000001"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: "request_0002",
+                Option: "margwa",
+                TargetXuid: "name-only"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SetHostname,
+                RequestId: "request_0003",
+                Option: "bad;hostname"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.ClearJoinPassword,
+                RequestId: "request_0004",
+                Option: "secret"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.EnablePower,
+                Option: "unexpected")
+        };
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+
+        foreach (var request in invalid)
+        {
+            var result = await service.ExecuteAsync(request, Endpoint);
+            Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidRequest, result.Status);
+            Assert.IsFalse(result.CommandSent);
+        }
+
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
     [DataRow(ServerAdministrationAction.SetRound, null)]
     [DataRow(ServerAdministrationAction.SetRound, 1)]
     [DataRow(ServerAdministrationAction.SetRound, 256)]

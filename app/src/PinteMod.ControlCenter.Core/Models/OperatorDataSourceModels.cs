@@ -36,6 +36,18 @@ public sealed record OperatorConfiguration(
     int RconPort)
 {
     public const int CurrentSchemaVersion = 1;
+    public const int MaximumProfileDisplayNameLength = 48;
+    public const string DefaultProfileDisplayName = "Serveur principal";
+
+    public string ProfileDisplayName { get; init; } = DefaultProfileDisplayName;
+
+    public static bool IsValidProfileDisplayName(string? value)
+    {
+        var normalized = value?.Trim();
+        return !string.IsNullOrWhiteSpace(normalized) &&
+               normalized.Length <= MaximumProfileDisplayNameLength &&
+               normalized.All(character => !char.IsControl(character));
+    }
 
     public static OperatorConfiguration Default { get; } = new(
         CurrentSchemaVersion,
@@ -44,4 +56,19 @@ public sealed record OperatorConfiguration(
         false,
         "127.0.0.1",
         27017);
+}
+
+public sealed record OperatorWorkspaceConfiguration(
+    int SchemaVersion,
+    IReadOnlyList<string> ProfileIds,
+    string ActiveProfileId)
+{
+    public const int CurrentSchemaVersion = 1;
+    public const int MaximumProfileCount = 8;
+    public const string PrimaryProfileId = "primary";
+
+    public static OperatorWorkspaceConfiguration Default { get; } = new(
+        CurrentSchemaVersion,
+        [PrimaryProfileId],
+        PrimaryProfileId);
 }

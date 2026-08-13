@@ -64,11 +64,42 @@
                                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" />
                         <WrapPanel>
                             <ComboBox ItemsSource="{Binding MapOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedMap}" Width="230" Margin="0,0,10,10" />
-                            <Button Content="Changer" Style="{StaticResource SimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeMap}" />
+                            <Button Content="CHANGER · SIMULATION" Style="{StaticResource SimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeMap}" />
                         </WrapPanel>
-                        <Button Content="Redémarrer la carte" Style="{StaticResource DangerSimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RestartMap}" HorizontalAlignment="Left" />
-                        <TextBlock Text="Le catalogue est local ; la commande de changement reste volontairement inactive."
+                        <Button Content="REDÉMARRER LA CARTE ACTIVE" Style="{StaticResource DangerButtonStyle}"
+                                Command="{Binding RestartMapCommand}" HorizontalAlignment="Left"
+                                ToolTip="Commande réelle fermée : ezzccrestartmap &lt;request_id&gt;" />
+                        <TextBlock Text="{Binding ChangeMapContractNotice}"
                                    Foreground="{StaticResource WarningBrush}" FontSize="10" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding ContractSourceSummary}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="IDENTITÉ PUBLIQUE · CONTRAT LOCAL" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="{Binding ServerIdentityText}" Foreground="{StaticResource AccentBrightBrush}"
+                                   FontSize="12" FontWeight="SemiBold" Margin="0,7,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding JoinPasswordStatus}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="10" Margin="0,4,0,10" />
+                        <TextBlock Text="NOUVEAU NOM DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
+                        <WrapPanel>
+                            <TextBox Text="{Binding RequestedHostname, UpdateSourceTrigger=PropertyChanged}" Width="260"
+                                     MaxLength="64" Margin="0,0,8,8" ToolTip="1 à 64 caractères ASCII autorisés par le contrat" />
+                            <Button Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding SetHostnameCommand}" Margin="0,0,8,8"
+                                    ToolTip="Commande réelle fermée : ezzccsethostname" />
+                        </WrapPanel>
+                        <WrapPanel>
+                            <Button Content="SUPPRIMER LE MOT DE PASSE JOUEUR" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding ClearJoinPasswordCommand}" Margin="0,0,8,8"
+                                    ToolTip="La valeur de g_password n’est jamais lue ni affichée" />
+                            <Button Content="DÉFINIR LE MOT DE PASSE · À VENIR" Style="{StaticResource SimulationButtonStyle}"
+                                    IsEnabled="False" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding SetJoinPasswordNotice}" Foreground="{StaticResource WarningBrush}"
+                                   FontSize="9" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
@@ -140,12 +171,22 @@
                             <Button Content="DÉLAI NORMAL" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding RestorePowerUpTimeoutCommand}" ToolTip="Commande réelle confirmée : ezzfreezepowerups off" Margin="0,0,8,8" />
                         </WrapPanel>
-                        <TextBlock Text="ACTIONS SPÉCIFIQUES À LA CARTE · SIMULATION" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
+                        <TextBlock Text="BOSS CONTRACTUELS · ACTION RÉELLE" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
+                        <TextBlock Text="{Binding BossTargetText}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,0,0,5" TextWrapping="Wrap" />
+                        <WrapPanel>
+                            <ComboBox ItemsSource="{Binding BossAliasOptions}" DisplayMemberPath="Label"
+                                      SelectedItem="{Binding SelectedBossAlias}" Width="190" Margin="0,0,8,8" />
+                            <Button Content="FAIRE APPARAÎTRE LE BOSS" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding SpawnBossCommand}" Margin="0,0,8,8"
+                                    ToolTip="Cible interne revalidée exclusivement par BOIII_XUID" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding BossCapacityText}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,0,0,8" />
+                        <TextBlock Text="ACTIONS SANS CONTRAT STABLE · SIMULATION" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
                         <WrapPanel>
                             <Button Content="ÉVÉNEMENTS · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
                                     Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.TriggerEvent}" />
-                            <Button Content="BOSS · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
-                                    Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.SpawnBoss}" />
                             <Button Content="POWER-UP GLOBAL · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
                                     Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.SpawnPowerUp}" />
                         </WrapPanel>

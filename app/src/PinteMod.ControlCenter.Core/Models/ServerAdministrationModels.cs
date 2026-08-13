@@ -12,7 +12,11 @@ public enum ServerAdministrationAction
     KeepLastZombie,
     KillAllZombies,
     MakePowerUpsPermanent,
-    RestorePowerUpTimeout
+    RestorePowerUpTimeout,
+    RestartMap,
+    SpawnBoss,
+    SetHostname,
+    ClearJoinPassword
 }
 
 public enum ServerAdministrationExecutionStatus
@@ -27,7 +31,10 @@ public enum ServerAdministrationExecutionStatus
 
 public sealed record ServerAdministrationRequest(
     ServerAdministrationAction Action,
-    int? TargetRound = null);
+    int? TargetRound = null,
+    string? RequestId = null,
+    string? Option = null,
+    string? TargetXuid = null);
 
 public sealed record ServerAdministrationExecutionResult(
     ServerAdministrationRequest Request,

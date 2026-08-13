@@ -366,22 +366,28 @@ public sealed class ViewModelTests
     public void AppLifecycle_StoresAndAwaitsMonitorBeforeDisposingReaders()
     {
         var presentationRoot = FindPresentationSourceRoot();
-        var source = File.ReadAllText(Path.Combine(presentationRoot, "App.xaml.cs"));
+        var appSource = File.ReadAllText(Path.Combine(presentationRoot, "App.xaml.cs"));
+        var contextSource = File.ReadAllText(Path.Combine(
+            presentationRoot,
+            "Composition",
+            "ServerRuntimeContext.cs"));
 
-        StringAssert.Contains(source, "_monitorTask = RunMonitorAsync");
-        StringAssert.Contains(source, "await _monitorTask;");
-        StringAssert.Contains(source, "_rconOperations.StopAcceptingNewOperations();");
-        StringAssert.Contains(source, "await _rconOperations.WaitForIdleAsync();");
-        StringAssert.Contains(source, "rconOperationGate");
-        Assert.AreEqual(4, CountOccurrences(source, "rconOperationGate);"));
-        StringAssert.Contains(source, "new ServerAdministrationCommandService(");
-        StringAssert.Contains(source, "new PlayerAdministrationCommandService(");
-        Assert.IsTrue(CountOccurrences(source, "_rconOperations") >= 7);
-        StringAssert.Contains(source, "DisposeResources();");
-        Assert.IsFalse(source.Contains("_ = RunMonitorAsync", StringComparison.Ordinal));
-        var closingHandler = source[source.IndexOf("private async void OnMainWindowClosing", StringComparison.Ordinal)..];
+        StringAssert.Contains(contextSource, "_monitorTask = RunMonitorAsync");
+        StringAssert.Contains(contextSource, "await _monitorTask;");
+        StringAssert.Contains(contextSource, "RconOperations.StopAcceptingNewOperations();");
+        StringAssert.Contains(contextSource, "await RconOperations.WaitForIdleAsync();");
+        StringAssert.Contains(contextSource, "rconOperationGate");
+        Assert.AreEqual(4, CountOccurrences(contextSource, "rconOperationGate);"));
+        StringAssert.Contains(contextSource, "new ServerAdministrationCommandService(");
+        StringAssert.Contains(contextSource, "new PlayerAdministrationCommandService(");
+        StringAssert.Contains(appSource, "StopAllContexts();");
+        StringAssert.Contains(appSource, "context.StopAcceptingNewOperations();");
+        StringAssert.Contains(appSource, "context.WaitForShutdownAsync()");
+        StringAssert.Contains(appSource, "DisposeResources();");
+        Assert.IsFalse(contextSource.Contains("_ = RunMonitorAsync", StringComparison.Ordinal));
+        var closingHandler = appSource[appSource.IndexOf("private async void OnMainWindowClosing", StringComparison.Ordinal)..];
         Assert.IsTrue(
-            closingHandler.IndexOf("await _rconOperations.WaitForIdleAsync();", StringComparison.Ordinal) <
+            closingHandler.IndexOf("context.WaitForShutdownAsync()", StringComparison.Ordinal) <
             closingHandler.IndexOf("DisposeResources();", StringComparison.Ordinal));
     }
 
@@ -395,6 +401,20 @@ public sealed class ViewModelTests
 
         Assert.IsFalse(xaml.Any(contents => contents.Contains("FullXuid", StringComparison.Ordinal)));
         Assert.IsFalse(xaml.Any(contents => contents.Contains("SelectedPlayer.Xuid", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void MainWindow_UsesIsolatedServerTabsAndActiveShellBindings()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "MainWindow.xaml"));
+
+        StringAssert.Contains(xaml, "ItemsSource=\"{Binding Servers}\"");
+        StringAssert.Contains(xaml, "Command=\"{Binding AddServerCommand}\"");
+        StringAssert.Contains(xaml, "Command=\"{Binding RemoveServerCommand}\"");
+        StringAssert.Contains(xaml, "ActiveServer.Shell.NavigationItems");
+        StringAssert.Contains(xaml, "ActiveServer.Shell.CurrentPage");
+        StringAssert.Contains(xaml, "ActiveServer.Shell.RefreshCommand");
     }
 
     [TestMethod]

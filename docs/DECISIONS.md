@@ -735,3 +735,45 @@ Dernière mise à jour : 2026-08-12
 **Publication.** La clôture technique n’autorise pas implicitement une mutation GitHub. Toute fusion, création de tag, release stable ou remplacement d’asset exige un ordre explicite. La RC2 historique reste intacte.
 
 **Extensions futures.** La modération à deux comptes et les fonctions sans contrat PinteMod stable ne sont pas transformées en dette bloquante de cette livraison. Elles feront l’objet de travaux distincts si les contrats nécessaires deviennent disponibles.
+
+## ADR-096 — Les serveurs sont des contextes isolés, pas des vues partageant un singleton
+
+**Décision.** La fenêtre peut accueillir jusqu’à huit onglets serveurs. Chaque onglet possède son propre `ShellViewModel`, snapshot store, moniteur local, sélection joueur, activité opérateur, verrou de mutation, coordinateur RCON, secret DPAPI et catalogue de cartes. Seuls la fenêtre et le presse-papiers Windows sont des ressources de présentation communes.
+
+**Migration.** Le profil `primary` réutilise exactement les emplacements historiques `operator-settings.json`, `rcon.secret.dpapi` et `map-catalog.json`. Les profils supplémentaires résident sous un dossier local dédié et ne sont jamais créés à partir d’une découverte réseau ou d’une installation détectée. Un nouvel onglet démarre toujours en simulation jusqu’à activation explicite de sa source.
+
+**Cycle de vie.** Tous les moniteurs peuvent observer leurs racines read-only en parallèle, mais chaque profil sérialise ses propres opérations RCON. À la fermeture ou au retrait d’un onglet, les nouvelles opérations sont refusées, le moniteur est annulé, les opérations acceptées sont attendues, puis les lecteurs sont détruits. Retirer un onglet ne supprime pas automatiquement sa configuration ou son secret protégé et ne touche jamais BOIII.
+
+**Interface.** Le nom de l’onglet est un libellé local distinct du nom public du serveur. Les collections utilisées par les ComboBox ne sont remplacées que si leur contenu change, afin que l’actualisation automatique ne réinitialise pas leur défilement.
+
+**Limite de contrat.** L’audit de PinteModReal n’a identifié aucune commande fermée pour changer le nom public BOIII ou le mot de passe de connexion joueur. Ces mutations ne seront pas construites à partir de commandes moteur supposées ou de texte libre. Elles attendent un contrat PinteMod validé, une validation stricte, une confirmation humaine et un feedback observable.
+
+## ADR-097 — `g_password` est une donnée éphémère distincte du secret RCON
+
+**Décision.** Le mot de passe serveur demandé par l’opérateur désigne la dvar de connexion joueur `g_password`. Il ne doit jamais être confondu avec le secret RCON DPAPI. Le futur écran utilisera un `PasswordBox` non bindé ; la valeur ne sera ni persistée, ni réaffichée, ni copiée, ni incluse dans l’activité opérateur. Une action séparée retirera le mot de passe sans demander de valeur vide dans un champ de commande libre.
+
+**Transport.** Un encodage hexadécimal ou Base64 n’apporte aucune confidentialité. En l’absence de preuve d’un transport applicatif protégé côté PinteMod, la mutation sera réservée au loopback. Le mode LAN pourra continuer à observer et administrer les actions non sensibles, mais ne transmettra pas `g_password`.
+
+**Contrat requis.** PinteMod doit fournir une commande dédiée à paramètres strictement bornés, sans journalisation de la valeur, ainsi qu’un feedback ne contenant que `join_password_enabled` et un résultat fermé. Le Control Center n’enverra jamais directement une commande libre `set g_password ...`.
+
+## 2026-08-14 — Contrats Control Center v1 post-RC2
+
+- Les quatre documents PinteModReal sont agrégés dans `BlockALocalSnapshot.ControlCenterContracts` afin que toutes les pages consomment le même snapshot partagé et qu’aucune lecture ne soit déclenchée depuis le thread UI.
+- Un lecteur unique expose quatre résultats séparés avec métadonnées indépendantes. Il réutilise le lecteur JSON et le handle vérifié déjà audités, avec limites 16/4/4/4 Kio.
+- Les schémas JSON validés au commit PinteModReal `e279a59` sont versionnés sous `app/contracts/control-center/v1` et copiés dans la publication.
+- `supported` décrit uniquement la compatibilité PinteMod. Le catalogue de cartes installées reste inconnu et `change_map=false` ne peut jamais autoriser une mutation.
+- Les alias boss publiés doivent aussi appartenir à la liste fermée connue du contrat v1 avant construction de la commande.
+- Les commandes contractuelles réutilisent `IServerAdministrationCommandService`, le gate RCON, le coordinateur opérateur et le verrou humain existants. Aucun deuxième canal RCON n’est créé.
+- Une action est revalidée après confirmation puis corrélée par `request_id`. Restart exige en plus une nouvelle session et un `map_transition` actif ; hostname/CLEAR exigent une révision d’identité strictement supérieure.
+- Une absence de feedback ou une transition lente produit « envoyé, non confirmé » avec verrou anti-répétition, jamais un faux échec.
+- SET `g_password`, `ezzccmap` et `ezzccevent` restent volontairement absents du constructeur de commandes.
+
+## ADR-098 — Les contrats Control Center v1 sont des preuves locales corrélées, pas des promesses de capacité
+
+**Décision.** Les quatre fichiers PinteModReal v1 sont lus uniquement sous la racine serveur explicitement configurée, via le lecteur borné et le handle déjà vérifié. Une donnée n’autorise une action que si sa provenance est locale, sa lecture réussie, sa fraîcheur valide et sa session/carte cohérente. Une valeur conservée en cache reste visible comme périmée mais ne peut jamais autoriser une mutation.
+
+**Corrélation.** Chaque action réelle reçoit un `request_id` unique. Le résultat doit correspondre à l’action et au `request_id`, être postérieur au snapshot de départ et, selon le cas, présenter une séquence plus récente, une nouvelle session de transition ou une révision d’identité strictement croissante. `accepted` et une transition lente ne sont jamais assimilés à un succès.
+
+**Périmètre fermé.** Seules `ezzccrestartmap`, `ezzccboss`, `ezzccsethostname` et `ezzccclearjoinpassword` sont ajoutées. `change_map=false` maintient Change Map en simulation ; `ezzccevent` et `ezzccsetjoinpassword` sont absentes. La valeur de `g_password` n’est jamais lue, transportée ou affichée.
+
+**Alternative rejetée.** Déduire qu’une carte `supported` est installée, accepter un alias non publié, ou confirmer une action à partir de la seule réponse UDP contournerait l’autorité locale structurée et les garanties de revalidation déjà validées.

@@ -130,6 +130,31 @@ Champs recommandés :
 
 Le message affichable doit provenir d’un code fermé, pas d’un texte libre contenant potentiellement chemins, IP, commandes ou secrets. Aucun retry automatique ne doit être exigé côté Control Center.
 
+## Priorité 7 — identité publique et mot de passe de connexion du serveur
+
+Besoin confirmé par l’opérateur le 2026-08-13 : le mot de passe visé est bien la dvar `g_password`, demandée aux joueurs lors de la connexion. Ce n’est pas le secret RCON.
+
+L’audit du bridge opérateur, de la configuration admin, du registre et des commandes de PinteModReal n’a trouvé aucun contrat fermé permettant de modifier le nom public BOIII ou le mot de passe demandé aux joueurs. Le Control Center ne doit donc pas fabriquer de commande moteur `set ...` ni accepter de texte libre en RCON.
+
+Fournir deux mutations PinteMod dédiées et versionnées :
+
+- modifier le nom public du serveur avec une longueur et un alphabet explicitement bornés ;
+- définir ou retirer le mot de passe de connexion joueur sans jamais le restituer dans la console, un log, un heartbeat ou un snapshot.
+
+Le transport de valeurs contenant des espaces ou caractères spéciaux doit être défini sans possibilité d’injection de commande. Le contrat doit préciser l’encodage, les limites en octets, les caractères refusés, le comportement à vide et la portée runtime ou persistante. Une valeur ne doit jamais être réinterprétée comme une commande moteur libre.
+
+Ajouter une observation structurée ne contenant que :
+
+- `schema_version`, `session_id`, séquence et fraîcheur ;
+- nom public effectivement appliqué, après neutralisation contractuelle ;
+- booléen `join_password_enabled`, jamais le mot de passe ni une empreinte réutilisable ;
+- résultat fermé `applied|rejected|failed` et code d’erreur fermé ;
+- révision strictement croissante permettant de relier confirmation et feedback.
+
+Le Control Center appliquera ensuite confirmation humaine, revalidation de la session, sérialisation RCON, zéro retry et verrou conservateur après émission potentielle. Le secret de connexion ne sera ni persisté dans la configuration du Control Center, ni lié à un ViewModel, ni copié dans le presse-papiers.
+
+Tant que la confidentialité du transport n’est pas démontrée, la mutation de `g_password` doit être limitée à une cible loopback `127.0.0.1`/`::1`. Une adresse LAN ne doit pas être autorisée par simple commodité : une valeur brute ou seulement encodée ne constitue pas un secret protégé.
+
 ## Livrables attendus côté PinteMod
 
 - contrats JSON versionnés et exemples valides/invalides ;

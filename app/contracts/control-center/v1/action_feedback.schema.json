@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pintemod.invalid/contracts/control-center/v1/action_feedback.schema.json",
+  "title": "PinteMod Control Center action feedback v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "session_id", "sequence", "generated_gettime",
+    "updated_at_utc", "time_authority", "request_id", "action",
+    "status", "result_code"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "session_id": { "type": "string", "minLength": 1, "maxLength": 96 },
+    "sequence": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "generated_gettime": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "updated_at_utc": { "const": "" },
+    "time_authority": { "const": "session_gettime_and_file_mtime" },
+    "request_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,32}$" },
+    "action": {
+      "enum": [
+        "restart_map", "spawn_boss", "set_hostname", "clear_join_password"
+      ]
+    },
+    "status": { "enum": ["accepted", "applied", "rejected", "failed"] },
+    "result_code": {
+      "enum": [
+        "accepted", "success", "invalid_request_id", "duplicate_request",
+        "invalid_arguments", "map_not_allowed", "transition_in_progress",
+        "transition_state_write_failed",
+        "result_map_mismatch", "unsupported_on_map", "invalid_target_xuid",
+        "target_not_connected", "events_disabled", "boss_limit_reached",
+        "invalid_position", "spawn_failed", "invalid_hostname",
+        "hostname_not_applied", "password_not_cleared"
+      ]
+    }
+  }
+}
+

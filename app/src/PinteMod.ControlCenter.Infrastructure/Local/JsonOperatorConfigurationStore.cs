@@ -111,8 +111,10 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
             configuration.SchemaVersion != OperatorConfiguration.CurrentSchemaVersion ||
             configuration.ServerRoot is null ||
             configuration.RconAddress is null ||
+            configuration.ProfileDisplayName is null ||
             configuration.ServerRoot.Length > 2048 ||
             configuration.RconAddress.Length > 64 ||
+            !OperatorConfiguration.IsValidProfileDisplayName(configuration.ProfileDisplayName) ||
             configuration.RconPort is < 1 or > 65535)
         {
             return OperatorConfiguration.Default;
@@ -121,7 +123,8 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
         var normalized = configuration with
         {
             ServerRoot = configuration.ServerRoot.Trim(),
-            RconAddress = configuration.RconAddress.Trim()
+            RconAddress = configuration.RconAddress.Trim(),
+            ProfileDisplayName = NormalizeProfileDisplayName(configuration.ProfileDisplayName)
         };
         return RconEndpointValidator.IsAllowed(new RconEndpoint(
             normalized.RconAddress,
@@ -142,6 +145,11 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
             throw new ArgumentException("Le chemin de données est trop long.", nameof(configuration));
         }
 
+        if (!OperatorConfiguration.IsValidProfileDisplayName(configuration.ProfileDisplayName))
+        {
+            throw new ArgumentException("Le nom du profil serveur est invalide.", nameof(configuration));
+        }
+
         var address = configuration.RconAddress.Trim();
         if (!RconEndpointValidator.IsAllowed(new RconEndpoint(
                 address,
@@ -155,7 +163,13 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
         {
             SchemaVersion = OperatorConfiguration.CurrentSchemaVersion,
             ServerRoot = configuration.ServerRoot.Trim(),
-            RconAddress = address
+            RconAddress = address,
+            ProfileDisplayName = NormalizeProfileDisplayName(configuration.ProfileDisplayName)
         };
     }
+
+    private static string NormalizeProfileDisplayName(string? displayName) =>
+        string.IsNullOrWhiteSpace(displayName)
+            ? OperatorConfiguration.DefaultProfileDisplayName
+            : displayName.Trim();
 }

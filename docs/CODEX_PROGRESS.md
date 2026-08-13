@@ -3237,8 +3237,111 @@ Clore les deux blocages de la revue globale post-RC2 : lecture réellement born�
 - Revue ChatGPT et validation terrain : validées sans condition restante.
 - Aucun blocage connu ne reste dans le périmètre post-RC2.
 
+## 2026-08-13 — Stabilisation des sélecteurs et fondation multi-serveurs
+
+### Objectif de la passe
+
+Préparer la publication stable avec des menus déroulants qui ne remontent plus pendant l’actualisation automatique et plusieurs contextes serveur réellement isolés dans une même fenêtre.
+
+### Réalisé
+
+- Les catalogues Armes et Cartes ne sont plus vidés/recréés lorsque leur contenu est inchangé ; un menu ouvert conserve donc sa position et ses objets de sélection pendant les rafraîchissements.
+- Ajout d’un catalogue local de profils serveurs, limité à huit profils et migré automatiquement depuis la configuration unique existante.
+- Chaque profil possède sa configuration, son catalogue de cartes, son secret RCON DPAPI, son cache, son moniteur local, son coordinateur RCON et son verrou de mutation propres.
+- Ajout d’une barre d’onglets serveurs, d’un bouton d’ajout et d’un retrait confirmé qui n’arrête ni ne modifie BOIII et conserve les fichiers locaux récupérables.
+- Ajout du nom local de l’onglet dans Paramètres ; ce libellé ne prétend pas modifier le nom public BOIII.
+- Simulation conservée par défaut pour tout nouveau profil ; aucune découverte automatique de serveur et aucun envoi RCON automatique.
+
+### Fichiers créés ou modifiés
+
+- `app/src/PinteMod.ControlCenter.Core/Contracts/IOperatorWorkspaceConfigurationStore.cs`.
+- `app/src/PinteMod.ControlCenter.Core/Models/OperatorDataSourceModels.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/JsonOperatorConfigurationStore.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/JsonOperatorWorkspaceConfigurationStore.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/OperatorProfileStoragePaths.cs`.
+- `app/src/PinteMod.ControlCenter/Composition/ServerRuntimeContext.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/ControlCenterWorkspaceViewModel.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/PlayerActionsViewModelBase.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/SettingsViewModel.cs`.
+- `app/src/PinteMod.ControlCenter/App.xaml.cs`, `MainWindow.xaml`, `Views/SettingsView.xaml`.
+- Tests de configuration, workspace, armes, cartes et cycle de vie sous `app/tests/PinteMod.ControlCenter.Tests/`.
+- `docs/PINTEMOD_REQUIREMENTS_NEXT.md`, `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Compilation et tests intermédiaires
+
+- Build Debug : 0 avertissement, 0 erreur.
+- Tests menus ciblés : 26/26 réussis.
+- Tests configuration/workspace/ViewModels ciblés : 106/106 réussis.
+- Debug : 0 avertissement, 0 erreur, 394/394 tests réussis.
+- Release : 0 avertissement, 0 erreur, 394/394 tests réussis.
+- Le test DPAPI a été exécuté sous le profil Windows réel ; l’échec initial de l’environnement isolé ne se reproduit pas dans ce contexte conforme au produit.
+- Preview autonome Windows x64 : 466 entrées, audit packaging `PASS`.
+- ZIP final du lot : `app/artifacts/PinteMod-ControlCenter-post-RC2-multiserver-preview-2-win-x64.zip`.
+- SHA-256 : `B66FDB258C2ACB865D6385FDC8B04ADFFA7976D3CAD40D08258568E461DDE3DC`.
+- Exécutable à vérifier : `app/artifacts/post-rc2-multiserver-preview-2-win-x64/PinteMod.ControlCenter.exe`.
+- Aucun serveur, processus BOIII ou commande RCON n’a été lancé pendant cette passe.
+
+### Point nécessitant une décision humaine
+
+- Confirmation reçue le 2026-08-13 : le mot de passe demandé est bien `g_password`, utilisé par les joueurs pour rejoindre, et non le secret RCON.
+- Le dépôt PinteModReal audité ne fournit aucun contrat fermé pour modifier le nom public BOIII ou `g_password`. Aucun `set` libre ou commande supposée n’est ajouté. La prochaine action appartient à PinteMod : définir des commandes fermées, la confidentialité du transport et un feedback structuré avant activation réelle dans le Control Center.
+- Prompt préparé : `docs/PROMPT_PINTE_MOD_SERVER_IDENTITY_CONTRACT.md`.
+
+### Captures
+
+- Aucune capture automatique produite ; la barre multi-serveurs, le renommage, l’ajout/retrait et la stabilité des trois listes doivent être vérifiés dans la preview locale ci-dessus.
+
 ### Hors périmètre maintenu
 
 - Modération réelle à deux comptes volontairement non validée.
 - ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés faute de contrats PinteMod fermés et observables.
 - Aucune publication, fusion, création de tag ou modification de release GitHub effectuée pendant cette clôture.
+
+## 2026-08-14 — Intégration ciblée des contrats PinteModReal e279a59 (automatisée terminée)
+
+### Objectif de la passe
+
+Intégrer sur la branche post-RC2 les quatre contrats Control Center v1 validés côté PinteModReal, sans modifier la RC2, sans commande libre et sans activer Change Map, événement générique ou SET mot de passe joueur.
+
+### Réalisé
+
+- ajout des modèles Core `capabilities`, `action_feedback`, `map_transition` et `server_identity` ;
+- ajout des quatre chemins locaux explicitement autorisés et lecture via `VerifiedReadOnlyFile`/`ReadOnlyJsonFileReader` ;
+- tailles maximales : capabilities 16 Kio, autres contrats 4 Kio ;
+- lecture asynchrone hors UI, cache mémoire non autoritaire, invalidation par session et contrôle carte/session ;
+- schémas JSON v1 embarqués dans l’application ;
+- ajout des quatre commandes fermées : Restart Map, Spawn Boss, Set Hostname et Clear Join Password ;
+- revalidation après confirmation de la session, carte, capability, alias boss et cible BOIII_XUID ;
+- corrélation du résultat par `request_id`, nouvelle session de transition et révision d’identité ;
+- une transition lente reste « non confirmée » et ne devient jamais automatiquement un échec ;
+- Change Map reste Simulation, SET password reste désactivé « À venir », événement générique reste Simulation ;
+- aucun XUID complet ajouté à une propriété publique de ViewModel.
+
+### Validation automatisée finale
+
+- compilation WPF Debug : 0 avertissement, 0 erreur ;
+- tests ciblés Debug : 27/27 réussis ;
+- suite complète Debug : 0 avertissement, 0 erreur, 413/413 tests réussis ;
+- suite complète Release : 0 avertissement, 0 erreur, 413/413 tests réussis ;
+- 10/10 fichiers XAML valides et 4/4 schémas JSON valides ;
+- aucune occurrence de `ezzccmap`, `ezzccevent` ou `ezzccsetjoinpassword` dans les sources de production ;
+- aucun binding vers un XUID complet et aucune commande libre ajoutée ;
+- garanties read-only couvertes par tests avant/après sur les quatre sources contractuelles ;
+- validation terrain : non exécutée ;
+- aucun serveur, BAT ou EXE BOIII lancé.
+
+### Problèmes rencontrés
+
+- plusieurs processus `dotnet` de compilation sont restés bloqués sans sortie ; seuls ces processus de build ont été arrêtés, sans toucher au Control Center ni à BOIII.
+
+### Validation humaine future
+
+- compilation GSC et installation de la branche PinteModReal candidate sur la copie de test ;
+- validation groupée Restart/Boss/Hostname/Clear Password après réussite automatisée finale.
+
+### Fichiers de preuve
+
+- rapport : `docs/CONTROL_CENTER_CONTRACTS_INTEGRATION_REPORT.md` ;
+- prompt de revue : `docs/PROMPT_CHATGPT_CONTROL_CENTER_CONTRACTS_REVIEW.md` ;
+- `UI_FEEDBACK.md` n’a pas été modifié.

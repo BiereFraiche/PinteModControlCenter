@@ -61,8 +61,11 @@ public sealed class SettingsOperatorViewModelTests
         var store = new CapturingConfigurationStore();
         var viewModel = new SettingsViewModel(localDataSourceProbe: probe, configurationStore: store)
         {
+            ProfileDisplayName = "Serveur salon",
             OperatorServerRoot = "C:\\Server\\UnrankedServer"
         };
+        var savedDisplayName = string.Empty;
+        viewModel.ProfileDisplayNameSaved += value => savedDisplayName = value;
 
         viewModel.TestDataSourceCommand.Execute(null);
         await probe.Called.Task.WaitAsync(TimeSpan.FromSeconds(2));
@@ -74,6 +77,8 @@ public sealed class SettingsOperatorViewModelTests
 
         Assert.IsTrue(store.Configuration!.ActivateDataSourceOnStartup);
         Assert.AreEqual("C:\\Server\\UnrankedServer", store.Configuration.ServerRoot);
+        Assert.AreEqual("Serveur salon", store.Configuration.ProfileDisplayName);
+        Assert.AreEqual("Serveur salon", savedDisplayName);
         Assert.AreEqual("ENREGISTRÉ", viewModel.ConfigurationSaveStatus);
     }
 

@@ -99,6 +99,9 @@ public sealed record BlockALocalSnapshot(
     public LocalReadResult<ControlCenterRuntimeSnapshot> RuntimeSnapshot { get; init; } =
         new(null, LocalSourceMetadata.Unavailable("Snapshot runtime PinteMod non lu."), null);
 
+    public ControlCenterContractSnapshot ControlCenterContracts { get; init; } =
+        ControlCenterContractSnapshot.Unavailable;
+
     public static BlockALocalSnapshot Simulation { get; } = new(
         new(null, SimulationMetadata, null),
         new(null, SimulationMetadata, null),

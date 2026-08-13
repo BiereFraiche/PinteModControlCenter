@@ -45,6 +45,33 @@ public sealed class OperatorConfigurationStoreTests
     }
 
     [TestMethod]
+    public async Task ProfileDisplayName_RoundTripsAndLegacyFileGetsSafeDefault()
+    {
+        using var directory = new TemporaryConfigurationDirectory();
+        var store = new JsonOperatorConfigurationStore(directory.ConfigurationPath);
+        var configured = OperatorConfiguration.Default with { ProfileDisplayName = "Serveur Zombies 2" };
+
+        await store.SaveAsync(configured);
+        var roundTrip = await store.LoadAsync();
+        Assert.AreEqual("Serveur Zombies 2", roundTrip.ProfileDisplayName);
+
+        await File.WriteAllTextAsync(
+            directory.ConfigurationPath,
+            """
+            {
+              "schema_version": 1,
+              "data_location": 0,
+              "server_root": "",
+              "activate_data_source_on_startup": false,
+              "rcon_address": "127.0.0.1",
+              "rcon_port": 27017
+            }
+            """);
+        var migrated = await store.LoadAsync();
+        Assert.AreEqual(OperatorConfiguration.DefaultProfileDisplayName, migrated.ProfileDisplayName);
+    }
+
+    [TestMethod]
     public async Task InvalidConfiguration_ReturnsDefaultWithoutThrowing()
     {
         using var directory = new TemporaryConfigurationDirectory();
@@ -62,6 +89,20 @@ public sealed class OperatorConfigurationStoreTests
         using var directory = new TemporaryConfigurationDirectory();
         var store = new JsonOperatorConfigurationStore(directory.ConfigurationPath);
         var configuration = OperatorConfiguration.Default with { RconAddress = "8.8.8.8" };
+
+        await Assert.ThrowsExceptionAsync<ArgumentException>(() => store.SaveAsync(configuration));
+        Assert.IsFalse(File.Exists(directory.ConfigurationPath));
+    }
+
+    [TestMethod]
+    public async Task ProfileDisplayName_WithControlCharacterCannotBeSaved()
+    {
+        using var directory = new TemporaryConfigurationDirectory();
+        var store = new JsonOperatorConfigurationStore(directory.ConfigurationPath);
+        var configuration = OperatorConfiguration.Default with
+        {
+            ProfileDisplayName = "Serveur\r\nInjecté"
+        };
 
         await Assert.ThrowsExceptionAsync<ArgumentException>(() => store.SaveAsync(configuration));
         Assert.IsFalse(File.Exists(directory.ConfigurationPath));

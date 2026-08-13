@@ -309,3 +309,38 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Contre-revue ChatGPT validée sans blocage le 2026-08-13 ; lot post-RC2 autorisé pour le terrain.
 - **Terminé** — Validation terrain groupée réussie le 2026-08-13 : armes, PAP, retrait d’atout, power-up et fallbacks diagnostics acceptés.
 - **À faire** — Sur ordre explicite uniquement, préparer la publication stable issue de la candidate `0e4e092` sans modifier la RC2 historique.
+
+## Prépublication stable — profils serveurs et identité
+
+- **Terminé** — Empêcher les listes Armes et Cartes inchangées d’être reconstruites à chaque actualisation automatique.
+- **Terminé** — Ajouter plusieurs onglets serveurs avec configuration, lecture locale, secret DPAPI, catalogue et sécurité RCON isolés par profil.
+- **Terminé** — Migrer la configuration unique existante vers le profil principal sans perdre le chemin, l’adresse RCON ou le secret déjà protégé.
+- **Terminé** — Ajouter, retirer et renommer localement un onglet serveur sans modifier ni arrêter BOIII.
+- **Terminé** — Exécuter la suite complète Debug/Release : 0 avertissement, 0 erreur et 394/394 tests dans chaque configuration.
+- **Terminé** — Produire et auditer la preview autonome multi-serveurs : 466 entrées, audit packaging PASS.
+- **À valider** — Vérifier visuellement la barre d’onglets, l’ajout/retrait, le renommage et la stabilité des listes Armes, Cartes et Catalogue pendant plusieurs actualisations.
+- **Bloqué** — Modification du nom public BOIII : aucun contrat PinteMod fermé, validé et observable n’existe dans PinteModReal.
+- **Terminé** — Confirmation humaine reçue : « mot de passe serveur » désigne bien `g_password`, demandé aux joueurs pour rejoindre, et non le secret RCON.
+- **Bloqué** — Modification de `g_password` : attendre un contrat PinteMod typé, borné, sans journalisation de la valeur et avec une décision explicite sur la confidentialité du transport ; ne jamais utiliser une commande libre supposée.
+
+## Intégration contrats PinteModReal e279a59 — 2026-08-14
+
+### En cours
+
+- Aucun travail automatisé restant dans ce lot.
+
+### À valider
+
+- [Interface graphique] Vérifier le rendu responsive de la nouvelle carte Identité et du sélecteur Boss.
+- [Intégration PinteMod] Compiler les GSC candidats dans un environnement compatible.
+- [Intégration PinteMod] Valider en une seule passe terrain Restart Map, Spawn Boss, Set Hostname et Clear Join Password.
+
+### Terminé
+
+- [Lecture locale] Quatre sources contractuelles bornées, confinées, asynchrones et mises en cache sans autorité fraîche artificielle.
+- [Sécurité] `supported` n’est jamais transformé en `installed`; Change Map reste inactif.
+- [RCON] Quatre nouvelles commandes fermées seulement, sans texte de commande libre ni retry automatique.
+- [Confidentialité] `g_password` n’est jamais lu/affiché et le boss reste ciblé en interne par BOIII_XUID.
+- [Tests] Debug et Release : 0 avertissement, 0 erreur et 413/413 tests réussis dans chaque configuration.
+- [Tests] Scans de whitelist, confidentialité, XAML, schémas et garantie read-only terminés.
+- [Documentation] Rapport et prompt de revue post-RC2 préparés.

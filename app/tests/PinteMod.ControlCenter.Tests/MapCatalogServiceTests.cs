@@ -221,6 +221,44 @@ public sealed class MapCatalogServiceTests
     }
 
     [TestMethod]
+    public async Task UnchangedMapCatalog_DoesNotRebuildOpenMapMenu()
+    {
+        using var directory = new TemporaryCatalogDirectory();
+        var service = new JsonMapCatalogService(directory.CatalogPath);
+        var snapshot = SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy);
+        var viewModel = new ServerViewModel(
+            new FixedSnapshotStore(snapshot),
+            new SimulationActionService(),
+            mapCatalogService: service);
+        await viewModel.InitializeAsync();
+        var firstOption = viewModel.MapOptions[0];
+        var collectionChanges = 0;
+        viewModel.MapOptions.CollectionChanged += (_, _) => collectionChanges++;
+
+        await viewModel.InitializeAsync();
+
+        Assert.AreEqual(0, collectionChanges);
+        Assert.AreSame(firstOption, viewModel.MapOptions[0]);
+    }
+
+    [TestMethod]
+    public async Task UnchangedSettingsCatalog_DoesNotRebuildOpenCatalogMenu()
+    {
+        using var directory = new TemporaryCatalogDirectory();
+        var service = new JsonMapCatalogService(directory.CatalogPath);
+        var viewModel = new SettingsViewModel(mapCatalogService: service);
+        await viewModel.InitializeAsync();
+        var firstEntry = viewModel.MapCatalogEntries[0];
+        var collectionChanges = 0;
+        viewModel.MapCatalogEntries.CollectionChanged += (_, _) => collectionChanges++;
+
+        await viewModel.InitializeAsync();
+
+        Assert.AreEqual(0, collectionChanges);
+        Assert.AreSame(firstEntry, viewModel.MapCatalogEntries[0]);
+    }
+
+    [TestMethod]
     public async Task SettingsChange_RefreshesServerMenuImmediatelyThroughSharedState()
     {
         using var directory = new TemporaryCatalogDirectory();

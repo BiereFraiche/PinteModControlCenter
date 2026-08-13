@@ -20,6 +20,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly MapCatalogState? _mapCatalogState;
     private readonly ITextClipboardService? _clipboardService;
     private readonly IControlCenterSnapshotStore? _snapshotStore;
+    private string _profileDisplayName;
     private string _selectedOperatorMode;
     private string _operatorServerRoot;
     private bool _activateDataSourceOnStartup;
@@ -75,6 +76,7 @@ public sealed class SettingsViewModel : PageViewModel
         _clipboardService = clipboardService;
         _snapshotStore = snapshotStore;
         var configuration = initialConfiguration ?? OperatorConfiguration.Default;
+        _profileDisplayName = configuration.ProfileDisplayName;
         var configuredRoot = serverRoot ?? configuration.ServerRoot;
         _selectedOperatorMode = serverRoot is not null
             ? IsUnc(serverRoot) ? "LAN" : "LOCAL"
@@ -160,6 +162,8 @@ public sealed class SettingsViewModel : PageViewModel
     }
 
     public IReadOnlyList<string> OperatorModes { get; } = ["LOCAL", "LAN"];
+
+    public event Action<string>? ProfileDisplayNameSaved;
 
     public AsyncRelayCommand TestDataSourceCommand { get; }
 
@@ -274,6 +278,22 @@ public sealed class SettingsViewModel : PageViewModel
     public bool CanRemoveManualMap =>
         _mapCatalogService is not null && SelectedMapCatalogEntry?.IsManual == true;
 
+    public string ProfileDisplayName
+    {
+        get => _profileDisplayName;
+        set
+        {
+            var normalized = value ?? string.Empty;
+            if (SetProperty(ref _profileDisplayName, normalized))
+            {
+                ConfigurationSaveStatus = "MODIFIÉ";
+                ConfigurationSaveMessage = "Enregistrez pour appliquer le nom de cet onglet serveur.";
+                OnPropertyChanged(nameof(CanSaveConfiguration));
+                SaveConfigurationCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
     public string SelectedOperatorMode
     {
         get => _selectedOperatorMode;
@@ -380,6 +400,7 @@ public sealed class SettingsViewModel : PageViewModel
 
     public bool CanSaveConfiguration =>
         _configurationStore is not null &&
+        OperatorConfiguration.IsValidProfileDisplayName(ProfileDisplayName) &&
         CreateRconEndpoint() is not null &&
         (!ActivateDataSourceOnStartup || string.Equals(_lastAcceptedProbeSignature, ProbeSignature(), StringComparison.Ordinal));
 
@@ -540,10 +561,21 @@ public sealed class SettingsViewModel : PageViewModel
         var selectedCode = SelectedMapCatalogEntry?.Code;
         var snapshot = await _mapCatalogService.GetSnapshotAsync(cancellationToken);
         _mapCatalogState?.Update(snapshot);
-        MapCatalogEntries.Clear();
-        foreach (var entry in snapshot.Entries)
+        var desiredEntries = snapshot.Entries
+            .Select(entry => new MapCatalogItemViewModel(entry))
+            .ToArray();
+        var catalogChanged = MapCatalogEntries.Count != desiredEntries.Length ||
+                             MapCatalogEntries.Zip(desiredEntries).Any(pair =>
+                                 !string.Equals(pair.First.Code, pair.Second.Code, StringComparison.Ordinal) ||
+                                 !string.Equals(pair.First.DisplayLabel, pair.Second.DisplayLabel, StringComparison.Ordinal) ||
+                                 pair.First.IsManual != pair.Second.IsManual);
+        if (catalogChanged)
         {
-            MapCatalogEntries.Add(new MapCatalogItemViewModel(entry));
+            MapCatalogEntries.Clear();
+            foreach (var entry in desiredEntries)
+            {
+                MapCatalogEntries.Add(entry);
+            }
         }
 
         SelectedMapCatalogEntry = MapCatalogEntries.FirstOrDefault(entry =>
@@ -680,8 +712,13 @@ public sealed class SettingsViewModel : PageViewModel
             OperatorServerRoot,
             ActivateDataSourceOnStartup,
             endpoint.Address,
-            endpoint.Port);
+            endpoint.Port)
+        {
+            ProfileDisplayName = ProfileDisplayName.Trim()
+        };
         await _configurationStore.SaveAsync(configuration);
+        ProfileDisplayName = configuration.ProfileDisplayName;
+        ProfileDisplayNameSaved?.Invoke(configuration.ProfileDisplayName);
         ConfigurationSaveStatus = "ENREGISTRÉ";
         ConfigurationSaveMessage = ActivateDataSourceOnStartup
             ? "Le mode opérateur sera appliqué au prochain démarrage."

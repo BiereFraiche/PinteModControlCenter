@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pintemod.invalid/contracts/control-center/v1/server_identity.schema.json",
+  "title": "PinteMod Control Center server identity v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "session_id", "sequence", "generated_gettime",
+    "updated_at_utc", "time_authority", "public_hostname",
+    "public_hostname_state",
+    "join_password_enabled", "revision"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "session_id": { "type": "string", "minLength": 1, "maxLength": 96 },
+    "sequence": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "generated_gettime": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "updated_at_utc": { "const": "" },
+    "time_authority": { "const": "session_gettime_and_file_mtime" },
+    "public_hostname": {
+      "type": "string",
+      "maxLength": 96,
+      "pattern": "^[A-Za-z0-9 ._\\[\\]()-]*$"
+    },
+    "public_hostname_state": { "enum": ["observed", "neutralized", "empty"] },
+    "join_password_enabled": { "enum": ["true", "false"] },
+    "revision": { "type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 12 }
+  }
+}
+
