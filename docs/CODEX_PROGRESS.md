@@ -3636,3 +3636,7 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - Debug : 0 avertissement, 0 erreur, 447/447 tests ;
 - Release : 0 avertissement, 0 erreur, 447/447 tests ;
 - aucune modification supplémentaire de PinteMod ou de la copie serveur.
+- commit applicatif de l’ajustement : `45599e5` ;
+- exécutable actualisé : `app/artifacts/post-rc2-net-password-v014-ui-45599e5-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP actualisé : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-ui-45599e5-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ; SHA-256 `0F8E1547914B357318BBA47996505F3D47A51A8B8158A38EF67626E9AA0F5CFA`.
