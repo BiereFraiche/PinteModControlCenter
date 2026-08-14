@@ -841,3 +841,5 @@ Dernière mise à jour : 2026-08-12
 **Couleurs.** La grammaire accepte les couples BOIII `^0` à `^9`. Un caret isolé, `^x`, les séparateurs de commande et tout caractère hors alphabet fermé sont refusés avant transport. La limite de 64 caractères porte sur la chaîne brute, codes compris.
 
 **Mot de passe.** Le booléen local `join_password_enabled=true` prouve que la dvar est active, mais son effet doit être vérifié sur une nouvelle connexion. Les joueurs déjà connectés ne sont ni expulsés ni redemandés automatiquement.
+
+**Candidate.** La révision `7bdb22fbcc1a69b4768bb59afaf3bb72295f2004` consomme exclusivement le contrat v0.1.3 et refuse donc silencieusement de réactiver les contrôles sur un ancien GSC v0.1.2.

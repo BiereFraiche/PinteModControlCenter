@@ -3568,3 +3568,11 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - Control Center Debug : 0 avertissement, 0 erreur, 445/445 tests ;
 - Control Center Release : 0 avertissement, 0 erreur, 445/445 tests ;
 - GSC v0.1.3 préparé dans la copie `servtest\Server3` avec sauvegarde, sans arrêter ni relancer le processus BOIII en cours ; il prendra effet au prochain redémarrage manuel.
+
+### Candidate v0.1.3
+
+- commit applicatif : `7bdb22fbcc1a69b4768bb59afaf3bb72295f2004` ;
+- exécutable : `app/artifacts/post-rc2-identity-v013-7bdb22f-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-identity-v0.1.3-7bdb22f-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `E7513B783C900B451F58E8E01F4B34EF0355DADB0BC2B2FB2C80AF881A073F46`.

@@ -372,3 +372,4 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Corriger le contrat v0.1.3, accepter uniquement `^0`–`^9` et valider 445/445 tests Debug/Release.
 - **À valider** — Redémarrer manuellement la copie de test, confirmer `Control Center Contracts v0.1.3 loaded`, puis retester le nom coloré.
 - **À valider** — Tester le mot de passe avec un client totalement déconnecté puis reconnecté ; un joueur déjà en session ne constitue pas une preuve.
+- **Terminé** — Produire et auditer la candidate v0.1.3 `7bdb22f`, 471 entrées, SHA-256 `E7513B783C900B451F58E8E01F4B34EF0355DADB0BC2B2FB2C80AF881A073F46`.
