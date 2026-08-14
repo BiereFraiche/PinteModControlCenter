@@ -400,6 +400,7 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Isoler l’enregistrement de l’apparence afin qu’il ne puisse pas sauvegarder une source ou une cible RCON non vérifiée.
 - **Terminé** — Ajouter une palette BOIII `^0`–`^9`, l’insertion au curseur, la coloration d’une sélection et un aperçu direct du hostname.
 - **Terminé** — Valider 460/460 tests Debug et Release, 0 avertissement, 0 erreur ; paquet autonome audité PASS.
-- **À valider** — Vérifier visuellement deux thèmes distincts sur deux onglets, leur persistance après redémarrage et le comportement en fenêtre réduite.
-- **À valider** — Comparer l’aperçu multicolore indicatif au rendu réel BOIII avec un nom synthétique.
-- **Bloqué** — Publication stable tant que les validations terrain mot de passe/confidentialité et la validation visuelle de cette personnalisation ne sont pas terminées.
+- **Terminé** — Validation humaine de deux thèmes distincts, de leur persistance et du comportement par onglet.
+- **Terminé** — Validation humaine de l’éditeur multicolore et de son aperçu direct.
+- **Bloqué** — Publication stable tant que la validation terrain `net_password` et le contrôle de confidentialité avec une valeur synthétique ne sont pas terminés.
+- **À faire** — Après validation `net_password`, geler le code, exécuter l’audit final Debug/Release/packaging et préparer une unique candidate stable pour revue ChatGPT.

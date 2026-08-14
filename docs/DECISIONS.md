@@ -872,8 +872,12 @@ Dernière mise à jour : 2026-08-12
 
 **Isolation.** L’action `ENREGISTRER L’APPARENCE` recharge la configuration enregistrée puis ne remplace que le nom local de l’onglet et sa clé d’accent. Les champs source, activation et RCON actuellement saisis ne sont pas propagés par cette action. Une couleur inconnue revient au Bleu PinteMod à la lecture et ne peut pas être enregistrée.
 
+**Validation humaine.** Le changement d’accent par onglet et sa persistance ont été validés sans demande de correction supplémentaire.
+
 ## ADR-109 — Le hostname coloré conserve la chaîne BOIII autoritaire
 
 **Décision.** L’éditeur conserve `RequestedHostname` sous la forme contractuelle existante contenant les codes `^0` à `^9`. La palette insère uniquement ces couples fermés au curseur. Lorsqu’une sélection est colorée, l’éditeur restaure ensuite la couleur active avant la sélection. L’aperçu est une interprétation visuelle indicative et ne devient jamais la valeur autoritaire.
 
 **Sécurité.** La validation existante du hostname et la limite de 64 caractères bruts restent appliquées avant transport. L’éditeur refuse une insertion qui dépasserait cette limite. Aucun contenu riche, couleur arbitraire, commande libre ou nouveau chemin RCON n’est introduit.
+
+**Validation humaine.** La palette, la coloration partielle et l’aperçu direct ont été validés. L’aperçu reste explicitement indicatif ; la chaîne BOIII encodée demeure l’autorité.

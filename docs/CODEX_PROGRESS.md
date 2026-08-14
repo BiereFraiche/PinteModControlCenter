@@ -3738,3 +3738,9 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - attribuer deux couleurs différentes à deux onglets, enregistrer l’apparence, basculer entre eux puis redémarrer le Control Center ;
 - saisir un nom avec plusieurs couleurs, tester la coloration d’une sélection et comparer l’aperçu indicatif au rendu BOIII ;
 - contrôler la carte Serveur dans une fenêtre réduite avant publication stable.
+
+### Verdict humain
+
+- personnalisation par onglet, persistance des couleurs et éditeur de hostname multicolore validés le 2026-08-14 ;
+- aucun correctif graphique supplémentaire demandé ;
+- prochain et dernier verrou fonctionnel : validation terrain et confidentialité de `net_password`, puis gel du code et audit de publication stable.
