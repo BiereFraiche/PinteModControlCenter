@@ -3608,10 +3608,20 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - tests WPF ciblés : 3/3 PASS ;
 - Debug Control Center : 0 avertissement, 0 erreur, 447/447 tests ;
 - Release Control Center : 0 avertissement, 0 erreur, 447/447 tests ;
-- aucun serveur, BAT ou exécutable BOIII lancé ; aucun secret lu, journalisé ou ajouté au dépôt.
+- aucun serveur, BAT ou exécutable BOIII lancé ; aucune valeur sensible utilisée par le correctif, journalisée ou ajoutée au dépôt.
 
 ### Validation humaine restante
 
 - après déploiement sur la copie de test et redémarrage manuel : vérifier `net_password` vide/refus, correct/accepté et incorrect/refusé ;
 - rechercher une valeur synthétique unique dans les sorties et fichiers de test ;
 - contrôler visuellement les cartes repliées sur Dashboard et Records.
+
+### Livraison candidate
+
+- commit PinteModReal : `fdb9a55` sur `codex/pintemod-contracts-3-7` ;
+- commit Control Center : `e9be7ca` sur `codex/post-rc2-runtime-contracts` ;
+- GSC v0.1.4 préparé dans `E:\Dev\servtest\Server3\boiii\custom_scripts`, hash identique à la source validée ;
+- exécutable : `app/artifacts/post-rc2-net-password-v014-e9be7ca-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-e9be7ca-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `F77687A7E35B1DCAB0C58BA6C453D37B7A5DEA34E8A19CB9484EE87CC8A150AC`.

@@ -382,7 +382,7 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Replier les détails de lecture des services et les XUID abrégés des profils Ranks, avec révélation explicite et clavier/souris.
 - **Terminé** — Afficher directement le numéro de meilleure manche sans préfixe `M`.
 - **Terminé** — Exécuter les suites complètes Debug et Release : 0 avertissement, 0 erreur et 447/447 tests dans chaque configuration.
-- **En cours** — Préparer la candidate autonome de test liée au correctif v0.1.4.
+- **Terminé** — Préparer et auditer la candidate autonome `e9be7ca` liée au correctif PinteMod v0.1.4.
 - **À valider** — Redémarrer manuellement la copie Server3, confirmer `Control Center Contracts v0.1.4 loaded`, puis tester refus sans `net_password` et acceptation avec la bonne valeur.
 - **À valider** — Vérifier visuellement les deux flèches de détails sur Dashboard et Records en fenêtre grande et réduite.
 - **Bloqué** — Publication stable tant que le test terrain `net_password` et le contrôle de confidentialité avec valeur synthétique ne sont pas terminés.
