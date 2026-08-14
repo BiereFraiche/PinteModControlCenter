@@ -3694,3 +3694,47 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contract-compatible-b135e7a-win-x64.zip` ;
 - audit packaging : PASS, 471 entrées ;
 - SHA-256 : `728691D794A0BF8D2917458491A9240A109EC5754235AF498E2856B532606B60`.
+
+## 2026-08-14 — Personnalisation par serveur et éditeur de nom BOIII coloré
+
+### Objectif
+
+- permettre une identité visuelle distincte pour chaque onglet serveur et rendre les codes couleur BOIII accessibles sans saisie manuelle obligatoire.
+
+### Réalisé
+
+- six palettes d’accent fermées : Bleu PinteMod, Cyan électrique, Indigo, Violet, Rose néon et Turquoise ;
+- couleur enregistrée dans la configuration locale isolée de chaque profil serveur et appliquée automatiquement lors du changement d’onglet ;
+- indicateur coloré discret ajouté dans chaque onglet ;
+- ressources d’accent WPF converties en ressources dynamiques ; les couleurs sémantiques sain/avertissement/danger restent fixes ;
+- bouton séparé `ENREGISTRER L’APPARENCE` : il persiste uniquement le nom de l’onglet et sa couleur, sans enregistrer une source ou une cible RCON non vérifiée ;
+- éditeur de hostname BOIII dédié avec palette `^0` à `^9`, insertion à la position du curseur, application à une sélection et restauration de la couleur précédente ;
+- aperçu coloré en direct dans le même bloc d’édition ;
+- limite contractuelle de 64 caractères bruts conservée, codes couleur compris ;
+- aucune nouvelle commande, aucun texte RCON libre et aucune modification PinteMod/GSC ;
+- `UI_FEEDBACK.md` inchangé.
+
+### Fichiers principaux créés ou modifiés
+
+- Core : `BoiiiColorText.cs`, `OperatorDataSourceModels.cs` ;
+- Infrastructure : `JsonOperatorConfigurationStore.cs` ;
+- WPF : `AccentThemeService.cs`, `BoiiiHostnameEditor.xaml/.cs`, `App.xaml.cs`, workspace/settings ViewModels, MainWindow, thème et vues ;
+- tests : parser couleur, configuration opérateur, Settings, workspace, XAML et rendu WPF.
+
+### Validation
+
+- tests ciblés : 113/113 réussis ;
+- Debug : 0 avertissement, 0 erreur, 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 460/460 tests réussis ;
+- commit applicatif local : `6358d94` ;
+- exécutable : `app/artifacts/post-rc2-personalization-6358d94-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-personalization-6358d94-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `7A459BE69CF0CBB6F3C36CCF337248DD8A3B840FCA46DEA7F92BE7CA7812A970` ;
+- aucune capture produite automatiquement.
+
+### Validation humaine restante
+
+- attribuer deux couleurs différentes à deux onglets, enregistrer l’apparence, basculer entre eux puis redémarrer le Control Center ;
+- saisir un nom avec plusieurs couleurs, tester la coloration d’une sélection et comparer l’aperçu indicatif au rendu BOIII ;
+- contrôler la carte Serveur dans une fenêtre réduite avant publication stable.

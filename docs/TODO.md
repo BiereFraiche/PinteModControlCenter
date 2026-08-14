@@ -392,3 +392,14 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Valider le correctif compatible : 450/450 tests Debug et Release, audit du paquet autonome PASS.
 - **À valider** — Lancer la candidate `b135e7a` et confirmer que « APPLIQUER LE NOM » s’active avec un nom différent.
 - **À valider** — Sur la machine serveur en loopback uniquement, confirmer que « DÉFINIR LE MOT DE PASSE » s’active puis terminer le test terrain de confidentialité/refus-acceptation.
+
+## Personnalisation de la candidate publiable — 2026-08-14
+
+- **Terminé** — Ajouter six palettes d’accent fermées, persistées séparément pour chaque onglet serveur.
+- **Terminé** — Appliquer dynamiquement la palette de l’onglet actif sans modifier les couleurs sémantiques vert/orange/rouge.
+- **Terminé** — Isoler l’enregistrement de l’apparence afin qu’il ne puisse pas sauvegarder une source ou une cible RCON non vérifiée.
+- **Terminé** — Ajouter une palette BOIII `^0`–`^9`, l’insertion au curseur, la coloration d’une sélection et un aperçu direct du hostname.
+- **Terminé** — Valider 460/460 tests Debug et Release, 0 avertissement, 0 erreur ; paquet autonome audité PASS.
+- **À valider** — Vérifier visuellement deux thèmes distincts sur deux onglets, leur persistance après redémarrage et le comportement en fenêtre réduite.
+- **À valider** — Comparer l’aperçu multicolore indicatif au rendu réel BOIII avec un nom synthétique.
+- **Bloqué** — Publication stable tant que les validations terrain mot de passe/confidentialité et la validation visuelle de cette personnalisation ne sont pas terminées.

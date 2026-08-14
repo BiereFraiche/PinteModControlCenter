@@ -863,3 +863,17 @@ Dernière mise à jour : 2026-08-12
 **Confinement.** Cette règle ne relâche ni les objets fermés, ni les propriétés autorisées, ni les types, bornes, sessions, cartes, fraîcheurs, capacités booléennes ou listes blanches. Toute évolution structurelle exige une nouvelle version de schéma ou de contrat et une adaptation explicite du Control Center.
 
 **Présentation.** Le bandeau Serveur est dérivé de la présence réelle de l’infrastructure RCON configurée. Il ne doit plus annoncer statiquement une absence de transport lorsque des commandes réelles fermées sont disponibles. Les fonctions restant simulées sont toujours nommées explicitement.
+
+## ADR-108 — L’accent visuel est isolé par profil serveur
+
+**Décision.** Chaque profil choisit une clé dans une palette fermée de six accents. La clé est persistée dans son `operator-settings.json` local et la palette de l’onglet actif est appliquée via les ressources WPF dynamiques `AccentBrush`, `AccentBrightBrush` et `AccentSoftBrush`.
+
+**Sémantique.** Les ressources `Success`, `Warning` et `Danger` ne sont jamais recolorées par ce mécanisme. Un thème utilisateur ne doit pas transformer une erreur en accent décoratif ni rendre ambigu un état de santé.
+
+**Isolation.** L’action `ENREGISTRER L’APPARENCE` recharge la configuration enregistrée puis ne remplace que le nom local de l’onglet et sa clé d’accent. Les champs source, activation et RCON actuellement saisis ne sont pas propagés par cette action. Une couleur inconnue revient au Bleu PinteMod à la lecture et ne peut pas être enregistrée.
+
+## ADR-109 — Le hostname coloré conserve la chaîne BOIII autoritaire
+
+**Décision.** L’éditeur conserve `RequestedHostname` sous la forme contractuelle existante contenant les codes `^0` à `^9`. La palette insère uniquement ces couples fermés au curseur. Lorsqu’une sélection est colorée, l’éditeur restaure ensuite la couleur active avant la sélection. L’aperçu est une interprétation visuelle indicative et ne devient jamais la valeur autoritaire.
+
+**Sécurité.** La validation existante du hostname et la limite de 64 caractères bruts restent appliquées avant transport. L’éditeur refuse une insertion qui dépasserait cette limite. Aucun contenu riche, couleur arbitraire, commande libre ou nouveau chemin RCON n’est introduit.
