@@ -580,12 +580,12 @@ public sealed class ServerViewModel : PageViewModel
     public string JoinPasswordStatus => CurrentIdentity switch
     {
         null => "Mot de passe joueur : état inconnu",
-        { JoinPasswordEnabled: true } => "Mot de passe joueur : actif · valeur jamais lue",
+        { JoinPasswordEnabled: true } => "Mot de passe joueur : actif pour les nouvelles connexions · valeur jamais lue",
         _ => "Mot de passe joueur : désactivé"
     };
 
     public string HostnamePersistenceNotice =>
-        "Le nom public est persisté par PinteMod. Le titre de la fenêtre BOIII peut rester inchangé : l’identité locale et le navigateur de serveurs font foi.";
+        "Le nom public live_steam_server_name est persisté par PinteMod. Le titre de la fenêtre BOIII peut rester inchangé : l’identité locale et le navigateur de serveurs font foi.";
 
     public string SetJoinPasswordNotice => CanSetJoinPassword
         ? "Disponible uniquement sur la machine serveur · valeur éphémère, jamais lue, affichée, journalisée ni enregistrée."

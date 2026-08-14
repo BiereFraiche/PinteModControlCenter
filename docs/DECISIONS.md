@@ -831,3 +831,13 @@ Dernière mise à jour : 2026-08-12
 **Gate terrain.** La fonctionnalité reste candidate jusqu’à un test avec valeur synthétique unique et recherche dans toutes les sorties et fichiers de la copie de test. Toute trace impose la désactivation de la capability. Aucun retry automatique et aucune commande libre ne sont autorisés.
 
 **Candidate.** La première candidate intégrant cette décision embarque la révision `3d624fa3b09490d005b3cf65ad24ef081a8a7da5`. Son paquet autonome passe l’audit de publication ; cela ne remplace pas le gate de confidentialité terrain.
+
+## ADR-105 — `live_steam_server_name` est l’autorité du nom public BOIII
+
+**Constat terrain.** La copie Server3 configure le nom présenté aux joueurs avec `live_steam_server_name`. Modifier uniquement `sv_hostname` met à jour une dvar secondaire et le snapshot interne, mais ne constitue pas la mutation du nom public attendue.
+
+**Décision.** Le contrat v0.1.3 observe, applique, persiste et restaure `live_steam_server_name`. `sv_hostname` reçoit la même valeur uniquement pour compatibilité. Aucun CFG n’est lu ou réécrit par le Control Center ou le GSC.
+
+**Couleurs.** La grammaire accepte les couples BOIII `^0` à `^9`. Un caret isolé, `^x`, les séparateurs de commande et tout caractère hors alphabet fermé sont refusés avant transport. La limite de 64 caractères porte sur la chaîne brute, codes compris.
+
+**Mot de passe.** Le booléen local `join_password_enabled=true` prouve que la dvar est active, mais son effet doit être vérifié sur une nouvelle connexion. Les joueurs déjà connectés ne sont ni expulsés ni redemandés automatiquement.

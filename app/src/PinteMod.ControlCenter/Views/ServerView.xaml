@@ -86,11 +86,14 @@
                         <TextBlock Text="NOUVEAU NOM DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
                         <WrapPanel>
                             <TextBox Text="{Binding RequestedHostname, UpdateSourceTrigger=PropertyChanged}" Width="260"
-                                     MaxLength="64" Margin="0,0,8,8" ToolTip="1 à 64 caractères ASCII autorisés par le contrat" />
+                                     MaxLength="64" Margin="0,0,8,8" ToolTip="1 à 64 caractères · codes couleur BOIII ^0 à ^9 autorisés" />
                             <Button Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding SetHostnameCommand}" Margin="0,0,8,8"
                                     ToolTip="Commande réelle fermée : ezzccsethostname" />
                         </WrapPanel>
+                        <TextBlock Text="COULEURS : ^1 rouge · ^2 vert · ^3 jaune · ^4 bleu · ^5 cyan · ^6 rose · ^7 blanc · ^8 équipe · ^9 orange · ^0 noir"
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
+                                   TextWrapping="Wrap" />
                         <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="9" Margin="0,0,0,10" TextWrapping="Wrap" />
                         <TextBlock Text="NOUVEAU MOT DE PASSE JOUEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />

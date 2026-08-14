@@ -76,7 +76,7 @@ public sealed class ServerAdministrationCommandServiceTests
             new ServerAdministrationRequest(
                 ServerAdministrationAction.SetHostname,
                 RequestId: "request_0003",
-                Option: "PinteMod Test [EU]"),
+                Option: "^7[^4FR^7] ^1PinteMod"),
             new ServerAdministrationRequest(
                 ServerAdministrationAction.ClearJoinPassword,
                 RequestId: "request_0004")
@@ -94,7 +94,7 @@ public sealed class ServerAdministrationCommandServiceTests
             {
                 "ezzccrestartmap request_0001",
                 "ezzccboss request_0002 margwa 0000000000000001",
-                "ezzccsethostname request_0003 PinteMod Test [EU]",
+                "ezzccsethostname request_0003 ^7[^4FR^7] ^1PinteMod",
                 "ezzccclearjoinpassword request_0004"
             },
             client.Commands);

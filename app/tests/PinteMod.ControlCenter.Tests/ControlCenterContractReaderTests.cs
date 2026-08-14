@@ -187,7 +187,7 @@ public sealed class ControlCenterContractReaderTests
 
     private static string CapabilitiesJson() => """
         {
-          "schema_version":1,"module_version":"2.1.1","contract_module_version":"0.1.2",
+          "schema_version":1,"module_version":"2.1.1","contract_module_version":"0.1.3",
           "command_contract_version":1,"session_id":"session-local-001","sequence":7,
           "generated_gettime":25000,"updated_at_utc":"","time_authority":"session_gettime_and_file_mtime",
           "map_code":"zm_tomb","map_source":"runtime","map_installation_authority":"unknown",

@@ -3544,3 +3544,27 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-identity-v0.1.2-3d624fa-win-x64.zip` ;
 - audit packaging : PASS, 471 entrées, aucun PDB ;
 - SHA-256 : `C8D9B56E0307FAB614F75DD4D07D11FDA4114FBE078D8DB3D036AF494D42FB8A`.
+
+## 2026-08-14 — Correctif terrain du nom public BOIII et codes couleur
+
+### Diagnostic read-only
+
+- `control_center_identity.json` contient bien le nom public `Test` ;
+- `server_identity.json` confirme `public_hostname=Test`, `join_password_enabled=true`, révision 2 ;
+- le feedback corrélé confirme `set_join_password / applied / success` ;
+- le CFG de test déclare le nom public avec `live_steam_server_name`, et non `sv_hostname` ; les deux boutons avaient donc fonctionné côté contrat, mais le premier GSC modifiait la mauvaise autorité d’affichage BOIII.
+
+### Correction
+
+- contrat PinteMod v0.1.3 : `live_steam_server_name` devient l’autorité du nom public, avec mise à jour parallèle de `sv_hostname` pour compatibilité ;
+- persistance/restauration du même nom public non sensible ;
+- grammaire fermée étendue uniquement aux codes couleur BOIII `^0` à `^9` ; toute séquence `^` invalide reste refusée ;
+- aide compacte des dix couleurs ajoutée sous le champ nom ;
+- état mot de passe clarifié : actif pour les nouvelles connexions, jamais pour une session joueur déjà connectée.
+
+### Validation
+
+- PinteModReal : 39/39 PASS, commit local `b4d5b11` ;
+- Control Center Debug : 0 avertissement, 0 erreur, 445/445 tests ;
+- Control Center Release : 0 avertissement, 0 erreur, 445/445 tests ;
+- GSC v0.1.3 préparé dans la copie `servtest\Server3` avec sauvegarde, sans arrêter ni relancer le processus BOIII en cours ; il prendra effet au prochain redémarrage manuel.

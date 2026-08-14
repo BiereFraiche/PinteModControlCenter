@@ -402,7 +402,7 @@ public sealed class ControlCenterContractViewModelTests
     }
 
     private static ControlCenterCapabilitiesSnapshot Capabilities(string sessionId, string mapCode) => new(
-        "2.1.1", "0.1.2", sessionId, 7, 25000, mapCode, true,
+        "2.1.1", "0.1.3", sessionId, 7, 25000, mapCode, true,
         [new SupportedMapCapability(mapCode, mapCode)],
         ["margwa"], ["max_ammo"], ["map_audit", "event_status", "power_ups"],
         "idle", true, true, true, "OFFICIAL", "SUPPORTED", "SUPPORTED", "SUPPORTED_MARGWA",

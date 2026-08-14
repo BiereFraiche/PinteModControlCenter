@@ -21,8 +21,27 @@ public static class ControlCenterCommandValidator
             return false;
         }
 
-        return value.All(character =>
-            char.IsAsciiLetterOrDigit(character) || character is ' ' or '-' or '_' or '.' or '[' or ']' or '(' or ')');
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character == '^')
+            {
+                if (++index >= value.Length || value[index] is < '0' or > '9')
+                {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if (!char.IsAsciiLetterOrDigit(character) &&
+                character is not (' ' or '-' or '_' or '.' or '[' or ']' or '(' or ')'))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static bool IsValidJoinPassword(string? value) =>
