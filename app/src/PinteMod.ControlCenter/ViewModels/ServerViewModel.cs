@@ -488,6 +488,19 @@ public sealed class ServerViewModel : PageViewModel
         !_pauseMutationAuthorizationBlocked &&
         !_serverAdministrationMutationBlocked;
 
+    public bool IsServerAdministrationTransportConfigured =>
+        _serverAdministrationCommandService is not null &&
+        _confirmationService is not null &&
+        _rconEndpointFactory?.Invoke() is not null;
+
+    public string ServerActionModeTitle => IsServerAdministrationTransportConfigured
+        ? "COMMANDES SERVEUR · RCON EXPLICITE + SIMULATION LIMITÉE"
+        : "ACTIONS SERVEUR SIMULÉES · RCON NON CONFIGURÉ";
+
+    public string ServerActionModeDescription => IsServerAdministrationTransportConfigured
+        ? "Les actions marquées réelles utilisent uniquement les commandes fermées et confirmées ; Carte, Événements et Power-up restent simulés."
+        : "Configurez explicitement RCON dans Paramètres pour les actions réelles autorisées ; les autres contrôles restent simulés.";
+
     public string ServerAdministrationNotice
     {
         get
@@ -1769,6 +1782,9 @@ public sealed class ServerViewModel : PageViewModel
     private void NotifyServerAdministrationAuthorizationChanged()
     {
         OnPropertyChanged(nameof(CanRunServerAdministration));
+        OnPropertyChanged(nameof(IsServerAdministrationTransportConfigured));
+        OnPropertyChanged(nameof(ServerActionModeTitle));
+        OnPropertyChanged(nameof(ServerActionModeDescription));
         OnPropertyChanged(nameof(ServerAdministrationNotice));
         NextRoundCommand.NotifyCanExecuteChanged();
         SetRoundCommand.NotifyCanExecuteChanged();

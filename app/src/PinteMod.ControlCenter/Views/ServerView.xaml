@@ -40,8 +40,8 @@
             <Border Grid.Row="1" Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="7" Padding="14,11" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="ACTIONS SERVEUR SIMULÉES · AUCUN TRANSPORT RCON" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
-                    <TextBlock Text="Les contrôles ci-dessous produisent uniquement un résultat local structuré."
+                    <TextBlock Text="{Binding ServerActionModeTitle}" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding ServerActionModeDescription}"
                                Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10"
                                Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
                     <controls:ResponsiveUniformGrid MinItemWidth="112" MaxColumns="6"

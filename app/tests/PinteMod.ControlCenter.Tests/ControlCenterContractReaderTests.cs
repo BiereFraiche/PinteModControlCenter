@@ -37,6 +37,44 @@ public sealed class ControlCenterContractReaderTests
     }
 
     [TestMethod]
+    public async Task CapabilitiesV014_IsAcceptedAndItsVersionIsPreserved()
+    {
+        using var root = new TemporaryServerRoot();
+        WriteContracts(root, Now.AddSeconds(-2));
+        var capabilityPath = root.Options.ResolvePath(LocalPinteModFile.ControlCenterCapabilities);
+        var json = JsonNode.Parse(await File.ReadAllTextAsync(capabilityPath))!.AsObject();
+        json["contract_module_version"] = "0.1.4";
+        await File.WriteAllTextAsync(capabilityPath, json.ToJsonString());
+        File.SetLastWriteTimeUtc(capabilityPath, Now.AddSeconds(-1).UtcDateTime);
+        using var reader = new ControlCenterContractReader(root.Options, new FakeClock(Now));
+
+        var result = await reader.ReadAsync("session-local-001", "zm_tomb");
+
+        Assert.AreEqual(LocalReadStatus.Success, result.Capabilities.Metadata.ReadStatus);
+        Assert.AreEqual("0.1.4", result.Capabilities.Value!.ContractModuleVersion);
+        Assert.IsTrue(result.Capabilities.Value.SetHostname);
+        Assert.IsTrue(result.Capabilities.Value.SetJoinPassword);
+    }
+
+    [TestMethod]
+    public async Task UnknownCapabilitiesVersion_IsRejectedWithoutAffectingIdentity()
+    {
+        using var root = new TemporaryServerRoot();
+        WriteContracts(root, Now.AddSeconds(-2));
+        var capabilityPath = root.Options.ResolvePath(LocalPinteModFile.ControlCenterCapabilities);
+        var json = JsonNode.Parse(await File.ReadAllTextAsync(capabilityPath))!.AsObject();
+        json["contract_module_version"] = "0.1.5";
+        await File.WriteAllTextAsync(capabilityPath, json.ToJsonString());
+        File.SetLastWriteTimeUtc(capabilityPath, Now.AddSeconds(-1).UtcDateTime);
+        using var reader = new ControlCenterContractReader(root.Options, new FakeClock(Now));
+
+        var result = await reader.ReadAsync("session-local-001", "zm_tomb");
+
+        Assert.AreEqual(LocalReadStatus.Invalid, result.Capabilities.Metadata.ReadStatus);
+        Assert.AreEqual(LocalReadStatus.Success, result.ServerIdentity.Metadata.ReadStatus);
+    }
+
+    [TestMethod]
     public async Task SupportedMapNeverBecomesInstalledAndChangeMapTrueIsRejected()
     {
         using var root = new TemporaryServerRoot();

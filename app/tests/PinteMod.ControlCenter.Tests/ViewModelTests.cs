@@ -429,6 +429,8 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "x:Name=\"JoinPasswordBox\"");
         StringAssert.Contains(xaml, "Click=\"SetJoinPassword_Click\"");
         StringAssert.Contains(xaml, "IsEnabled=\"{Binding CanSetJoinPassword}\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ServerActionModeTitle}\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ServerActionModeDescription}\"");
         StringAssert.Contains(xaml, "MOT DE PASSE RÉSEAU BOIII");
         StringAssert.Contains(xaml, "codes couleur BOIII ^0 à ^9 autorisés");
         Assert.AreEqual(2, CountOccurrences(xaml, "Background=\"{StaticResource SurfaceHoverBrush}\" BorderBrush=\"{StaticResource AccentBrush}\""));

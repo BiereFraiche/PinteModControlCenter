@@ -236,7 +236,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
     {
         RequireClosedObject(root, CapabilityPropertyNames, DynamicCapabilityName.IsMatch);
         RequireSchema(root);
-        RequireExact(root, "contract_module_version", "0.1.3");
+        var contractModuleVersion = RequiredEnum(root, "contract_module_version", "0.1.3", "0.1.4");
         RequireIntegerExact(root, "command_contract_version", 1);
         RequireExact(root, "updated_at_utc", string.Empty);
         RequireExact(root, "time_authority", RuntimeJsonContract.TimeAuthority);
@@ -279,7 +279,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
 
         return new(
             RequiredIdentifier(root, "module_version", 32),
-            "0.1.3",
+            contractModuleVersion,
             RequiredSessionId(root, "session_id"),
             RequiredTwelveDigitNumber(root, "sequence"),
             RequiredTwelveDigitNumber(root, "generated_gettime"),
