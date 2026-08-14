@@ -16,6 +16,9 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
     private static readonly Regex DynamicCapabilityName = new(
         "^(?:map_[1-9][0-9]*_(?:code|display_name|availability)|boss_[1-9][0-9]*_alias|power_up_[1-9][0-9]*_alias|diagnostic_[1-9][0-9]*_alias)$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex SemanticVersion = new(
+        "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly HashSet<string> FeedbackResultCodes = new(StringComparer.Ordinal)
     {
         "accepted", "success", "invalid_request_id", "duplicate_request", "invalid_arguments",
@@ -236,7 +239,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
     {
         RequireClosedObject(root, CapabilityPropertyNames, DynamicCapabilityName.IsMatch);
         RequireSchema(root);
-        var contractModuleVersion = RequiredEnum(root, "contract_module_version", "0.1.3", "0.1.4");
+        var contractModuleVersion = RequiredSemanticVersion(root, "contract_module_version");
         RequireIntegerExact(root, "command_contract_version", 1);
         RequireExact(root, "updated_at_utc", string.Empty);
         RequireExact(root, "time_authority", RuntimeJsonContract.TimeAuthority);
@@ -459,6 +462,9 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
 
     private static string RequiredIdentifier(JsonElement root, string name, int maximumLength) =>
         RuntimeJsonContract.RequiredString(root, name, maximumLength, RuntimeJsonContract.IsSafeIdentifier);
+
+    private static string RequiredSemanticVersion(JsonElement root, string name) =>
+        RuntimeJsonContract.RequiredString(root, name, 32, SemanticVersion.IsMatch);
 
     private static string RequiredSessionId(JsonElement root, string name) =>
         RuntimeJsonContract.RequiredString(root, name, 96, IsSafeSessionId);

@@ -57,13 +57,32 @@ public sealed class ControlCenterContractReaderTests
     }
 
     [TestMethod]
-    public async Task UnknownCapabilitiesVersion_IsRejectedWithoutAffectingIdentity()
+    public async Task FutureModuleVersion_WithCompatibleSchemaAndCommandContract_IsAccepted()
     {
         using var root = new TemporaryServerRoot();
         WriteContracts(root, Now.AddSeconds(-2));
         var capabilityPath = root.Options.ResolvePath(LocalPinteModFile.ControlCenterCapabilities);
         var json = JsonNode.Parse(await File.ReadAllTextAsync(capabilityPath))!.AsObject();
-        json["contract_module_version"] = "0.1.5";
+        json["contract_module_version"] = "9.7.42";
+        await File.WriteAllTextAsync(capabilityPath, json.ToJsonString());
+        File.SetLastWriteTimeUtc(capabilityPath, Now.AddSeconds(-1).UtcDateTime);
+        using var reader = new ControlCenterContractReader(root.Options, new FakeClock(Now));
+
+        var result = await reader.ReadAsync("session-local-001", "zm_tomb");
+
+        Assert.AreEqual(LocalReadStatus.Success, result.Capabilities.Metadata.ReadStatus);
+        Assert.AreEqual("9.7.42", result.Capabilities.Value!.ContractModuleVersion);
+        Assert.AreEqual(LocalReadStatus.Success, result.ServerIdentity.Metadata.ReadStatus);
+    }
+
+    [TestMethod]
+    public async Task MalformedModuleVersion_IsRejectedWithoutAffectingIdentity()
+    {
+        using var root = new TemporaryServerRoot();
+        WriteContracts(root, Now.AddSeconds(-2));
+        var capabilityPath = root.Options.ResolvePath(LocalPinteModFile.ControlCenterCapabilities);
+        var json = JsonNode.Parse(await File.ReadAllTextAsync(capabilityPath))!.AsObject();
+        json["contract_module_version"] = "version-future";
         await File.WriteAllTextAsync(capabilityPath, json.ToJsonString());
         File.SetLastWriteTimeUtc(capabilityPath, Now.AddSeconds(-1).UtcDateTime);
         using var reader = new ControlCenterContractReader(root.Options, new FakeClock(Now));
