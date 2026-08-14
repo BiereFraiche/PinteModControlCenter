@@ -387,3 +387,8 @@ Dernière mise à jour : 2026-08-12
 - **À valider** — Vérifier visuellement les deux flèches de détails sur Dashboard et Records en fenêtre grande et réduite.
 - **Terminé** — Rendre `DÉTAILS` et `IDENTIFIANT` discrets (8 px, opacité réduite, petite flèche) et mieux distinguer les champs actifs Nom/Mot de passe.
 - **Bloqué** — Publication stable tant que le test terrain `net_password` et le contrôle de confidentialité avec valeur synthétique ne sont pas terminés.
+- **Terminé** — Rendre le lecteur de capacités compatible avec les contrats Control Center v0.1.3 et v0.1.4 sans accepter de version inconnue.
+- **Terminé** — Remplacer le bandeau Serveur statique « aucun transport RCON » par l’état réel de la configuration.
+- **Terminé** — Valider le correctif v0.1.4 : 449/449 tests Debug et Release, audit du paquet autonome PASS.
+- **À valider** — Lancer la candidate `52ff04e` et confirmer que « APPLIQUER LE NOM » s’active avec un nom différent.
+- **À valider** — Sur la machine serveur en loopback uniquement, confirmer que « DÉFINIR LE MOT DE PASSE » s’active puis terminer le test terrain de confidentialité/refus-acceptation.

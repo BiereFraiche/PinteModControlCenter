@@ -853,3 +853,11 @@ Dernière mise à jour : 2026-08-12
 **Confidentialité.** La valeur reste éphémère, transmise uniquement par la commande fermée et loopback, absente des snapshots, feedbacks, ViewModels, fichiers et journaux applicatifs. Seul `join_password_enabled` est publié. Le hash BOIII étant actuellement FNV1a-64 non salé, l’interface parle d’« isolation réseau BOIII » et recommande implicitement une valeur longue et aléatoire, sans revendiquer une protection cryptographique forte.
 
 **Présentation.** Les diagnostics secondaires des services et les XUID déjà abrégés des profils Ranks sont repliés par défaut dans des contrôles accessibles. L’état principal reste visible. Les déclencheurs utilisent une typographie secondaire de 8 px et une flèche atténuée afin de ne pas concurrencer les données principales. Le numéro de meilleure manche est affiché sans préfixe `M`. Les champs actifs Nom et Mot de passe réseau utilisent un fond relevé et une bordure bleue ; le bouton Nom reste désactivé tant que la valeur saisie est identique au nom observé.
+
+## ADR-107 — Compatibilité fermée des contrats Control Center v0.1.3 et v0.1.4
+
+**Constat.** La structure publique de `control_center_capabilities.json` reste identique entre v0.1.3 et v0.1.4. La v0.1.4 corrige l’autorité interne du mot de passe réseau BOIII sans ajouter de champ ni de commande au contrat consommé par l’application. Exiger seulement v0.1.3 rendait les capacités v0.1.4 indisponibles alors que l’identité v1 restait lisible.
+
+**Décision.** Le lecteur et le schéma embarqué acceptent exactement `0.1.3` et `0.1.4`, conservent la version réellement lue dans le snapshot et refusent toute autre version. Cette compatibilité ne relâche ni les objets fermés, ni les types, bornes, sessions, cartes, fraîcheurs ou listes blanches.
+
+**Présentation.** Le bandeau Serveur est dérivé de la présence réelle de l’infrastructure RCON configurée. Il ne doit plus annoncer statiquement une absence de transport lorsque des commandes réelles fermées sont disponibles. Les fonctions restant simulées sont toujours nommées explicitement.

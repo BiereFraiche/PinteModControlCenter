@@ -3640,3 +3640,42 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - exécutable actualisé : `app/artifacts/post-rc2-net-password-v014-ui-45599e5-win-x64/PinteMod.ControlCenter.exe` ;
 - ZIP actualisé : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-ui-45599e5-win-x64.zip` ;
 - audit packaging : PASS, 471 entrées ; SHA-256 `0F8E1547914B357318BBA47996505F3D47A51A8B8158A38EF67626E9AA0F5CFA`.
+
+## 2026-08-14 — Compatibilité du lecteur avec le contrat Control Center v0.1.4
+
+### Objectif
+
+- corriger les boutons Nom et Mot de passe restant désactivés malgré un contrat PinteMod v0.1.4 frais et cohérent.
+
+### Diagnostic et correction
+
+- la copie Server3 publiait correctement `contract_module_version=0.1.4`, `set_hostname=true`, `set_join_password=true` et `join_password_transport=loopback_rcon_ephemeral` ;
+- le lecteur applicatif exigeait encore exactement la version v0.1.3 et rejetait donc uniquement les capacités, tandis que l’identité v1 restait lisible ;
+- le lecteur et le schéma embarqué acceptent désormais explicitement v0.1.3 et v0.1.4, conservent la version réellement observée et refusent toujours toute version inconnue ;
+- le bandeau Serveur n’annonce plus statiquement « aucun transport RCON » : il reflète la configuration réelle et rappelle les fonctions qui restent simulées ;
+- aucun secret, serveur, fichier PinteMod ou GSC n’a été lu ou modifié pendant ce correctif ; `UI_FEEDBACK.md` reste inchangé.
+
+### Fichiers modifiés
+
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/ControlCenterContractReader.cs` ;
+- `app/contracts/control-center/v1/control_center_capabilities.schema.json` ;
+- `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
+- `app/src/PinteMod.ControlCenter/Views/ServerView.xaml` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractReaderTests.cs` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ViewModelTests.cs`.
+
+### Validation
+
+- tests ciblés : 105/105 réussis ;
+- Debug : 0 avertissement, 0 erreur, 449/449 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 449/449 tests réussis ;
+- commit applicatif local : `52ff04e` ;
+- exécutable : `app/artifacts/post-rc2-contract-v014-52ff04e-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contract-v0.1.4-52ff04e-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `3698BE0A9B4E0458B82621249B69F403479C93886519869CD4BCDEAD40063B1B`.
+
+### Validation humaine restante
+
+- fermer l’ancienne candidate, lancer l’exécutable `52ff04e`, charger le profil Server3 puis vérifier que le nom différent active « APPLIQUER LE NOM » ;
+- le bouton mot de passe ne doit être disponible que sur la machine serveur avec un endpoint RCON loopback (`127.0.0.1`).
