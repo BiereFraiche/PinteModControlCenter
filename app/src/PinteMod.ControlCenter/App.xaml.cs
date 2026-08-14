@@ -5,6 +5,7 @@ using PinteMod.ControlCenter.Configuration;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
 using PinteMod.ControlCenter.Infrastructure.Local;
+using PinteMod.ControlCenter.Services;
 using PinteMod.ControlCenter.ViewModels;
 
 namespace PinteMod.ControlCenter;
@@ -66,6 +67,7 @@ public partial class App : Application
                 AddServerAsync,
                 RemoveServerAsync,
                 SetActiveServerAsync);
+            AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
             var window = new MainWindow { DataContext = _workspace };
             MainWindow = window;
             window.Closing += OnMainWindowClosing;
@@ -166,8 +168,20 @@ public partial class App : Application
         ServerRuntimeContext context,
         string displayName)
     {
-        var tab = new ServerTabViewModel(context.ProfileId, displayName, context.Shell);
+        var tab = new ServerTabViewModel(
+            context.ProfileId,
+            displayName,
+            context.Shell,
+            context.Settings.SelectedAccentTheme.Key);
         context.Settings.ProfileDisplayNameSaved += name => tab.DisplayName = name;
+        context.Settings.AccentThemeChanged += key =>
+        {
+            tab.AccentColorKey = key;
+            if (tab.IsActive)
+            {
+                AccentThemeService.Apply(key);
+            }
+        };
         return tab;
     }
 
@@ -279,6 +293,13 @@ public partial class App : Application
         await _profileOperations.WaitAsync(_applicationLifetime.Token);
         try
         {
+            var selectedTab = _workspace?.Servers.FirstOrDefault(server =>
+                string.Equals(server.ProfileId, profileId, StringComparison.Ordinal));
+            if (selectedTab is not null)
+            {
+                AccentThemeService.Apply(selectedTab.AccentColorKey);
+            }
+
             if (_shutdownStarted ||
                 _workspaceStore is null ||
                 string.Equals(_workspaceConfiguration.ActiveProfileId, profileId, StringComparison.Ordinal))

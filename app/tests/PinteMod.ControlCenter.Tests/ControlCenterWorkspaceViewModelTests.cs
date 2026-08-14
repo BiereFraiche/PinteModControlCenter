@@ -86,6 +86,22 @@ public sealed class ControlCenterWorkspaceViewModelTests
         Assert.AreEqual("Serveur secondaire", second.DisplayName);
     }
 
+    [TestMethod]
+    public void EachTabKeepsAnIndependentValidatedAccentColor()
+    {
+        var first = CreateTab("primary", "Serveur principal");
+        var second = CreateTab("srv-second", "Serveur secondaire");
+        first.AccentColorKey = "violet";
+        second.AccentColorKey = "cyan";
+
+        Assert.AreEqual("violet", first.AccentColorKey);
+        Assert.AreEqual("cyan", second.AccentColorKey);
+        Assert.AreNotEqual(first.AccentPreviewBrush, second.AccentPreviewBrush);
+
+        second.AccentColorKey = "invalid";
+        Assert.AreEqual(OperatorAccentTheme.DefaultKey, second.AccentColorKey);
+    }
+
     private static ServerTabViewModel CreateTab(string profileId, string displayName)
     {
         var store = new CachedControlCenterSnapshotStore(

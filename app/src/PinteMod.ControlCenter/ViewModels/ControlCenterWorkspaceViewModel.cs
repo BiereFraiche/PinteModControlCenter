@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using PinteMod.ControlCenter.Core.Models;
+using PinteMod.ControlCenter.Services;
 
 namespace PinteMod.ControlCenter.ViewModels;
 
@@ -156,9 +157,14 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
 public sealed class ServerTabViewModel : ObservableObject
 {
     private string _displayName;
+    private string _accentColorKey;
     private bool _isActive;
 
-    public ServerTabViewModel(string profileId, string displayName, ShellViewModel shell)
+    public ServerTabViewModel(
+        string profileId,
+        string displayName,
+        ShellViewModel shell,
+        string accentColorKey = OperatorAccentTheme.DefaultKey)
     {
         if (!JsonProfileIdRules.IsValid(profileId))
         {
@@ -167,6 +173,7 @@ public sealed class ServerTabViewModel : ObservableObject
 
         ProfileId = profileId;
         _displayName = NormalizeDisplayName(displayName);
+        _accentColorKey = OperatorAccentTheme.NormalizeOrDefault(accentColorKey);
         Shell = shell ?? throw new ArgumentNullException(nameof(shell));
     }
 
@@ -179,6 +186,21 @@ public sealed class ServerTabViewModel : ObservableObject
         get => _displayName;
         set => SetProperty(ref _displayName, NormalizeDisplayName(value));
     }
+
+    public string AccentColorKey
+    {
+        get => _accentColorKey;
+        set
+        {
+            if (SetProperty(ref _accentColorKey, OperatorAccentTheme.NormalizeOrDefault(value)))
+            {
+                OnPropertyChanged(nameof(AccentPreviewBrush));
+            }
+        }
+    }
+
+    public System.Windows.Media.Brush AccentPreviewBrush =>
+        AccentThemeService.Resolve(AccentColorKey).PreviewBrush;
 
     public bool IsActive
     {

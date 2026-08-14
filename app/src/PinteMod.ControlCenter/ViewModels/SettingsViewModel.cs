@@ -21,6 +21,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly ITextClipboardService? _clipboardService;
     private readonly IControlCenterSnapshotStore? _snapshotStore;
     private string _profileDisplayName;
+    private AccentThemeOption _selectedAccentTheme = AccentThemeService.Resolve(OperatorAccentTheme.DefaultKey);
     private string _selectedOperatorMode;
     private string _operatorServerRoot;
     private bool _activateDataSourceOnStartup;
@@ -77,6 +78,7 @@ public sealed class SettingsViewModel : PageViewModel
         _snapshotStore = snapshotStore;
         var configuration = initialConfiguration ?? OperatorConfiguration.Default;
         _profileDisplayName = configuration.ProfileDisplayName;
+        _selectedAccentTheme = AccentThemeService.Resolve(configuration.AccentColorKey);
         var configuredRoot = serverRoot ?? configuration.ServerRoot;
         _selectedOperatorMode = serverRoot is not null
             ? IsUnc(serverRoot) ? "LAN" : "LOCAL"
@@ -110,6 +112,10 @@ public sealed class SettingsViewModel : PageViewModel
             SaveConfigurationAsync,
             () => CanSaveConfiguration,
             _ => SetConfigurationFailure("La configuration locale n’a pas pu être enregistrée."));
+        SaveAppearanceCommand = new AsyncRelayCommand(
+            SaveAppearanceAsync,
+            () => CanSaveAppearance,
+            _ => SetConfigurationFailure("L’apparence de l’onglet n’a pas pu être enregistrée."));
         TestRconHealthCommand = new AsyncRelayCommand(
             () => _rconOperations.RunExclusiveAsync(
                 _ => ExecuteRconDiagnosticCoreAsync(RconDiagnosticCommand.HealthFull)),
@@ -163,11 +169,17 @@ public sealed class SettingsViewModel : PageViewModel
 
     public IReadOnlyList<string> OperatorModes { get; } = ["LOCAL", "LAN"];
 
+    public IReadOnlyList<AccentThemeOption> AccentColorOptions { get; } = AccentThemeService.Options;
+
     public event Action<string>? ProfileDisplayNameSaved;
+
+    public event Action<string>? AccentThemeChanged;
 
     public AsyncRelayCommand TestDataSourceCommand { get; }
 
     public AsyncRelayCommand SaveConfigurationCommand { get; }
+
+    public AsyncRelayCommand SaveAppearanceCommand { get; }
 
     public AsyncRelayCommand TestRconHealthCommand { get; }
 
@@ -289,7 +301,28 @@ public sealed class SettingsViewModel : PageViewModel
                 ConfigurationSaveStatus = "MODIFIÉ";
                 ConfigurationSaveMessage = "Enregistrez pour appliquer le nom de cet onglet serveur.";
                 OnPropertyChanged(nameof(CanSaveConfiguration));
+                OnPropertyChanged(nameof(CanSaveAppearance));
                 SaveConfigurationCommand.NotifyCanExecuteChanged();
+                SaveAppearanceCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public AccentThemeOption SelectedAccentTheme
+    {
+        get => _selectedAccentTheme;
+        set
+        {
+            var normalized = AccentThemeService.Resolve(value?.Key);
+            if (SetProperty(ref _selectedAccentTheme, normalized))
+            {
+                ConfigurationSaveStatus = "MODIFIÉ";
+                ConfigurationSaveMessage = "Enregistrez pour conserver la couleur de cet onglet serveur.";
+                OnPropertyChanged(nameof(CanSaveConfiguration));
+                OnPropertyChanged(nameof(CanSaveAppearance));
+                SaveConfigurationCommand.NotifyCanExecuteChanged();
+                SaveAppearanceCommand.NotifyCanExecuteChanged();
+                AccentThemeChanged?.Invoke(normalized.Key);
             }
         }
     }
@@ -401,8 +434,14 @@ public sealed class SettingsViewModel : PageViewModel
     public bool CanSaveConfiguration =>
         _configurationStore is not null &&
         OperatorConfiguration.IsValidProfileDisplayName(ProfileDisplayName) &&
+        OperatorAccentTheme.IsValid(SelectedAccentTheme.Key) &&
         CreateRconEndpoint() is not null &&
         (!ActivateDataSourceOnStartup || string.Equals(_lastAcceptedProbeSignature, ProbeSignature(), StringComparison.Ordinal));
+
+    public bool CanSaveAppearance =>
+        _configurationStore is not null &&
+        OperatorConfiguration.IsValidProfileDisplayName(ProfileDisplayName) &&
+        OperatorAccentTheme.IsValid(SelectedAccentTheme.Key);
 
     public bool CanRunRconDiagnostic =>
         _rconDiagnosticService is not null &&
@@ -714,7 +753,8 @@ public sealed class SettingsViewModel : PageViewModel
             endpoint.Address,
             endpoint.Port)
         {
-            ProfileDisplayName = ProfileDisplayName.Trim()
+            ProfileDisplayName = ProfileDisplayName.Trim(),
+            AccentColorKey = SelectedAccentTheme.Key
         };
         await _configurationStore.SaveAsync(configuration);
         ProfileDisplayName = configuration.ProfileDisplayName;
@@ -723,6 +763,27 @@ public sealed class SettingsViewModel : PageViewModel
         ConfigurationSaveMessage = ActivateDataSourceOnStartup
             ? "Le mode opérateur sera appliqué au prochain démarrage."
             : "Configuration conservée · le démarrage reste en simulation.";
+    }
+
+    private async Task SaveAppearanceAsync()
+    {
+        if (_configurationStore is null || !CanSaveAppearance)
+        {
+            return;
+        }
+
+        var current = await _configurationStore.LoadAsync();
+        var updated = current with
+        {
+            ProfileDisplayName = ProfileDisplayName.Trim(),
+            AccentColorKey = SelectedAccentTheme.Key
+        };
+        await _configurationStore.SaveAsync(updated);
+        ProfileDisplayName = updated.ProfileDisplayName;
+        ProfileDisplayNameSaved?.Invoke(updated.ProfileDisplayName);
+        AccentThemeChanged?.Invoke(updated.AccentColorKey);
+        ConfigurationSaveStatus = "APPARENCE ENREGISTRÉE";
+        ConfigurationSaveMessage = "Nom de l’onglet et couleur conservés · la source et RCON n’ont pas été modifiés.";
     }
 
     private void SetConfigurationFailure(string message)

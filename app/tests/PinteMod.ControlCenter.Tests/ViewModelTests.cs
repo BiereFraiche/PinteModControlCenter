@@ -418,6 +418,7 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "CaptionHeight=\"34\"");
         StringAssert.Contains(xaml, "x:Name=\"WindowDragBar\" Grid.Row=\"0\"");
         StringAssert.Contains(xaml, "<Border Grid.Row=\"1\" Background=\"{StaticResource SidebarBrush}\"");
+        StringAssert.Contains(xaml, "Fill=\"{Binding AccentPreviewBrush}\"");
     }
 
     [TestMethod]
@@ -432,9 +433,29 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "Text=\"{Binding ServerActionModeTitle}\"");
         StringAssert.Contains(xaml, "Text=\"{Binding ServerActionModeDescription}\"");
         StringAssert.Contains(xaml, "MOT DE PASSE RÉSEAU BOIII");
-        StringAssert.Contains(xaml, "codes couleur BOIII ^0 à ^9 autorisés");
-        Assert.AreEqual(2, CountOccurrences(xaml, "Background=\"{StaticResource SurfaceHoverBrush}\" BorderBrush=\"{StaticResource AccentBrush}\""));
+        StringAssert.Contains(xaml, "<controls:BoiiiHostnameEditor");
+        StringAssert.Contains(xaml, "EncodedText=\"{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"");
         Assert.IsFalse(xaml.Contains("Password=\"{Binding", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void AccentResourcesAreDynamicAndSettingsExposePerServerPalette()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xamlFiles = Directory.EnumerateFiles(presentationRoot, "*.xaml", SearchOption.AllDirectories)
+            .Select(File.ReadAllText)
+            .ToArray();
+        var settings = File.ReadAllText(Path.Combine(presentationRoot, "Views", "SettingsView.xaml"));
+
+        Assert.IsFalse(xamlFiles.Any(source =>
+            source.Contains("{StaticResource AccentBrush}", StringComparison.Ordinal) ||
+            source.Contains("{StaticResource AccentBrightBrush}", StringComparison.Ordinal) ||
+            source.Contains("{StaticResource AccentSoftBrush}", StringComparison.Ordinal)));
+        Assert.IsTrue(xamlFiles.Any(source => source.Contains("{DynamicResource AccentBrush}", StringComparison.Ordinal)));
+        StringAssert.Contains(settings, "ItemsSource=\"{Binding AccentColorOptions}\"");
+        StringAssert.Contains(settings, "SelectedItem=\"{Binding SelectedAccentTheme, Mode=TwoWay}\"");
+        StringAssert.Contains(settings, "Command=\"{Binding SaveAppearanceCommand}\"");
+        StringAssert.Contains(settings, "Les couleurs d’état restent inchangées.");
     }
 
     [TestMethod]

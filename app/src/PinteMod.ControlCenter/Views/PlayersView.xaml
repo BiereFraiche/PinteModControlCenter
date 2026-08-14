@@ -21,7 +21,7 @@
                             <TextBlock Text="JOUEURS CONNECTÉS" Style="{StaticResource SectionTitleStyle}" />
                             <TextBlock Text="Le pseudo n’est jamais une clé d’action."
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" />
-                            <TextBlock Text="{Binding SourceSummary}" Foreground="{StaticResource AccentBrightBrush}"
+                            <TextBlock Text="{Binding SourceSummary}" Foreground="{DynamicResource AccentBrightBrush}"
                                        FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap" />
                         </StackPanel>
                         <ListBox Grid.Row="1" ItemsSource="{Binding Players}" SelectedItem="{Binding SelectedPlayer, Mode=TwoWay}"

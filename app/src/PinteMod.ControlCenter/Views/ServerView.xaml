@@ -20,7 +20,7 @@
                     <StackPanel><TextBlock Text="CARTE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding MapName}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="{Binding MapCode}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
-                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{StaticResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="{Binding RoundSource}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="{Binding RoundSource}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel><TextBlock Text="PINTE MOD" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PinteModVersion}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap"><Run Text="COURANT " /><Run Text="{Binding PowerStateText, Mode=OneWay}" /><Run Text=" · PAP " /><Run Text="{Binding PackAPunchStateText, Mode=OneWay}" /></TextBlock></StackPanel>
@@ -37,7 +37,7 @@
                 </Border>
             </controls:ResponsiveUniformGrid>
 
-            <Border Grid.Row="1" Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+            <Border Grid.Row="1" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="7" Padding="14,11" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="{Binding ServerActionModeTitle}" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
@@ -51,7 +51,7 @@
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="XUID" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.ShortXuid}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="OPTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Option}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="HEURE · STATUT" Style="{StaticResource EyebrowTextStyle}" /><TextBlock FontSize="12" Margin="0,4,0,0"><Run Text="{Binding LastSimulationResult.Time, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding LastSimulationResult.Status, Mode=OneWay}" Foreground="{Binding LastSimulationResult.StatusValue, Mode=OneWay, Converter={StaticResource StatusBrushConverter}}" /></TextBlock></StackPanel>
-                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{DynamicResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
                     </controls:ResponsiveUniformGrid>
                 </StackPanel>
             </Border>
@@ -79,23 +79,22 @@
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>
                         <TextBlock Text="IDENTITÉ PUBLIQUE · CONTRAT LOCAL" Style="{StaticResource SectionTitleStyle}" />
-                        <TextBlock Text="{Binding ServerIdentityText}" Foreground="{StaticResource AccentBrightBrush}"
+                        <TextBlock Text="{Binding ServerIdentityText}" Foreground="{DynamicResource AccentBrightBrush}"
                                    FontSize="12" FontWeight="SemiBold" Margin="0,7,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding JoinPasswordStatus}" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="10" Margin="0,4,0,10" />
                         <TextBlock Text="NOUVEAU NOM DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
-                        <WrapPanel>
-                            <TextBox Text="{Binding RequestedHostname, UpdateSourceTrigger=PropertyChanged}" Width="260"
-                                     MaxLength="64" Margin="0,0,8,8"
-                                     Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{StaticResource AccentBrush}"
-                                     ToolTip="1 à 64 caractères · codes couleur BOIII ^0 à ^9 autorisés" />
-                            <Button Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
-                                    Command="{Binding SetHostnameCommand}" Margin="0,0,8,8"
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <controls:BoiiiHostnameEditor EncodedText="{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Margin="0,0,10,8" />
+                            <Button Grid.Column="1" Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding SetHostnameCommand}" Margin="0,0,0,8" VerticalAlignment="Top"
                                     ToolTip="Commande réelle fermée : ezzccsethostname" />
-                        </WrapPanel>
-                        <TextBlock Text="COULEURS : ^1 rouge · ^2 vert · ^3 jaune · ^4 bleu · ^5 cyan · ^6 rose · ^7 blanc · ^8 équipe · ^9 orange · ^0 noir"
-                                   Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
-                                   TextWrapping="Wrap" />
+                        </Grid>
                         <TextBlock Text="Le bouton s’active lorsque le nom saisi diffère du nom actuellement observé."
                                    Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
                                    TextWrapping="Wrap" />
@@ -104,7 +103,7 @@
                         <TextBlock Text="NOUVEAU MOT DE PASSE RÉSEAU BOIII" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
                         <WrapPanel>
                             <PasswordBox x:Name="JoinPasswordBox" Width="220" MaxLength="32" Margin="0,0,8,8"
-                                         Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{StaticResource AccentBrush}"
+                                         Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{DynamicResource AccentBrush}"
                                          ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
                             <Button Content="DÉFINIR LE MOT DE PASSE" Style="{StaticResource SecondaryButtonStyle}"
                                     IsEnabled="{Binding CanSetJoinPassword}" Click="SetJoinPassword_Click" Margin="0,0,8,8"

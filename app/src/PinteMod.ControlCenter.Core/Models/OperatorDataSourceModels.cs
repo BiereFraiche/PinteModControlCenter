@@ -6,6 +6,23 @@ public enum OperatorDataLocation
     Lan
 }
 
+public static class OperatorAccentTheme
+{
+    public const string DefaultKey = "blue";
+
+    public static IReadOnlyList<string> AllowedKeys { get; } =
+        [DefaultKey, "cyan", "indigo", "violet", "pink", "teal"];
+
+    public static bool IsValid(string? value) =>
+        value is not null && AllowedKeys.Contains(value, StringComparer.Ordinal);
+
+    public static string NormalizeOrDefault(string? value)
+    {
+        var normalized = value?.Trim().ToLowerInvariant();
+        return IsValid(normalized) ? normalized! : DefaultKey;
+    }
+}
+
 public sealed record LocalDataSourceProbeRequest(
     OperatorDataLocation Location,
     string ServerRoot);
@@ -40,6 +57,8 @@ public sealed record OperatorConfiguration(
     public const string DefaultProfileDisplayName = "Serveur principal";
 
     public string ProfileDisplayName { get; init; } = DefaultProfileDisplayName;
+
+    public string AccentColorKey { get; init; } = OperatorAccentTheme.DefaultKey;
 
     public static bool IsValidProfileDisplayName(string? value)
     {

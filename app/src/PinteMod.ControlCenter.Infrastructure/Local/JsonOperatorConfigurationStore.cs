@@ -124,7 +124,8 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
         {
             ServerRoot = configuration.ServerRoot.Trim(),
             RconAddress = configuration.RconAddress.Trim(),
-            ProfileDisplayName = NormalizeProfileDisplayName(configuration.ProfileDisplayName)
+            ProfileDisplayName = NormalizeProfileDisplayName(configuration.ProfileDisplayName),
+            AccentColorKey = OperatorAccentTheme.NormalizeOrDefault(configuration.AccentColorKey)
         };
         return RconEndpointValidator.IsAllowed(new RconEndpoint(
             normalized.RconAddress,
@@ -150,6 +151,12 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
             throw new ArgumentException("Le nom du profil serveur est invalide.", nameof(configuration));
         }
 
+        var accentColorKey = configuration.AccentColorKey?.Trim().ToLowerInvariant();
+        if (!OperatorAccentTheme.IsValid(accentColorKey))
+        {
+            throw new ArgumentException("La couleur d’accent du profil est invalide.", nameof(configuration));
+        }
+
         var address = configuration.RconAddress.Trim();
         if (!RconEndpointValidator.IsAllowed(new RconEndpoint(
                 address,
@@ -164,7 +171,8 @@ public sealed class JsonOperatorConfigurationStore : IOperatorConfigurationStore
             SchemaVersion = OperatorConfiguration.CurrentSchemaVersion,
             ServerRoot = configuration.ServerRoot.Trim(),
             RconAddress = address,
-            ProfileDisplayName = NormalizeProfileDisplayName(configuration.ProfileDisplayName)
+            ProfileDisplayName = NormalizeProfileDisplayName(configuration.ProfileDisplayName),
+            AccentColorKey = accentColorKey!
         };
     }
 

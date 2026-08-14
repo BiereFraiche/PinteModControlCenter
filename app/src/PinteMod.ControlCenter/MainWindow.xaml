@@ -38,12 +38,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource AccentSoftBrush}" />
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource AccentBrightBrush}" />
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrightBrush}" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -72,10 +72,10 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4,0,0,28">
                         <Border Width="44" Height="44" CornerRadius="12"
-                                Background="{StaticResource AccentSoftBrush}"
-                                BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
+                                Background="{DynamicResource AccentSoftBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
                             <TextBlock Text="PM" FontWeight="Bold" FontSize="15"
-                                       Foreground="{StaticResource AccentBrightBrush}"
+                                       Foreground="{DynamicResource AccentBrightBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Margin="12,2,0,0"
@@ -89,7 +89,7 @@
                             Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=1100}">
                         <StackPanel>
                             <TextBlock Text="{Binding ActiveServer.Shell.ModeLabel}" FontWeight="SemiBold" FontSize="11"
-                                       Foreground="{StaticResource AccentBrightBrush}" />
+                                       Foreground="{DynamicResource AccentBrightBrush}" />
                             <TextBlock Text="{Binding ActiveServer.Shell.ModeDescription}" FontSize="10"
                                        Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
                         </StackPanel>
@@ -98,7 +98,7 @@
                             ToolTip="{Binding ActiveServer.Shell.ModeDescription}"
                             Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=1100:Invert}">
                         <TextBlock Text="{Binding ActiveServer.Shell.ModeShortLabel}" FontWeight="Bold" FontSize="10"
-                                   Foreground="{StaticResource AccentBrightBrush}"
+                                   Foreground="{DynamicResource AccentBrightBrush}"
                                    HorizontalAlignment="Center" />
                     </Border>
 
@@ -175,8 +175,12 @@
                                                      Command="{Binding DataContext.SelectServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                      CommandParameter="{Binding}"
                                                      shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                                            <TextBlock Text="{Binding DisplayName}" MaxWidth="150"
-                                                       TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="8" Height="8" Fill="{Binding AccentPreviewBrush}"
+                                                         Margin="0,0,7,0" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding DisplayName}" MaxWidth="150"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
                                         </RadioButton>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -251,7 +255,7 @@
                                    VerticalAlignment="Center"
                                    Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=980}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}" Margin="0,0,6,0" />
+                            <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
                             <TextBlock Text="Prototype actif" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
                         </StackPanel>
                     </Grid>

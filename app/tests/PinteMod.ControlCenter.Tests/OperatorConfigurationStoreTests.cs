@@ -32,7 +32,10 @@ public sealed class OperatorConfigurationStoreTests
             "\\\\serveur\\partage\\UnrankedServer",
             true,
             "192.168.1.20",
-            27017);
+            27017)
+        {
+            AccentColorKey = "violet"
+        };
 
         await store.SaveAsync(expected);
         var result = await store.LoadAsync();
@@ -69,6 +72,45 @@ public sealed class OperatorConfigurationStoreTests
             """);
         var migrated = await store.LoadAsync();
         Assert.AreEqual(OperatorConfiguration.DefaultProfileDisplayName, migrated.ProfileDisplayName);
+        Assert.AreEqual(OperatorAccentTheme.DefaultKey, migrated.AccentColorKey);
+    }
+
+    [TestMethod]
+    public async Task InvalidAccentOnDisk_FallsBackOnlyToSafeAccentDefault()
+    {
+        using var directory = new TemporaryConfigurationDirectory();
+        Directory.CreateDirectory(Path.GetDirectoryName(directory.ConfigurationPath)!);
+        await File.WriteAllTextAsync(
+            directory.ConfigurationPath,
+            """
+            {
+              "schema_version": 1,
+              "data_location": 0,
+              "server_root": "C:\\Server\\Test",
+              "activate_data_source_on_startup": false,
+              "rcon_address": "127.0.0.1",
+              "rcon_port": 27017,
+              "profile_display_name": "Serveur violet",
+              "accent_color_key": "danger-red"
+            }
+            """);
+
+        var result = await new JsonOperatorConfigurationStore(directory.ConfigurationPath).LoadAsync();
+
+        Assert.AreEqual("C:\\Server\\Test", result.ServerRoot);
+        Assert.AreEqual("Serveur violet", result.ProfileDisplayName);
+        Assert.AreEqual(OperatorAccentTheme.DefaultKey, result.AccentColorKey);
+    }
+
+    [TestMethod]
+    public async Task UnknownAccentCannotBeSaved()
+    {
+        using var directory = new TemporaryConfigurationDirectory();
+        var store = new JsonOperatorConfigurationStore(directory.ConfigurationPath);
+        var configuration = OperatorConfiguration.Default with { AccentColorKey = "unknown" };
+
+        await Assert.ThrowsExceptionAsync<ArgumentException>(() => store.SaveAsync(configuration));
+        Assert.IsFalse(File.Exists(directory.ConfigurationPath));
     }
 
     [TestMethod]
