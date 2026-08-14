@@ -3489,3 +3489,13 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractReaderTests.cs` ;
 - `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractSchemaTests.cs` ;
 - documents de suivi.
+
+### Nouvelle candidate terrain
+
+- commit : `3bf033ccc3371a054b757e4a5e86c726f255e9e6` ;
+- version embarquée : `2.2.0-post-rc2-contracts.3bf033c` ;
+- exécutable : `app/artifacts/post-rc2-contracts-terrain-3bf033c-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contracts-terrain-3bf033c-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `35EBBE5723D5CE20387A551D467078EC13E89E697F9DBDA7A9CFCE0FB607FFDB` ;
+- révision et version vérifiées dans l'assembly publié.
