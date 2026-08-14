@@ -829,3 +829,5 @@ Dernière mise à jour : 2026-08-12
 **Persistance.** `g_password` reste runtime uniquement. Un redémarrage complet recharge la configuration serveur déjà administrée hors Control Center. Persister cette valeur dans PinteMod, la configuration opérateur ou DPAPI a été rejeté afin de ne pas créer un second magasin de secrets.
 
 **Gate terrain.** La fonctionnalité reste candidate jusqu’à un test avec valeur synthétique unique et recherche dans toutes les sorties et fichiers de la copie de test. Toute trace impose la désactivation de la capability. Aucun retry automatique et aucune commande libre ne sont autorisés.
+
+**Candidate.** La première candidate intégrant cette décision embarque la révision `3d624fa3b09490d005b3cf65ad24ef081a8a7da5`. Son paquet autonome passe l’audit de publication ; cela ne remplace pas le gate de confidentialité terrain.

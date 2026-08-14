@@ -367,3 +367,4 @@ Dernière mise à jour : 2026-08-12
 - **À valider** — Persistance du hostname après redémarrage complet du processus de test ; le titre de fenêtre BOIII n’est pas une autorité.
 - **À valider** — Test de confidentialité avec un mot de passe synthétique unique sur loopback et recherche exhaustive de toute fuite.
 - **Bloqué** — Publication de SET mot de passe tant que le test de fuite terrain n’est pas réussi.
+- **Terminé** — Produire la candidate autonome `3d624fa`, audit packaging PASS (471 entrées), SHA-256 `C8D9B56E0307FAB614F75DD4D07D11FDA4114FBE078D8DB3D036AF494D42FB8A`.

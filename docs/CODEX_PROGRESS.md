@@ -3535,3 +3535,12 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - vérifier le déplacement de fenêtre depuis la nouvelle barre ;
 - tester le hostname, redémarrer le processus de test et confirmer sa restauration dans l’identité locale ;
 - utiliser un mot de passe synthétique unique sur loopback, vérifier la connexion puis rechercher cette chaîne dans les sorties/logs avant toute autorisation de publication.
+
+### Candidate terrain produite
+
+- commit applicatif embarqué : `3d624fa3b09490d005b3cf65ad24ef081a8a7da5` ;
+- version produit : `2.2.0-rc.2+3d624fa3b09490d005b3cf65ad24ef081a8a7da5` ;
+- exécutable : `app/artifacts/post-rc2-identity-v012-3d624fa-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-identity-v0.1.2-3d624fa-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées, aucun PDB ;
+- SHA-256 : `C8D9B56E0307FAB614F75DD4D07D11FDA4114FBE078D8DB3D036AF494D42FB8A`.
