@@ -431,6 +431,7 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "IsEnabled=\"{Binding CanSetJoinPassword}\"");
         StringAssert.Contains(xaml, "MOT DE PASSE RÉSEAU BOIII");
         StringAssert.Contains(xaml, "codes couleur BOIII ^0 à ^9 autorisés");
+        Assert.AreEqual(2, CountOccurrences(xaml, "Background=\"{StaticResource SurfaceHoverBrush}\" BorderBrush=\"{StaticResource AccentBrush}\""));
         Assert.IsFalse(xaml.Contains("Password=\"{Binding", StringComparison.Ordinal));
     }
 
@@ -453,11 +454,17 @@ public sealed class ViewModelTests
     {
         var presentationRoot = FindPresentationSourceRoot();
         var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "RecordsView.xaml"));
+        var theme = File.ReadAllText(Path.Combine(presentationRoot, "Themes", "PinteModTheme.xaml"));
+        var expanderStart = theme.IndexOf("x:Key=\"CompactDetailsExpanderStyle\"", StringComparison.Ordinal);
+        var expanderEnd = theme.IndexOf("<Style TargetType=\"ComboBox\">", expanderStart, StringComparison.Ordinal);
+        var expanderStyle = theme[expanderStart..expanderEnd];
 
         StringAssert.Contains(xaml, "Header=\"IDENTIFIANT\" IsExpanded=\"False\"");
         StringAssert.Contains(xaml, "Text=\"{Binding ShortXuid}\"");
         StringAssert.Contains(xaml, "Text=\"{Binding BestOverallRound}\"");
         Assert.IsFalse(xaml.Contains("StringFormat=M{0}", StringComparison.Ordinal));
+        StringAssert.Contains(expanderStyle, "<Setter Property=\"FontSize\" Value=\"8\" />");
+        StringAssert.Contains(expanderStyle, "Opacity=\"0.72\"");
     }
 
     [TestMethod]

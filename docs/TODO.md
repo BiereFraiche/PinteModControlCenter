@@ -385,4 +385,5 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Préparer et auditer la candidate autonome `e9be7ca` liée au correctif PinteMod v0.1.4.
 - **À valider** — Redémarrer manuellement la copie Server3, confirmer `Control Center Contracts v0.1.4 loaded`, puis tester refus sans `net_password` et acceptation avec la bonne valeur.
 - **À valider** — Vérifier visuellement les deux flèches de détails sur Dashboard et Records en fenêtre grande et réduite.
+- **Terminé** — Rendre `DÉTAILS` et `IDENTIFIANT` discrets (8 px, opacité réduite, petite flèche) et mieux distinguer les champs actifs Nom/Mot de passe.
 - **Bloqué** — Publication stable tant que le test terrain `net_password` et le contrôle de confidentialité avec valeur synthétique ne sont pas terminés.

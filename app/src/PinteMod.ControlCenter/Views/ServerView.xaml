@@ -86,7 +86,9 @@
                         <TextBlock Text="NOUVEAU NOM DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
                         <WrapPanel>
                             <TextBox Text="{Binding RequestedHostname, UpdateSourceTrigger=PropertyChanged}" Width="260"
-                                     MaxLength="64" Margin="0,0,8,8" ToolTip="1 à 64 caractères · codes couleur BOIII ^0 à ^9 autorisés" />
+                                     MaxLength="64" Margin="0,0,8,8"
+                                     Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{StaticResource AccentBrush}"
+                                     ToolTip="1 à 64 caractères · codes couleur BOIII ^0 à ^9 autorisés" />
                             <Button Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding SetHostnameCommand}" Margin="0,0,8,8"
                                     ToolTip="Commande réelle fermée : ezzccsethostname" />
@@ -94,11 +96,15 @@
                         <TextBlock Text="COULEURS : ^1 rouge · ^2 vert · ^3 jaune · ^4 bleu · ^5 cyan · ^6 rose · ^7 blanc · ^8 équipe · ^9 orange · ^0 noir"
                                    Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
                                    TextWrapping="Wrap" />
+                        <TextBlock Text="Le bouton s’active lorsque le nom saisi diffère du nom actuellement observé."
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
+                                   TextWrapping="Wrap" />
                         <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="9" Margin="0,0,0,10" TextWrapping="Wrap" />
                         <TextBlock Text="NOUVEAU MOT DE PASSE RÉSEAU BOIII" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
                         <WrapPanel>
                             <PasswordBox x:Name="JoinPasswordBox" Width="220" MaxLength="32" Margin="0,0,8,8"
+                                         Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{StaticResource AccentBrush}"
                                          ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
                             <Button Content="DÉFINIR LE MOT DE PASSE" Style="{StaticResource SecondaryButtonStyle}"
                                     IsEnabled="{Binding CanSetJoinPassword}" Click="SetJoinPassword_Click" Margin="0,0,8,8"

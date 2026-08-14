@@ -3625,3 +3625,14 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-e9be7ca-win-x64.zip` ;
 - audit packaging : PASS, 471 entrées ;
 - SHA-256 : `F77687A7E35B1DCAB0C58BA6C453D37B7A5DEA34E8A19CB9484EE87CC8A150AC`.
+
+### Ajustement visuel ciblé après retour humain
+
+- capacités locales v0.1.4 vérifiées fraîches et cohérentes : Nom et Mot de passe sont autorisés côté serveur ;
+- le bouton Nom reste volontairement inactif lorsque le champ contient déjà le nom observé ; une aide explicite l’indique désormais ;
+- champs Nom et Mot de passe rendus visuellement actifs par un fond relevé et une bordure bleue ;
+- `DÉTAILS` et `IDENTIFIANT` réduits à 8 px, opacité 72 %, flèche 9 px et accent seulement au survol/focus ;
+- tests ciblés : 3/3 PASS ;
+- Debug : 0 avertissement, 0 erreur, 447/447 tests ;
+- Release : 0 avertissement, 0 erreur, 447/447 tests ;
+- aucune modification supplémentaire de PinteMod ou de la copie serveur.

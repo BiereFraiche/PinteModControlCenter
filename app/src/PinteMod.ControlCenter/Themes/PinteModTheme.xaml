@@ -301,6 +301,8 @@
 
     <Style x:Key="CompactDetailsExpanderStyle" TargetType="Expander">
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="FontSize" Value="8" />
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <Setter.Value>
@@ -314,17 +316,20 @@
                                       Background="Transparent"
                                       BorderThickness="0"
                                       Foreground="{TemplateBinding Foreground}"
+                                      FontSize="{TemplateBinding FontSize}"
+                                      FontWeight="{TemplateBinding FontWeight}"
                                       HorizontalContentAlignment="Left"
                                       IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                      Padding="0,4"
+                                      Opacity="0.72"
+                                      Padding="0,2"
                                       ToolTip="Afficher ou masquer les détails">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border Background="Transparent" Padding="{TemplateBinding Padding}">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock x:Name="Arrow" Text="▸" Width="14"
-                                                       Foreground="{StaticResource AccentBrightBrush}"
-                                                       FontSize="11" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="Arrow" Text="▸" Width="11"
+                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       FontSize="9" VerticalAlignment="Center" />
                                             <ContentPresenter VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Border>
@@ -334,9 +339,11 @@
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                                            <Setter Property="Opacity" Value="1" />
                                         </Trigger>
                                         <Trigger Property="IsKeyboardFocused" Value="True">
                                             <Setter Property="Foreground" Value="{StaticResource AccentBrightBrush}" />
+                                            <Setter Property="Opacity" Value="1" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
