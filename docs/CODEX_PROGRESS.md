@@ -3679,3 +3679,18 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 - fermer l’ancienne candidate, lancer l’exécutable `52ff04e`, charger le profil Server3 puis vérifier que le nom différent active « APPLIQUER LE NOM » ;
 - le bouton mot de passe ne doit être disponible que sur la machine serveur avec un endpoint RCON loopback (`127.0.0.1`).
+
+### Amélioration de compatibilité avant validation finale
+
+- `contract_module_version` n’est plus utilisé comme verrou de compatibilité fonctionnelle : il reste obligatoire, borné, au format sémantique `x.y.z` et affiché comme provenance ;
+- la compatibilité réelle reste strictement contrôlée par `schema_version=1`, `command_contract_version=1`, les objets JSON fermés et chaque capacité booléenne explicite ;
+- une future version de module conservant exactement ces contrats reste donc utilisable sans nouvelle version du Control Center ;
+- toute forme, commande, propriété ou type incompatible reste refusé ;
+- tests ciblés : 12/12 réussis ;
+- Debug : 0 avertissement, 0 erreur, 450/450 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 450/450 tests réussis ;
+- commit applicatif local : `b135e7a` ;
+- exécutable final de cette passe : `app/artifacts/post-rc2-contract-compatible-b135e7a-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contract-compatible-b135e7a-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `728691D794A0BF8D2917458491A9240A109EC5754235AF498E2856B532606B60`.
