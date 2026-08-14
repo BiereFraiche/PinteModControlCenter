@@ -579,9 +579,9 @@ public sealed class ServerViewModel : PageViewModel
 
     public string JoinPasswordStatus => CurrentIdentity switch
     {
-        null => "Mot de passe joueur : état inconnu",
-        { JoinPasswordEnabled: true } => "Mot de passe joueur : actif pour les nouvelles connexions · valeur jamais lue",
-        _ => "Mot de passe joueur : désactivé"
+        null => "Mot de passe réseau BOIII : état inconnu",
+        { JoinPasswordEnabled: true } => "Mot de passe réseau BOIII : actif pour les nouvelles connexions · valeur jamais lue",
+        _ => "Mot de passe réseau BOIII : désactivé"
     };
 
     public string HostnamePersistenceNotice =>
@@ -1668,8 +1668,8 @@ public sealed class ServerViewModel : PageViewModel
         ServerAdministrationAction.RestartMap => "La nouvelle session confirme le redémarrage de la carte active.",
         ServerAdministrationAction.SpawnBoss => "PinteMod confirme l’apparition du boss demandé.",
         ServerAdministrationAction.SetHostname => "L’identité locale confirme le nouveau nom du serveur.",
-        ServerAdministrationAction.SetJoinPassword => "L’identité locale confirme que le mot de passe joueur est actif. Sa valeur n’a pas été lue.",
-        ServerAdministrationAction.ClearJoinPassword => "L’identité locale confirme que le mot de passe joueur est désactivé.",
+        ServerAdministrationAction.SetJoinPassword => "L’identité locale confirme que le mot de passe réseau BOIII est actif. Sa valeur n’a pas été lue.",
+        ServerAdministrationAction.ClearJoinPassword => "L’identité locale confirme que le mot de passe réseau BOIII est désactivé.",
         _ => "PinteMod confirme l’application de l’action."
     };
 
@@ -1733,10 +1733,10 @@ public sealed class ServerViewModel : PageViewModel
                 "Confirmer le nouveau nom du serveur",
                 $"Appliquer et mémoriser réellement le hostname « {request.Option} » côté PinteMod ?\n\nLe titre de fenêtre BOIII peut ne pas se rafraîchir. Aucune commande libre ne sera construite."),
             ServerAdministrationAction.SetJoinPassword => new(
-                "Confirmer le nouveau mot de passe joueur",
+                "Confirmer le nouveau mot de passe réseau BOIII",
                 "Définir réellement un nouveau mot de passe d’accès pour la session en cours ?\n\nCette action est limitée à 127.0.0.1. La valeur ne sera jamais affichée, journalisée ni enregistrée par le Control Center."),
             ServerAdministrationAction.ClearJoinPassword => new(
-                "Confirmer la suppression du mot de passe joueur",
+                "Confirmer la suppression du mot de passe réseau BOIII",
                 "Désactiver réellement le mot de passe d’accès des joueurs ?\n\nLa valeur actuelle ne sera jamais lue ni affichée. Cette action n’est pas annulable automatiquement."),
             _ => new("Action serveur refusée", "Cette action ne fait pas partie de la liste blanche.")
         };

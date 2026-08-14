@@ -3576,3 +3576,42 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-identity-v0.1.3-7bdb22f-win-x64.zip` ;
 - audit packaging : PASS, 471 entrées ;
 - SHA-256 : `E7513B783C900B451F58E8E01F4B34EF0355DADB0BC2B2FB2C80AF881A073F46`.
+
+## 2026-08-14 — Correctif fonctionnel du mot de passe BOIII et détails repliables
+
+### Objectif
+
+- remplacer la fausse autorité `g_password` par le mécanisme réellement vérifié par Ezz BOIII et alléger les cartes Dashboard/Records sans supprimer d’information.
+
+### Réalisé
+
+- test humain négatif confirmé : un client vierge rejoint malgré `g_password` actif ;
+- audit du code public Ezz BOIII : la connexion directe compare `net_password` via le hash publié dans `getInfo` ;
+- contrat PinteMod candidat v0.1.4 corrigé pour définir, effacer et observer uniquement `net_password` ;
+- tests de contrat renforcés pour interdire tout retour à `g_password` dans le module ;
+- libellés UI corrigés en « mot de passe réseau BOIII » ;
+- détails Déclaré/Lecture/Fraîcheur/Provenance repliés par défaut sous une flèche accessible ;
+- XUID abrégé des profils Ranks replié de la même manière ;
+- préfixe `M` supprimé devant la meilleure manche ;
+- `UI_FEEDBACK.md` inchangé.
+
+### Fichiers créés ou modifiés à ce stade
+
+- WPF : thème, Dashboard, Records, Serveur et `ServerViewModel` ;
+- tests Control Center : `ViewModelTests.cs` ;
+- PinteModReal candidat : GSC contrats, test PowerShell et documentation du contrat ;
+- suivi : `CODEX_PROGRESS.md`, `TODO.md`, `DECISIONS.md`.
+
+### Validation intermédiaire
+
+- tests contrats PinteModReal : 39/39 PASS ;
+- tests WPF ciblés : 3/3 PASS ;
+- Debug Control Center : 0 avertissement, 0 erreur, 447/447 tests ;
+- Release Control Center : 0 avertissement, 0 erreur, 447/447 tests ;
+- aucun serveur, BAT ou exécutable BOIII lancé ; aucun secret lu, journalisé ou ajouté au dépôt.
+
+### Validation humaine restante
+
+- après déploiement sur la copie de test et redémarrage manuel : vérifier `net_password` vide/refus, correct/accepté et incorrect/refusé ;
+- rechercher une valeur synthétique unique dans les sorties et fichiers de test ;
+- contrôler visuellement les cartes repliées sur Dashboard et Records.

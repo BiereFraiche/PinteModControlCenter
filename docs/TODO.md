@@ -373,3 +373,16 @@ Dernière mise à jour : 2026-08-12
 - **À valider** — Redémarrer manuellement la copie de test, confirmer `Control Center Contracts v0.1.3 loaded`, puis retester le nom coloré.
 - **À valider** — Tester le mot de passe avec un client totalement déconnecté puis reconnecté ; un joueur déjà en session ne constitue pas une preuve.
 - **Terminé** — Produire et auditer la candidate v0.1.3 `7bdb22f`, 471 entrées, SHA-256 `E7513B783C900B451F58E8E01F4B34EF0355DADB0BC2B2FB2C80AF881A073F46`.
+
+## Correctif `net_password` et densité visuelle — 2026-08-14
+
+- **Terminé** — Confirmer sur un client vierge que `g_password` n’empêche pas la connexion directe Ezz BOIII.
+- **Terminé** — Identifier dans le code public BOIII l’autorité réelle `net_password` et corriger le contrat PinteMod v0.1.4 sans commande libre.
+- **Terminé** — Conserver la valeur hors fichiers, snapshots, feedbacks, ViewModels et journaux ; loopback uniquement.
+- **Terminé** — Replier les détails de lecture des services et les XUID abrégés des profils Ranks, avec révélation explicite et clavier/souris.
+- **Terminé** — Afficher directement le numéro de meilleure manche sans préfixe `M`.
+- **Terminé** — Exécuter les suites complètes Debug et Release : 0 avertissement, 0 erreur et 447/447 tests dans chaque configuration.
+- **En cours** — Préparer la candidate autonome de test liée au correctif v0.1.4.
+- **À valider** — Redémarrer manuellement la copie Server3, confirmer `Control Center Contracts v0.1.4 loaded`, puis tester refus sans `net_password` et acceptation avec la bonne valeur.
+- **À valider** — Vérifier visuellement les deux flèches de détails sur Dashboard et Records en fenêtre grande et réduite.
+- **Bloqué** — Publication stable tant que le test terrain `net_password` et le contrôle de confidentialité avec valeur synthétique ne sont pas terminés.

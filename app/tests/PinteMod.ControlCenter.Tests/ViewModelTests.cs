@@ -429,8 +429,35 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "x:Name=\"JoinPasswordBox\"");
         StringAssert.Contains(xaml, "Click=\"SetJoinPassword_Click\"");
         StringAssert.Contains(xaml, "IsEnabled=\"{Binding CanSetJoinPassword}\"");
+        StringAssert.Contains(xaml, "MOT DE PASSE RÉSEAU BOIII");
         StringAssert.Contains(xaml, "codes couleur BOIII ^0 à ^9 autorisés");
         Assert.IsFalse(xaml.Contains("Password=\"{Binding", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void DashboardServiceDiagnostics_AreCollapsedByDefaultAndRemainAvailable()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "DashboardView.xaml"));
+
+        StringAssert.Contains(xaml, "Header=\"DÉTAILS\" IsExpanded=\"False\"");
+        StringAssert.Contains(xaml, "Style=\"{StaticResource CompactDetailsExpanderStyle}\"");
+        StringAssert.Contains(xaml, "{Binding DeclaredStateText, Mode=OneWay}");
+        StringAssert.Contains(xaml, "{Binding ReadStatusText, Mode=OneWay}");
+        StringAssert.Contains(xaml, "{Binding FreshnessText, Mode=OneWay}");
+        StringAssert.Contains(xaml, "{Binding ProvenanceText, Mode=OneWay}");
+    }
+
+    [TestMethod]
+    public void RankProfileIdentifier_IsCollapsedAndBestRoundHasNoPrefix()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "RecordsView.xaml"));
+
+        StringAssert.Contains(xaml, "Header=\"IDENTIFIANT\" IsExpanded=\"False\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ShortXuid}\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding BestOverallRound}\"");
+        Assert.IsFalse(xaml.Contains("StringFormat=M{0}", StringComparison.Ordinal));
     }
 
     [TestMethod]

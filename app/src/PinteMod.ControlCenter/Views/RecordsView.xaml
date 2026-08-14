@@ -65,11 +65,16 @@
                                     <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="4">
                                         <StackPanel>
                                             <TextBlock Text="{Binding DisplayName}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding ShortXuid}" Foreground="{StaticResource AccentBrightBrush}" FontSize="10" Margin="0,3,0,10" />
+                                            <Expander Header="IDENTIFIANT" IsExpanded="False" Margin="0,1,0,5"
+                                                      Style="{StaticResource CompactDetailsExpanderStyle}"
+                                                      AutomationProperties.Name="Afficher l’identifiant abrégé du profil">
+                                                <TextBlock Text="{Binding ShortXuid}" Foreground="{StaticResource AccentBrightBrush}"
+                                                           FontSize="10" Margin="14,0,0,5" />
+                                            </Expander>
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
                                                 <StackPanel><TextBlock Text="SESSIONS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding Sessions}" Margin="0,4,0,0" /></StackPanel>
-                                                <StackPanel Grid.Column="1"><TextBlock Text="MEILLEURE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding BestOverallRound, StringFormat=M{0}}" Margin="0,4,0,0" Foreground="{StaticResource AccentBrightBrush}" /></StackPanel>
+                                                <StackPanel Grid.Column="1"><TextBlock Text="MEILLEURE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding BestOverallRound}" Margin="0,4,0,0" Foreground="{StaticResource AccentBrightBrush}" /></StackPanel>
                                                 <StackPanel Grid.Column="2"><TextBlock Text="TEMPS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding TotalPlayTime}" Margin="0,4,0,0" /></StackPanel>
                                             </Grid>
                                         </StackPanel>

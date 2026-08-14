@@ -96,7 +96,7 @@
                                    TextWrapping="Wrap" />
                         <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="9" Margin="0,0,0,10" TextWrapping="Wrap" />
-                        <TextBlock Text="NOUVEAU MOT DE PASSE JOUEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
+                        <TextBlock Text="NOUVEAU MOT DE PASSE RÉSEAU BOIII" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
                         <WrapPanel>
                             <PasswordBox x:Name="JoinPasswordBox" Width="220" MaxLength="32" Margin="0,0,8,8"
                                          ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
@@ -105,9 +105,9 @@
                                     ToolTip="Disponible uniquement avec RCON loopback sur la machine serveur" />
                         </WrapPanel>
                         <WrapPanel>
-                            <Button Content="SUPPRIMER LE MOT DE PASSE JOUEUR" Style="{StaticResource DangerButtonStyle}"
+                            <Button Content="SUPPRIMER LE MOT DE PASSE RÉSEAU" Style="{StaticResource DangerButtonStyle}"
                                     Command="{Binding ClearJoinPasswordCommand}" Margin="0,0,8,8"
-                                    ToolTip="La valeur du mot de passe joueur n’est jamais lue ni affichée" />
+                                    ToolTip="La valeur du mot de passe réseau BOIII n’est jamais lue ni affichée" />
                         </WrapPanel>
                         <TextBlock Text="{Binding SetJoinPasswordNotice}" Foreground="{StaticResource WarningBrush}"
                                    FontSize="9" TextWrapping="Wrap" />

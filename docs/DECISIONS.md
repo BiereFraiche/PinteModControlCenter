@@ -843,3 +843,13 @@ Dernière mise à jour : 2026-08-12
 **Mot de passe.** Le booléen local `join_password_enabled=true` prouve que la dvar est active, mais son effet doit être vérifié sur une nouvelle connexion. Les joueurs déjà connectés ne sont ni expulsés ni redemandés automatiquement.
 
 **Candidate.** La révision `7bdb22fbcc1a69b4768bb59afaf3bb72295f2004` consomme exclusivement le contrat v0.1.3 et refuse donc silencieusement de réactiver les contrôles sur un ancien GSC v0.1.2.
+
+## ADR-106 — `net_password`, et non `g_password`, protège les connexions Ezz BOIII
+
+**Constat terrain.** Un client totalement déconnecté et sans mot de passe configuré a pu rejoindre alors que `join_password_enabled=true` reflétait `g_password`. Le booléen prouvait donc uniquement qu’une dvar sans effet sur ce chemin était non vide.
+
+**Autorité BOIII.** Le code public Ezz BOIII enregistre `net_password`, publie son hash dans `getInfo` et compare ce hash côté client avant la connexion. Le contrat PinteMod v0.1.4 définit, efface et observe exclusivement `net_password`. `g_password` n’est plus présenté comme une protection des connexions directes.
+
+**Confidentialité.** La valeur reste éphémère, transmise uniquement par la commande fermée et loopback, absente des snapshots, feedbacks, ViewModels, fichiers et journaux applicatifs. Seul `join_password_enabled` est publié. Le hash BOIII étant actuellement FNV1a-64 non salé, l’interface parle d’« isolation réseau BOIII » et recommande implicitement une valeur longue et aléatoire, sans revendiquer une protection cryptographique forte.
+
+**Présentation.** Les diagnostics secondaires des services et les XUID déjà abrégés des profils Ranks sont repliés par défaut dans des contrôles accessibles. L’état principal reste visible. Le numéro de meilleure manche est affiché sans préfixe `M`.
