@@ -18,31 +18,31 @@
     "active_pintemod_bosses", "max_pintemod_bosses"
   ],
   "properties": {
-    "schema_version": { "const": "1" },
+    "schema_version": { "const": 1 },
     "module_version": { "type": "string", "maxLength": 32 },
     "contract_module_version": { "const": "0.1.1" },
-    "command_contract_version": { "const": "1" },
+    "command_contract_version": { "const": 1 },
     "session_id": { "type": "string", "minLength": 1, "maxLength": 96 },
-    "sequence": { "$ref": "#/$defs/nonNegativeIntegerString" },
-    "generated_gettime": { "$ref": "#/$defs/nonNegativeIntegerString" },
+    "sequence": { "$ref": "#/$defs/nonNegativeInteger" },
+    "generated_gettime": { "$ref": "#/$defs/nonNegativeInteger" },
     "updated_at_utc": { "const": "" },
     "time_authority": { "const": "session_gettime_and_file_mtime" },
     "map_code": { "type": "string", "minLength": 1, "maxLength": 32, "pattern": "^[a-z0-9_]+$" },
     "map_source": { "const": "runtime" },
     "map_installation_authority": { "const": "unknown" },
-    "map_count": { "$ref": "#/$defs/nonNegativeIntegerString" },
+    "map_count": { "$ref": "#/$defs/nonNegativeInteger" },
     "rotation_state": { "const": "unknown" },
-    "rotation_entry_count": { "const": "0" },
-    "change_map": { "const": "false" },
-    "restart_map": { "$ref": "#/$defs/booleanString" },
-    "event_count": { "$ref": "#/$defs/nonNegativeIntegerString" },
-    "boss_count": { "$ref": "#/$defs/nonNegativeIntegerString" },
-    "power_up_count": { "$ref": "#/$defs/nonNegativeIntegerString" },
-    "diagnostic_count": { "$ref": "#/$defs/nonNegativeIntegerString" },
+    "rotation_entry_count": { "const": 0 },
+    "change_map": { "const": false },
+    "restart_map": { "type": "boolean" },
+    "event_count": { "$ref": "#/$defs/nonNegativeInteger" },
+    "boss_count": { "$ref": "#/$defs/nonNegativeInteger" },
+    "power_up_count": { "$ref": "#/$defs/nonNegativeInteger" },
+    "diagnostic_count": { "$ref": "#/$defs/nonNegativeInteger" },
     "transition_state": { "enum": ["idle", "accepted", "transitioning", "active", "failed"] },
-    "set_hostname": { "$ref": "#/$defs/booleanString" },
-    "set_join_password": { "const": "false" },
-    "clear_join_password": { "$ref": "#/$defs/booleanString" },
+    "set_hostname": { "type": "boolean" },
+    "set_join_password": { "const": false },
+    "clear_join_password": { "type": "boolean" },
     "join_password_transport": { "const": "not_implemented_gate_required" },
     "map_profile": { "type": "string", "maxLength": 48 },
     "power_support": { "type": "string", "maxLength": 48 },
@@ -51,8 +51,8 @@
     "boss_support": { "type": "string", "maxLength": 48 },
     "music_support": { "type": "string", "maxLength": 48 },
     "dog_round_support": { "type": "string", "maxLength": 48 },
-    "active_pintemod_bosses": { "$ref": "#/$defs/nonNegativeIntegerString" },
-    "max_pintemod_bosses": { "$ref": "#/$defs/nonNegativeIntegerString" }
+    "active_pintemod_bosses": { "$ref": "#/$defs/nonNegativeInteger" },
+    "max_pintemod_bosses": { "$ref": "#/$defs/nonNegativeInteger" }
   },
   "patternProperties": {
     "^map_[1-9][0-9]*_code$": { "type": "string", "pattern": "^zm_[a-z0-9_]+$", "maxLength": 32 },
@@ -63,8 +63,6 @@
     "^diagnostic_[1-9][0-9]*_alias$": { "enum": ["map_audit", "event_status", "power_ups"] }
   },
   "$defs": {
-    "nonNegativeIntegerString": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
-    "booleanString": { "enum": ["true", "false"] }
+    "nonNegativeInteger": { "type": "integer", "minimum": 0, "maximum": 999999999999 }
   }
 }
-

@@ -795,3 +795,21 @@ Dernière mise à jour : 2026-08-12
 **Déploiement minimal.** Seuls `ezz_admin_events.gsc` et le nouveau `ezz_admin_control_center_contracts.gsc` proviennent de la candidate `e279a59`. La variante `ezz_admin_music.gsc` présente sur Server3 est conservée afin de ne pas écraser une évolution terrain sans rapport avec les contrats.
 
 **Barrière.** La copie ne doit être reliée au Control Center qu’après chargement GSC sans erreur. La préparation n’autorise aucune installation directe sur Server3 de production.
+
+## ADR-101 — Un diagnostic RCON sans rapport textuel peut être complété par une preuve locale explicitement distincte
+
+**Décision.** Une réponse BOIII vide ou ne transportant pas le rapport complet de `ezzhealth full` ne devient pas un faux rapport console. Le Control Center affiche séparément le résultat du transport et le résumé provenant d'une source locale fraîche et cohérente.
+
+**Validation terrain.** Sur la copie isolée écoutant sur `127.0.0.1:27121`, le diagnostic a été envoyé et le fallback local a conclu uniquement `PinteMod : SAIN`. Cette preuve valide le canal RCON et le mécanisme de fallback, sans prétendre transporter les 51 contrôles de la console.
+
+**Limite.** Cette validation n'autorise aucun retry automatique et ne confirme aucune mutation contractuelle. Les quatre actions réelles restent soumises à leur feedback local corrélé et à leur verrou humain.
+
+## ADR-102 — Les contrats Control Center reflètent les types JSON natifs réellement produits par BOIII
+
+**Décision.** Les champs numériques (`schema_version`, séquences, compteurs, révision et temps moteur) sont des entiers JSON bornés. Les indicateurs de capacité et `join_password_enabled` sont des booléens JSON natifs. Les variantes citées (`"1"`, `"true"`, `"false"`) sont refusées par le lecteur contractuel.
+
+**Motif.** Le builtin BOIII `jsonset` sérialise ces valeurs sous leur type JSON natif même lorsque le GSC les construit initialement comme texte. Le terrain a démontré que les anciens schémas à chaînes ne décrivaient donc pas les fichiers effectivement produits.
+
+**Sécurité.** Ce changement n'assouplit ni les objets fermés, ni les bornes, ni les listes blanches, ni la fraîcheur, ni la corrélation session/carte. Il ne change aucune commande RCON et ne transforme aucune source périmée en autorité.
+
+**Synchronisation.** Les schémas embarqués du Control Center sont corrigés immédiatement. Les copies documentaires correspondantes de PinteModReal devront être synchronisées avant sa prochaine publication ; le générateur GSC actuel émet déjà les valeurs natives attendues.

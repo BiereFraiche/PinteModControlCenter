@@ -11,10 +11,10 @@
     "join_password_enabled", "revision"
   ],
   "properties": {
-    "schema_version": { "const": "1" },
+    "schema_version": { "const": 1 },
     "session_id": { "type": "string", "minLength": 1, "maxLength": 96 },
-    "sequence": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
-    "generated_gettime": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "sequence": { "type": "integer", "minimum": 0, "maximum": 999999999999 },
+    "generated_gettime": { "type": "integer", "minimum": 0, "maximum": 999999999999 },
     "updated_at_utc": { "const": "" },
     "time_authority": { "const": "session_gettime_and_file_mtime" },
     "public_hostname": {
@@ -23,8 +23,7 @@
       "pattern": "^[A-Za-z0-9 ._\\[\\]()-]*$"
     },
     "public_hostname_state": { "enum": ["observed", "neutralized", "empty"] },
-    "join_password_enabled": { "enum": ["true", "false"] },
-    "revision": { "type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 12 }
+    "join_password_enabled": { "type": "boolean" },
+    "revision": { "type": "integer", "minimum": 1, "maximum": 999999999999 }
   }
 }
-

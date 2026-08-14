@@ -351,3 +351,7 @@ Dernière mise à jour : 2026-08-12
 - [Terrain] Copie Server3 de test sauvegardée et préparée en LAN-only sur le port 27121 avec les deux GSC candidats ; aucun serveur lancé.
 - [Terrain] Compilation/chargement GSC confirmé humainement sans erreur signalée sur la copie Server3 isolée.
 - [Terrain] Lecture hybride locale validée visuellement : session/runtime/PinteMod frais ; services auxiliaires non lancés correctement présentés comme arrêtés ou périmés.
+- [Terrain] Transport RCON local validé sur la copie isolée à `127.0.0.1:27121` via le diagnostic `ezzhealth full` et son fallback local frais `PinteMod : SAIN`.
+- [Terminé] Corriger l'écart terrain entre les scalaires JSON natifs produits par BOIII et les quatre schémas/lecteurs contractuels ; 419/419 tests Debug et Release.
+- [À valider] Relancer la nouvelle candidate puis confirmer l'identité locale et effectuer Restart Map, Spawn Boss, Set Hostname et Clear Join Password en une passe groupée.
+- [À faire] Reporter les mêmes types JSON natifs dans les quatre schémas source de PinteModReal avant sa prochaine publication, sans modifier le GSC runtime déjà conforme.

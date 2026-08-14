@@ -16,12 +16,10 @@ public sealed class ControlCenterContractSchemaTests
         var identity = Load("server_identity.schema.json");
 
         Assert.IsFalse(capabilities.RootElement.GetProperty("additionalProperties").GetBoolean());
-        Assert.AreEqual(
-            "false",
-            capabilities.RootElement.GetProperty("properties").GetProperty("change_map").GetProperty("const").GetString());
-        Assert.AreEqual(
-            "false",
-            capabilities.RootElement.GetProperty("properties").GetProperty("set_join_password").GetProperty("const").GetString());
+        Assert.IsFalse(
+            capabilities.RootElement.GetProperty("properties").GetProperty("change_map").GetProperty("const").GetBoolean());
+        Assert.IsFalse(
+            capabilities.RootElement.GetProperty("properties").GetProperty("set_join_password").GetProperty("const").GetBoolean());
 
         CollectionAssert.AreEquivalent(
             new[] { "restart_map", "spawn_boss", "set_hostname", "clear_join_password" },
@@ -32,7 +30,12 @@ public sealed class ControlCenterContractSchemaTests
         Assert.AreEqual(
             "restart_map",
             transition.RootElement.GetProperty("properties").GetProperty("action").GetProperty("const").GetString());
-        Assert.IsTrue(identity.RootElement.GetProperty("properties").GetProperty("revision").TryGetProperty("pattern", out _));
+        Assert.AreEqual(
+            "integer",
+            identity.RootElement.GetProperty("properties").GetProperty("revision").GetProperty("type").GetString());
+        Assert.AreEqual(
+            1L,
+            identity.RootElement.GetProperty("properties").GetProperty("revision").GetProperty("minimum").GetInt64());
         Assert.IsFalse(identity.RootElement.GetProperty("properties").GetProperty("revision").TryGetProperty("const", out _));
     }
 

@@ -3436,3 +3436,56 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - `app/src/PinteMod.ControlCenter/Views/ServerView.xaml` ;
 - `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractViewModelTests.cs` ;
 - documents de suivi et prompt de contre-revue.
+
+## 2026-08-14 — Validation terrain du transport RCON local
+
+### Objectif
+
+- valider le canal RCON de la copie Server3 isolée avant les quatre mutations contractuelles groupées.
+
+### Résultat
+
+- profil actif : `Serveur 2`, racine locale `E:\Dev\servtest\Server3` ;
+- serveur BOIII observé en écoute UDP locale sur `27121` ;
+- configuration opérateur corrigée sur `127.0.0.1:27121` ;
+- secret DPAPI présent, sans lecture ni affichage de sa valeur ;
+- `ezzhealth full` envoyé manuellement avec succès ;
+- BOIII n'a pas transporté les 51 contrôles dans sa réponse UDP, comportement déjà prévu par le fallback ;
+- preuve locale fraîche utilisée sans inventer la sortie console : `PinteMod : SAIN` ;
+- aucun retry automatique, aucune mutation serveur et aucune écriture PinteMod effectués pendant ce diagnostic.
+
+### Validation suivante
+
+- exécuter en une seule passe terrain les quatre actions contractuelles autorisées : Restart Map, Spawn Boss, Set Hostname et Clear Join Password ;
+- conserver Change Map, événements génériques et définition du mot de passe joueur en simulation.
+
+## 2026-08-14 — Correctif terrain des types JSON contractuels BOIII
+
+### Problème observé
+
+- `server_identity.json` et `control_center_capabilities.json` étaient présents, frais et liés à la session active, mais l'interface les classait invalides ;
+- BOIII sérialise les chaînes numériques et booléennes passées à `jsonset` sous forme de nombres et booléens JSON natifs ;
+- les quatre schémas embarqués exigeaient à tort ces scalaires entre guillemets.
+
+### Correction
+
+- alignement strict du lecteur sur les types réellement émis : entiers JSON bornés et booléens JSON natifs ;
+- alignement des quatre schémas Draft 2020-12 ;
+- conservation des objets fermés, listes blanches, bornes, corrélations de session et refus des scalaires cités ;
+- aucune modification du transport RCON, des commandes, des GSC de la copie de test ou de PinteMod en cours d'exécution.
+
+### Validation
+
+- tests ciblés lecteur/contrats : 8/8 réussis ;
+- Debug : 0 avertissement, 0 erreur, 419/419 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 419/419 tests réussis ;
+- test DPAPI rejoué avec succès dans le profil Windows normal ;
+- validation terrain des quatre actions suspendue jusqu'au lancement de la nouvelle candidate.
+
+### Fichiers modifiés
+
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/ControlCenterContractReader.cs` ;
+- `app/contracts/control-center/v1/*.schema.json` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractReaderTests.cs` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractSchemaTests.cs` ;
+- documents de suivi.

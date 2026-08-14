@@ -10,10 +10,10 @@
     "status", "result_code"
   ],
   "properties": {
-    "schema_version": { "const": "1" },
+    "schema_version": { "const": 1 },
     "session_id": { "type": "string", "minLength": 1, "maxLength": 96 },
-    "sequence": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
-    "generated_gettime": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "sequence": { "type": "integer", "minimum": 0, "maximum": 999999999999 },
+    "generated_gettime": { "type": "integer", "minimum": 0, "maximum": 999999999999 },
     "updated_at_utc": { "const": "" },
     "time_authority": { "const": "session_gettime_and_file_mtime" },
     "request_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,32}$" },
@@ -36,4 +36,3 @@
     }
   }
 }
-

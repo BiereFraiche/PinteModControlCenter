@@ -10,7 +10,7 @@
     "generated_gettime", "updated_at_utc", "time_authority"
   ],
   "properties": {
-    "schema_version": { "const": "1" },
+    "schema_version": { "const": 1 },
     "request_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,32}$" },
     "action": { "const": "restart_map" },
     "requested_map": { "type": "string", "pattern": "^zm_[a-z0-9_]+$", "maxLength": 32 },
@@ -21,10 +21,9 @@
         "accepted", "transition_started", "success", "result_map_mismatch"
       ]
     },
-    "generated_gettime": { "type": "string", "pattern": "^[0-9]+$", "maxLength": 12 },
+    "generated_gettime": { "type": "integer", "minimum": 0, "maximum": 999999999999 },
     "updated_at_utc": { "const": "" },
     "time_authority": { "const": "session_gettime_and_file_mtime" },
     "resulting_session_id": { "type": "string", "minLength": 1, "maxLength": 96 }
   }
 }
-

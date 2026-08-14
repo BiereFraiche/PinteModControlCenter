@@ -236,15 +236,15 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
         RequireClosedObject(root, CapabilityPropertyNames, DynamicCapabilityName.IsMatch);
         RequireSchema(root);
         RequireExact(root, "contract_module_version", "0.1.1");
-        RequireExact(root, "command_contract_version", "1");
+        RequireIntegerExact(root, "command_contract_version", 1);
         RequireExact(root, "updated_at_utc", string.Empty);
         RequireExact(root, "time_authority", RuntimeJsonContract.TimeAuthority);
         RequireExact(root, "map_source", "runtime");
         RequireExact(root, "map_installation_authority", "unknown");
         RequireExact(root, "rotation_state", "unknown");
-        RequireExact(root, "rotation_entry_count", "0");
-        RequireExact(root, "change_map", "false");
-        RequireExact(root, "set_join_password", "false");
+        RequireIntegerExact(root, "rotation_entry_count", 0);
+        RequireBooleanExact(root, "change_map", false);
+        RequireBooleanExact(root, "set_join_password", false);
         RequireExact(root, "join_password_transport", "not_implemented_gate_required");
 
         var mapCount = RequiredCount(root, "map_count", 64);
@@ -284,14 +284,14 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
             RequiredTwelveDigitNumber(root, "sequence"),
             RequiredTwelveDigitNumber(root, "generated_gettime"),
             RequiredMapCode(root, "map_code"),
-            RequiredBooleanString(root, "restart_map"),
+            RequiredBoolean(root, "restart_map"),
             maps,
             bosses,
             powerUps,
             diagnostics,
             RequiredEnum(root, "transition_state", "idle", "accepted", "transitioning", "active", "failed"),
-            RequiredBooleanString(root, "set_hostname"),
-            RequiredBooleanString(root, "clear_join_password"),
+            RequiredBoolean(root, "set_hostname"),
+            RequiredBoolean(root, "clear_join_password"),
             RequiredDisplayString(root, "map_profile", 48),
             RequiredDisplayString(root, "power_support", 48),
             RequiredDisplayString(root, "pack_a_punch_support", 48),
@@ -387,11 +387,11 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
             RequiredTwelveDigitNumber(root, "generated_gettime"),
             hostname,
             state,
-            RequiredBooleanString(root, "join_password_enabled"),
-            RuntimeJsonContract.RequiredInt64(root, "revision", 1, MaximumTwelveDigitValue));
+            RequiredBoolean(root, "join_password_enabled"),
+            RequiredInteger(root, "revision", 1, MaximumTwelveDigitValue));
     }
 
-    private static void RequireSchema(JsonElement root) => RequireExact(root, "schema_version", "1");
+    private static void RequireSchema(JsonElement root) => RequireIntegerExact(root, "schema_version", 1);
 
     private static void RequireClosedObject(
         JsonElement root,
@@ -415,6 +415,22 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
         if (!root.TryGetProperty(name, out var property) ||
             property.ValueKind != JsonValueKind.String ||
             !string.Equals(property.GetString(), expected, StringComparison.Ordinal))
+        {
+            throw RuntimeJsonContract.Invalid($"Valeur contractuelle invalide : {name}.");
+        }
+    }
+
+    private static void RequireIntegerExact(JsonElement root, string name, long expected)
+    {
+        if (RequiredInteger(root, name, expected, expected) != expected)
+        {
+            throw RuntimeJsonContract.Invalid($"Valeur contractuelle invalide : {name}.");
+        }
+    }
+
+    private static void RequireBooleanExact(JsonElement root, string name, bool expected)
+    {
+        if (RequiredBoolean(root, name) != expected)
         {
             throw RuntimeJsonContract.Invalid($"Valeur contractuelle invalide : {name}.");
         }
@@ -462,13 +478,35 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
             value.All(character => char.IsAsciiLetterOrDigit(character) || character == '_'));
 
     private static long RequiredTwelveDigitNumber(JsonElement root, string name) =>
-        RuntimeJsonContract.RequiredInt64(root, name, 0, MaximumTwelveDigitValue);
+        RequiredInteger(root, name, 0, MaximumTwelveDigitValue);
 
     private static int RequiredCount(JsonElement root, string name, int maximum) =>
-        RuntimeJsonContract.RequiredInt32(root, name, 0, maximum);
+        checked((int)RequiredInteger(root, name, 0, maximum));
 
-    private static bool RequiredBooleanString(JsonElement root, string name) =>
-        RequiredEnum(root, name, "true", "false") == "true";
+    private static long RequiredInteger(JsonElement root, string name, long minimum, long maximum)
+    {
+        if (!root.TryGetProperty(name, out var property) ||
+            property.ValueKind != JsonValueKind.Number ||
+            !property.TryGetInt64(out var value) ||
+            value < minimum ||
+            value > maximum)
+        {
+            throw RuntimeJsonContract.Invalid($"Champ numérique natif invalide : {name}.");
+        }
+
+        return value;
+    }
+
+    private static bool RequiredBoolean(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out var property) ||
+            property.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+        {
+            throw RuntimeJsonContract.Invalid($"Champ booléen natif invalide : {name}.");
+        }
+
+        return property.GetBoolean();
+    }
 
     private static string RequiredEnum(JsonElement root, string name, params string[] allowed)
     {
