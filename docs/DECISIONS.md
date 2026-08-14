@@ -813,3 +813,19 @@ Dernière mise à jour : 2026-08-12
 **Sécurité.** Ce changement n'assouplit ni les objets fermés, ni les bornes, ni les listes blanches, ni la fraîcheur, ni la corrélation session/carte. Il ne change aucune commande RCON et ne transforme aucune source périmée en autorité.
 
 **Synchronisation.** Les schémas embarqués du Control Center sont corrigés immédiatement. Les copies documentaires correspondantes de PinteModReal devront être synchronisées avant sa prochaine publication ; le générateur GSC actuel émet déjà les valeurs natives attendues.
+
+## ADR-103 — Les onglets serveurs ne font pas partie de la zone de déplacement
+
+**Décision.** Le chrome de fenêtre réserve une rangée supérieure de 34 px uniquement au déplacement et aux boutons Réduire/Agrandir/Fermer. Les onglets serveurs occupent une rangée distincte juste en dessous et restent marqués interactifs dans le chrome WPF.
+
+**Motif.** Un onglet ne doit jamais entrer en concurrence avec le glisser de fenêtre. Cette séparation reste stable lorsque de nouveaux serveurs ou boutons sont ajoutés.
+
+## ADR-104 — Le hostname est persistant mais `g_password` reste éphémère et loopback
+
+**Hostname.** PinteMod persiste uniquement le nom public validé dans `pintemod/config/control_center_identity.json`, via son écriture JSON sûre, puis le restaure au prochain chargement. Ce fichier public ne contient aucun mot de passe. Le titre natif de la fenêtre BOIII peut rester figé ; `server_identity.json` et le navigateur de serveurs sont les observations pertinentes.
+
+**Mot de passe joueur.** La valeur passe uniquement par une méthode dédiée, un `PasswordBox` non bindé et la commande fermée `ezzccsetjoinpassword`. Elle est limitée à 4–32 caractères ASCII, n’est jamais incluse dans un modèle public, un feedback, un snapshot, un fichier ou une activité opérateur, et n’est autorisée que si l’endpoint est loopback. Le mode LAN est refusé avant lecture du secret RCON et avant transport.
+
+**Persistance.** `g_password` reste runtime uniquement. Un redémarrage complet recharge la configuration serveur déjà administrée hors Control Center. Persister cette valeur dans PinteMod, la configuration opérateur ou DPAPI a été rejeté afin de ne pas créer un second magasin de secrets.
+
+**Gate terrain.** La fonctionnalité reste candidate jusqu’à un test avec valeur synthétique unique et recherche dans toutes les sorties et fichiers de la copie de test. Toute trace impose la désactivation de la capability. Aucun retry automatique et aucune commande libre ne sont autorisés.

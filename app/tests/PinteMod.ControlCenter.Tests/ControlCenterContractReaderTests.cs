@@ -187,7 +187,7 @@ public sealed class ControlCenterContractReaderTests
 
     private static string CapabilitiesJson() => """
         {
-          "schema_version":1,"module_version":"2.1.1","contract_module_version":"0.1.1",
+          "schema_version":1,"module_version":"2.1.1","contract_module_version":"0.1.2",
           "command_contract_version":1,"session_id":"session-local-001","sequence":7,
           "generated_gettime":25000,"updated_at_utc":"","time_authority":"session_gettime_and_file_mtime",
           "map_code":"zm_tomb","map_source":"runtime","map_installation_authority":"unknown",
@@ -196,8 +196,8 @@ public sealed class ControlCenterContractReaderTests
           "event_count":0,"boss_count":1,"boss_1_alias":"margwa",
           "power_up_count":1,"power_up_1_alias":"max_ammo","diagnostic_count":3,
           "diagnostic_1_alias":"map_audit","diagnostic_2_alias":"event_status","diagnostic_3_alias":"power_ups",
-          "transition_state":"idle","set_hostname":true,"set_join_password":false,
-          "clear_join_password":true,"join_password_transport":"not_implemented_gate_required",
+          "transition_state":"idle","set_hostname":true,"set_join_password":true,
+          "clear_join_password":true,"join_password_transport":"loopback_rcon_ephemeral",
           "map_profile":"OFFICIAL","power_support":"SUPPORTED","pack_a_punch_support":"SUPPORTED",
           "event_support":"SUPPORTED_MARGWA","boss_support":"MARGWA","music_support":"SUPPORTED",
           "dog_round_support":"NOT_DECLARED","active_pintemod_bosses":0,"max_pintemod_bosses":2

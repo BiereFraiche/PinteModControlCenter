@@ -18,15 +18,16 @@ public sealed class ControlCenterContractSchemaTests
         Assert.IsFalse(capabilities.RootElement.GetProperty("additionalProperties").GetBoolean());
         Assert.IsFalse(
             capabilities.RootElement.GetProperty("properties").GetProperty("change_map").GetProperty("const").GetBoolean());
-        Assert.IsFalse(
-            capabilities.RootElement.GetProperty("properties").GetProperty("set_join_password").GetProperty("const").GetBoolean());
+        Assert.AreEqual(
+            "boolean",
+            capabilities.RootElement.GetProperty("properties").GetProperty("set_join_password").GetProperty("type").GetString());
 
         CollectionAssert.AreEquivalent(
-            new[] { "restart_map", "spawn_boss", "set_hostname", "clear_join_password" },
+            new[] { "restart_map", "spawn_boss", "set_hostname", "set_join_password", "clear_join_password" },
             feedback.RootElement.GetProperty("properties").GetProperty("action").GetProperty("enum")
                 .EnumerateArray().Select(value => value.GetString()).ToArray());
         Assert.IsFalse(feedback.RootElement.GetRawText().Contains("trigger_event", StringComparison.Ordinal));
-        Assert.IsFalse(feedback.RootElement.GetRawText().Contains("set_join_password", StringComparison.Ordinal));
+        StringAssert.Contains(feedback.RootElement.GetRawText(), "set_join_password");
         Assert.AreEqual(
             "restart_map",
             transition.RootElement.GetProperty("properties").GetProperty("action").GetProperty("const").GetString());

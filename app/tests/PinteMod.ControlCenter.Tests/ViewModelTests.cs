@@ -415,6 +415,21 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "ActiveServer.Shell.NavigationItems");
         StringAssert.Contains(xaml, "ActiveServer.Shell.CurrentPage");
         StringAssert.Contains(xaml, "ActiveServer.Shell.RefreshCommand");
+        StringAssert.Contains(xaml, "CaptionHeight=\"34\"");
+        StringAssert.Contains(xaml, "x:Name=\"WindowDragBar\" Grid.Row=\"0\"");
+        StringAssert.Contains(xaml, "<Border Grid.Row=\"1\" Background=\"{StaticResource SidebarBrush}\"");
+    }
+
+    [TestMethod]
+    public void ServerView_UsesUnboundPasswordBoxForLoopbackOnlyPasswordAction()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "ServerView.xaml"));
+
+        StringAssert.Contains(xaml, "x:Name=\"JoinPasswordBox\"");
+        StringAssert.Contains(xaml, "Click=\"SetJoinPassword_Click\"");
+        StringAssert.Contains(xaml, "IsEnabled=\"{Binding CanSetJoinPassword}\"");
+        Assert.IsFalse(xaml.Contains("Password=\"{Binding", StringComparison.Ordinal));
     }
 
     [TestMethod]

@@ -23,6 +23,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
         "result_map_mismatch", "unsupported_on_map", "invalid_target_xuid",
         "target_not_connected", "events_disabled", "boss_limit_reached", "invalid_position",
         "spawn_failed", "invalid_hostname", "hostname_not_applied", "password_not_cleared"
+        , "invalid_join_password", "password_not_applied", "hostname_persist_failed"
     };
     private static readonly HashSet<string> DiagnosticAliases = new(StringComparer.Ordinal)
     {
@@ -235,7 +236,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
     {
         RequireClosedObject(root, CapabilityPropertyNames, DynamicCapabilityName.IsMatch);
         RequireSchema(root);
-        RequireExact(root, "contract_module_version", "0.1.1");
+        RequireExact(root, "contract_module_version", "0.1.2");
         RequireIntegerExact(root, "command_contract_version", 1);
         RequireExact(root, "updated_at_utc", string.Empty);
         RequireExact(root, "time_authority", RuntimeJsonContract.TimeAuthority);
@@ -244,8 +245,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
         RequireExact(root, "rotation_state", "unknown");
         RequireIntegerExact(root, "rotation_entry_count", 0);
         RequireBooleanExact(root, "change_map", false);
-        RequireBooleanExact(root, "set_join_password", false);
-        RequireExact(root, "join_password_transport", "not_implemented_gate_required");
+        RequireExact(root, "join_password_transport", "loopback_rcon_ephemeral");
 
         var mapCount = RequiredCount(root, "map_count", 64);
         var bossCount = RequiredCount(root, "boss_count", 64);
@@ -279,7 +279,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
 
         return new(
             RequiredIdentifier(root, "module_version", 32),
-            "0.1.1",
+            "0.1.2",
             RequiredSessionId(root, "session_id"),
             RequiredTwelveDigitNumber(root, "sequence"),
             RequiredTwelveDigitNumber(root, "generated_gettime"),
@@ -291,6 +291,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
             diagnostics,
             RequiredEnum(root, "transition_state", "idle", "accepted", "transitioning", "active", "failed"),
             RequiredBoolean(root, "set_hostname"),
+            RequiredBoolean(root, "set_join_password"),
             RequiredBoolean(root, "clear_join_password"),
             RequiredDisplayString(root, "map_profile", 48),
             RequiredDisplayString(root, "power_support", 48),
@@ -586,6 +587,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
         "restart_map" => ControlCenterContractAction.RestartMap,
         "spawn_boss" => ControlCenterContractAction.SpawnBoss,
         "set_hostname" => ControlCenterContractAction.SetHostname,
+        "set_join_password" => ControlCenterContractAction.SetJoinPassword,
         "clear_join_password" => ControlCenterContractAction.ClearJoinPassword,
         _ => throw RuntimeJsonContract.Invalid("Action Control Center inconnue.")
     };

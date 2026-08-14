@@ -19,7 +19,7 @@
     "request_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,32}$" },
     "action": {
       "enum": [
-        "restart_map", "spawn_boss", "set_hostname", "clear_join_password"
+        "restart_map", "spawn_boss", "set_hostname", "set_join_password", "clear_join_password"
       ]
     },
     "status": { "enum": ["accepted", "applied", "rejected", "failed"] },
@@ -31,7 +31,8 @@
         "result_map_mismatch", "unsupported_on_map", "invalid_target_xuid",
         "target_not_connected", "events_disabled", "boss_limit_reached",
         "invalid_position", "spawn_failed", "invalid_hostname",
-        "hostname_not_applied", "password_not_cleared"
+        "hostname_not_applied", "hostname_persist_failed",
+        "invalid_join_password", "password_not_applied", "password_not_cleared"
       ]
     }
   }

@@ -542,6 +542,13 @@ public sealed class ServerViewModel : PageViewModel
         ControlCenterCommandValidator.IsValidHostname(RequestedHostname) &&
         !string.Equals(CurrentIdentity.PublicHostname, RequestedHostname, StringComparison.Ordinal);
 
+    public bool CanSetJoinPassword =>
+        CanRunServerAdministration &&
+        CurrentCapabilities is { SetJoinPassword: true } &&
+        CurrentIdentity is not null &&
+        _rconEndpointFactory?.Invoke() is { } endpoint &&
+        RconEndpointValidator.IsLoopbackAddress(endpoint.Address);
+
     public bool CanClearJoinPassword =>
         CanRunServerAdministration &&
         CurrentCapabilities is { ClearJoinPassword: true } &&
@@ -577,8 +584,14 @@ public sealed class ServerViewModel : PageViewModel
         _ => "Mot de passe joueur : désactivé"
     };
 
-    public string SetJoinPasswordNotice =>
-        "Définir le mot de passe : Non disponible — validation confidentialité requise.";
+    public string HostnamePersistenceNotice =>
+        "Le nom public est persisté par PinteMod. Le titre de la fenêtre BOIII peut rester inchangé : l’identité locale et le navigateur de serveurs font foi.";
+
+    public string SetJoinPasswordNotice => CanSetJoinPassword
+        ? "Disponible uniquement sur la machine serveur · valeur éphémère, jamais lue, affichée, journalisée ni enregistrée."
+        : CurrentCapabilities is { SetJoinPassword: true }
+            ? "Définir le mot de passe exige un Control Center lancé sur la machine serveur avec RCON sur 127.0.0.1."
+            : "Définir le mot de passe : indisponible dans le contrat PinteMod actif.";
 
     public string BossTargetText
     {
@@ -848,6 +861,7 @@ public sealed class ServerViewModel : PageViewModel
         OnPropertyChanged(nameof(CanRestartMap));
         OnPropertyChanged(nameof(CanSpawnBoss));
         OnPropertyChanged(nameof(CanSetHostname));
+        OnPropertyChanged(nameof(CanSetJoinPassword));
         OnPropertyChanged(nameof(CanClearJoinPassword));
         OnPropertyChanged(nameof(ContractSourceSummary));
         OnPropertyChanged(nameof(ServerIdentityText));
@@ -1262,7 +1276,52 @@ public sealed class ServerViewModel : PageViewModel
             ServiceHealth.Error,
             blockMutations: false));
 
-    private async Task ExecuteServerAdministrationCoreAsync(ServerAdministrationRequest request)
+    public async Task SetJoinPasswordAsync(string? joinPassword)
+    {
+        if (!ControlCenterCommandValidator.IsValidJoinPassword(joinPassword))
+        {
+            SetServerAdministrationResult(
+                "ACTION REFUSÉE",
+                "Le mot de passe doit contenir 4 à 32 caractères ASCII autorisés.",
+                false,
+                ServiceHealth.Warning,
+                blockMutations: false);
+            return;
+        }
+
+        if (!CanSetJoinPassword)
+        {
+            SetServerAdministrationResult(
+                "LOOPBACK REQUIS",
+                "Cette action confidentielle est disponible uniquement sur la machine serveur avec RCON sur 127.0.0.1.",
+                false,
+                ServiceHealth.Warning,
+                blockMutations: false);
+            return;
+        }
+
+        var request = new ServerAdministrationRequest(
+            ServerAdministrationAction.SetJoinPassword,
+            RequestId: CreateRequestId());
+        try
+        {
+            await _rconOperations.RunExclusiveAsync(
+                _ => ExecuteServerAdministrationCoreAsync(request, joinPassword));
+        }
+        catch (Exception)
+        {
+            SetServerAdministrationResult(
+                "RÉSULTAT INCERTAIN",
+                "L’opération confidentielle s’est interrompue. Vérifiez l’état local avant toute nouvelle mutation.",
+                true,
+                ServiceHealth.Warning,
+                blockMutations: true);
+        }
+    }
+
+    private async Task ExecuteServerAdministrationCoreAsync(
+        ServerAdministrationRequest request,
+        string? sensitiveJoinPassword = null)
     {
         if (_serverAdministrationCommandService is null ||
             _confirmationService is null ||
@@ -1323,7 +1382,7 @@ public sealed class ServerViewModel : PageViewModel
         {
             var revalidated = await _snapshotStore.RefreshAsync();
             ApplySnapshot(revalidated);
-            if (!IsContractRequestAllowed(request, contractBaseline))
+            if (!IsContractRequestAllowed(request, contractBaseline, endpoint))
             {
                 SetServerAdministrationResult(
                     "AUTORISATION EXPIRÉE",
@@ -1345,7 +1404,12 @@ public sealed class ServerViewModel : PageViewModel
         ServerAdministrationExecutionResult result;
         try
         {
-            result = await _serverAdministrationCommandService.ExecuteAsync(request, endpoint);
+            result = request.Action == ServerAdministrationAction.SetJoinPassword
+                ? await _serverAdministrationCommandService.SetJoinPasswordAsync(
+                    request.RequestId!,
+                    sensitiveJoinPassword!,
+                    endpoint)
+                : await _serverAdministrationCommandService.ExecuteAsync(request, endpoint);
         }
         catch (Exception)
         {
@@ -1485,6 +1549,10 @@ public sealed class ServerViewModel : PageViewModel
             contracts.ServerIdentity.Value is { } hostnameIdentity &&
             hostnameIdentity.Revision > baseline.IdentityRevision &&
             string.Equals(hostnameIdentity.PublicHostname, request.Option, StringComparison.Ordinal),
+        ServerAdministrationAction.SetJoinPassword =>
+            IsFreshLocal(contracts.ServerIdentity) &&
+            contracts.ServerIdentity.Value is { JoinPasswordEnabled: true } enabledPasswordIdentity &&
+            enabledPasswordIdentity.Revision > baseline.IdentityRevision,
         ServerAdministrationAction.ClearJoinPassword =>
             IsFreshLocal(contracts.ServerIdentity) &&
             contracts.ServerIdentity.Value is { JoinPasswordEnabled: false } passwordIdentity &&
@@ -1494,7 +1562,8 @@ public sealed class ServerViewModel : PageViewModel
 
     private bool IsContractRequestAllowed(
         ServerAdministrationRequest request,
-        ContractActionBaseline baseline)
+        ContractActionBaseline baseline,
+        RconEndpoint endpoint)
     {
         var capabilities = CurrentCapabilities;
         var identity = CurrentIdentity;
@@ -1528,6 +1597,12 @@ public sealed class ServerViewModel : PageViewModel
                 capabilities.SetHostname &&
                 ControlCenterCommandValidator.IsValidHostname(request.Option) &&
                 !string.Equals(identity.PublicHostname, request.Option, StringComparison.Ordinal),
+            ServerAdministrationAction.SetJoinPassword =>
+                capabilities.SetJoinPassword &&
+                request.Option is null &&
+                request.TargetXuid is null &&
+                request.TargetRound is null &&
+                RconEndpointValidator.IsLoopbackAddress(endpoint.Address),
             ServerAdministrationAction.ClearJoinPassword =>
                 capabilities.ClearJoinPassword && identity.JoinPasswordEnabled,
             _ => false
@@ -1576,6 +1651,7 @@ public sealed class ServerViewModel : PageViewModel
         ServerAdministrationAction.RestartMap => ControlCenterContractAction.RestartMap,
         ServerAdministrationAction.SpawnBoss => ControlCenterContractAction.SpawnBoss,
         ServerAdministrationAction.SetHostname => ControlCenterContractAction.SetHostname,
+        ServerAdministrationAction.SetJoinPassword => ControlCenterContractAction.SetJoinPassword,
         ServerAdministrationAction.ClearJoinPassword => ControlCenterContractAction.ClearJoinPassword,
         _ => throw new ArgumentOutOfRangeException(nameof(action), action, "Action hors contrat Control Center.")
     };
@@ -1584,6 +1660,7 @@ public sealed class ServerViewModel : PageViewModel
         ServerAdministrationAction.RestartMap or
         ServerAdministrationAction.SpawnBoss or
         ServerAdministrationAction.SetHostname or
+        ServerAdministrationAction.SetJoinPassword or
         ServerAdministrationAction.ClearJoinPassword;
 
     private static string ContractSuccessMessage(ServerAdministrationAction action) => action switch
@@ -1591,6 +1668,7 @@ public sealed class ServerViewModel : PageViewModel
         ServerAdministrationAction.RestartMap => "La nouvelle session confirme le redémarrage de la carte active.",
         ServerAdministrationAction.SpawnBoss => "PinteMod confirme l’apparition du boss demandé.",
         ServerAdministrationAction.SetHostname => "L’identité locale confirme le nouveau nom du serveur.",
+        ServerAdministrationAction.SetJoinPassword => "L’identité locale confirme que le mot de passe joueur est actif. Sa valeur n’a pas été lue.",
         ServerAdministrationAction.ClearJoinPassword => "L’identité locale confirme que le mot de passe joueur est désactivé.",
         _ => "PinteMod confirme l’application de l’action."
     };
@@ -1653,7 +1731,10 @@ public sealed class ServerViewModel : PageViewModel
                 $"Faire apparaître réellement le boss « {request.Option} » près du joueur ciblé par BOIII_XUID abrégé ?\n\nLa cible et la capability seront revérifiées après cette confirmation."),
             ServerAdministrationAction.SetHostname => new(
                 "Confirmer le nouveau nom du serveur",
-                $"Appliquer réellement le hostname « {request.Option} » pour la session en cours ?\n\nAucune commande libre ne sera construite."),
+                $"Appliquer et mémoriser réellement le hostname « {request.Option} » côté PinteMod ?\n\nLe titre de fenêtre BOIII peut ne pas se rafraîchir. Aucune commande libre ne sera construite."),
+            ServerAdministrationAction.SetJoinPassword => new(
+                "Confirmer le nouveau mot de passe joueur",
+                "Définir réellement un nouveau mot de passe d’accès pour la session en cours ?\n\nCette action est limitée à 127.0.0.1. La valeur ne sera jamais affichée, journalisée ni enregistrée par le Control Center."),
             ServerAdministrationAction.ClearJoinPassword => new(
                 "Confirmer la suppression du mot de passe joueur",
                 "Désactiver réellement le mot de passe d’accès des joueurs ?\n\nLa valeur actuelle ne sera jamais lue ni affichée. Cette action n’est pas annulable automatiquement."),

@@ -24,4 +24,9 @@ public static class ControlCenterCommandValidator
         return value.All(character =>
             char.IsAsciiLetterOrDigit(character) || character is ' ' or '-' or '_' or '.' or '[' or ']' or '(' or ')');
     }
+
+    public static bool IsValidJoinPassword(string? value) =>
+        value is { Length: >= 4 and <= 32 } &&
+        value.All(character =>
+            char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.' or '!' or '@' or '#' or '$' or '%' or '+');
 }

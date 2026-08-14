@@ -11,7 +11,7 @@
         SnapsToDevicePixels="True"
         Background="{StaticResource AppBackgroundBrush}">
     <shell:WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="120" ResizeBorderThickness="6"
+        <shell:WindowChrome CaptionHeight="34" ResizeBorderThickness="6"
                             GlassFrameThickness="0" CornerRadius="0"
                             UseAeroCaptionButtons="False" />
     </shell:WindowChrome.WindowChrome>
@@ -127,13 +127,34 @@
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="34" />
                     <RowDefinition Height="50" />
                     <RowDefinition Height="70" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="28" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="{StaticResource SidebarBrush}"
+                <Border x:Name="WindowDragBar" Grid.Row="0" Background="{StaticResource SidebarBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
+                    <Grid Margin="14,0,0,0">
+                        <TextBlock Text="{Binding ActiveServer.DisplayName, StringFormat=PinteMod Control Center · {0}}"
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="—" Width="42" Height="32" Padding="0" FontSize="12"
+                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MinimizeButton_Click"
+                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                            <Button Content="□" Width="42" Height="32" Padding="0" FontSize="12"
+                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MaximizeButton_Click"
+                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                            <Button Content="×" Width="42" Height="32" Padding="0" FontSize="14"
+                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="CloseButton_Click"
+                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Background="{StaticResource SidebarBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
                     <Grid Margin="14,4,14,4">
                         <Grid.ColumnDefinitions>
@@ -175,12 +196,11 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1" Background="{StaticResource AppBackgroundBrush}"
+                <Border Grid.Row="2" Background="{StaticResource AppBackgroundBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
-                    <Grid Margin="24,0,0,0">
+                    <Grid Margin="24,0,24,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
@@ -200,21 +220,10 @@
                                            HorizontalAlignment="Right" Margin="0,3,0,0" />
                             </StackPanel>
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="18,0,0,0">
-                            <Button Content="—" Width="42" Height="32" Padding="0" FontSize="12"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MinimizeButton_Click"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
-                            <Button Content="□" Width="42" Height="32" Padding="0" FontSize="12"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MaximizeButton_Click"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
-                            <Button Content="×" Width="42" Height="32" Padding="0" FontSize="14"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="CloseButton_Click"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
-                        </StackPanel>
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="2">
+                <Grid Grid.Row="3">
                     <ContentControl Content="{Binding ActiveServer.Shell.CurrentPage}" />
                     <StackPanel VerticalAlignment="Top" Margin="24,10,24,0">
                         <Border Background="{StaticResource DangerSoftBrush}" BorderBrush="{StaticResource DangerBrush}"
@@ -235,7 +244,7 @@
                     </StackPanel>
                 </Grid>
 
-                <Border Grid.Row="3" Background="{StaticResource SidebarBrush}"
+                <Border Grid.Row="4" Background="{StaticResource SidebarBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,0,0">
                     <Grid Margin="14,0">
                         <TextBlock Text="{Binding ActiveServer.Shell.ReadOnlyFooterLabel}" Style="{StaticResource EyebrowTextStyle}"

@@ -91,12 +91,20 @@
                                     Command="{Binding SetHostnameCommand}" Margin="0,0,8,8"
                                     ToolTip="Commande réelle fermée : ezzccsethostname" />
                         </WrapPanel>
+                        <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,0,0,10" TextWrapping="Wrap" />
+                        <TextBlock Text="NOUVEAU MOT DE PASSE JOUEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
+                        <WrapPanel>
+                            <PasswordBox x:Name="JoinPasswordBox" Width="220" MaxLength="32" Margin="0,0,8,8"
+                                         ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
+                            <Button Content="DÉFINIR LE MOT DE PASSE" Style="{StaticResource SecondaryButtonStyle}"
+                                    IsEnabled="{Binding CanSetJoinPassword}" Click="SetJoinPassword_Click" Margin="0,0,8,8"
+                                    ToolTip="Disponible uniquement avec RCON loopback sur la machine serveur" />
+                        </WrapPanel>
                         <WrapPanel>
                             <Button Content="SUPPRIMER LE MOT DE PASSE JOUEUR" Style="{StaticResource DangerButtonStyle}"
                                     Command="{Binding ClearJoinPasswordCommand}" Margin="0,0,8,8"
                                     ToolTip="La valeur du mot de passe joueur n’est jamais lue ni affichée" />
-                            <Button Content="DÉFINIR LE MOT DE PASSE · À VENIR" Style="{StaticResource SimulationButtonStyle}"
-                                    IsEnabled="False" Margin="0,0,8,8" />
                         </WrapPanel>
                         <TextBlock Text="{Binding SetJoinPasswordNotice}" Foreground="{StaticResource WarningBrush}"
                                    FontSize="9" TextWrapping="Wrap" />

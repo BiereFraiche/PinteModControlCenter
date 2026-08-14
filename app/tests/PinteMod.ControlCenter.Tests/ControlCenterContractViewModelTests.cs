@@ -316,15 +316,39 @@ public sealed class ControlCenterContractViewModelTests
     }
 
     [TestMethod]
-    public async Task ChangeMapAndSetPasswordRemainUnavailableWhileSupportedMapIsOnlyInformative()
+    public async Task ChangeMapRemainsInformativeAndSetPasswordRequiresLoopback()
     {
         var viewModel = CreateViewModel(new DynamicSnapshotStore(Snapshot(), _ => Snapshot()), new CapturingService());
         await viewModel.InitializeAsync();
 
         StringAssert.Contains(viewModel.ChangeMapContractNotice, "supported ne signifie pas installed");
-        StringAssert.Contains(viewModel.SetJoinPasswordNotice, "Non disponible");
+        StringAssert.Contains(viewModel.SetJoinPasswordNotice, "machine serveur");
+        Assert.IsTrue(viewModel.CanSetJoinPassword);
         Assert.IsTrue(viewModel.CanRestartMap);
         Assert.IsFalse(viewModel.SimulateServerActionCommand is null);
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_UsesNoBindableSecretAndRequiresFreshIdentityRevision()
+    {
+        var baseline = Snapshot(identity: Identity("PinteMod Test", 7, false));
+        CapturingService? service = null;
+        var store = new DynamicSnapshotStore(baseline, _ => service?.Request is null
+            ? baseline
+            : Snapshot(
+                feedback: Feedback(service.Request, ControlCenterFeedbackStatus.Applied, "success"),
+                identity: Identity("PinteMod Test", 8, true)));
+        service = new CapturingService();
+        var viewModel = CreateViewModel(store, service);
+        await viewModel.InitializeAsync();
+
+        await viewModel.SetJoinPasswordAsync("Safe#2026");
+
+        Assert.AreEqual(1, service.CallCount);
+        Assert.AreEqual(ServerAdministrationAction.SetJoinPassword, service.Request?.Action);
+        Assert.IsNull(service.Request?.Option);
+        Assert.AreEqual("APPLIQUÉ · CONFIRMÉ LOCALEMENT", viewModel.ServerAdministrationStatus);
+        Assert.IsFalse(viewModel.ServerAdministrationMessage.Contains("Safe#2026", StringComparison.Ordinal));
     }
 
     private static ServerViewModel CreateViewModel(
@@ -378,10 +402,10 @@ public sealed class ControlCenterContractViewModelTests
     }
 
     private static ControlCenterCapabilitiesSnapshot Capabilities(string sessionId, string mapCode) => new(
-        "2.1.1", "0.1.1", sessionId, 7, 25000, mapCode, true,
+        "2.1.1", "0.1.2", sessionId, 7, 25000, mapCode, true,
         [new SupportedMapCapability(mapCode, mapCode)],
         ["margwa"], ["max_ammo"], ["map_audit", "event_status", "power_ups"],
-        "idle", true, true, "OFFICIAL", "SUPPORTED", "SUPPORTED", "SUPPORTED_MARGWA",
+        "idle", true, true, true, "OFFICIAL", "SUPPORTED", "SUPPORTED", "SUPPORTED_MARGWA",
         "MARGWA", "SUPPORTED", "NOT_DECLARED", 0, 2);
 
     private static ControlCenterServerIdentitySnapshot Identity(
@@ -401,6 +425,7 @@ public sealed class ControlCenterContractViewModelTests
             ServerAdministrationAction.RestartMap => ControlCenterContractAction.RestartMap,
             ServerAdministrationAction.SpawnBoss => ControlCenterContractAction.SpawnBoss,
             ServerAdministrationAction.SetHostname => ControlCenterContractAction.SetHostname,
+            ServerAdministrationAction.SetJoinPassword => ControlCenterContractAction.SetJoinPassword,
             _ => ControlCenterContractAction.ClearJoinPassword
         }, status, resultCode);
 
@@ -482,6 +507,16 @@ public sealed class ControlCenterContractViewModelTests
                 commandSent,
                 Now));
         }
+
+        public Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+            string requestId,
+            string joinPassword,
+            RconEndpoint endpoint,
+            CancellationToken cancellationToken = default) =>
+            ExecuteAsync(
+                new ServerAdministrationRequest(ServerAdministrationAction.SetJoinPassword, RequestId: requestId),
+                endpoint,
+                cancellationToken);
     }
 
     private sealed class AcceptConfirmationService : IOperatorConfirmationService

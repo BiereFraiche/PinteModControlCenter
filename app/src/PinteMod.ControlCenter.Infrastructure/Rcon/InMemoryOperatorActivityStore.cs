@@ -113,6 +113,11 @@ public sealed class InMemoryOperatorActivityStore : IOperatorActivityStore
             ServerAdministrationAction.KillAllZombies => "Éliminer les zombies",
             ServerAdministrationAction.MakePowerUpsPermanent => "Rendre les power-ups permanents",
             ServerAdministrationAction.RestorePowerUpTimeout => "Restaurer le délai des power-ups",
+            ServerAdministrationAction.RestartMap => "Redémarrer la carte",
+            ServerAdministrationAction.SpawnBoss => "Faire apparaître un boss",
+            ServerAdministrationAction.SetHostname => "Modifier le nom public",
+            ServerAdministrationAction.SetJoinPassword => "Définir le mot de passe joueur",
+            ServerAdministrationAction.ClearJoinPassword => "Supprimer le mot de passe joueur",
             _ => "Action serveur"
         };
         var details = LogPrivacyFilter.SanitizeDisplayText(

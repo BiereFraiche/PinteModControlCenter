@@ -59,7 +59,7 @@ public sealed class ServerAdministrationCommandServiceTests
     }
 
     [TestMethod]
-    public async Task ContractActions_UseOnlyFourClosedCommandsAndNeverExposeSetPasswordOrEvent()
+    public async Task NonSecretContractActions_UseOnlyFourClosedCommandsAndNeverExposeEvent()
     {
         var client = new CapturingClient(string.Empty);
         var service = CreateService(client);
@@ -100,8 +100,59 @@ public sealed class ServerAdministrationCommandServiceTests
             client.Commands);
         Assert.IsFalse(client.Commands.Any(command =>
             command.Contains("ezzccmap", StringComparison.Ordinal) ||
-            command.Contains("ezzccevent", StringComparison.Ordinal) ||
-            command.Contains("ezzccsetjoinpassword", StringComparison.Ordinal)));
+            command.Contains("ezzccevent", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_LoopbackUsesDedicatedCommandWithoutReturningSecret()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+
+        var result = await service.SetJoinPasswordAsync(
+            "request_0005",
+            "Safe#2026",
+            Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.SentAwaitingManualVerification, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        CollectionAssert.AreEqual(new[] { "ezzccsetjoinpassword request_0005 Safe#2026" }, client.Commands);
+        Assert.AreEqual(ServerAdministrationAction.SetJoinPassword, result.Request.Action);
+        Assert.IsNull(result.Request.Option);
+        Assert.IsFalse(result.DisplayMessage.Contains("Safe#2026", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_LanAddressIsRejectedBeforeSecretAndTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.SetJoinPasswordAsync(
+            "request_0005",
+            "Safe#2026",
+            new RconEndpoint("192.168.50.25", 27018, TimeSpan.FromSeconds(3)));
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidConfiguration, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_InvalidValueIsRejectedBeforeSecretAndTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.SetJoinPasswordAsync("request_0005", "bad value;quit", Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidRequest, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
     }
 
     [TestMethod]

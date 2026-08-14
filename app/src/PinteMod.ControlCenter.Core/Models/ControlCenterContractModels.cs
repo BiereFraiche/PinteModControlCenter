@@ -5,6 +5,7 @@ public enum ControlCenterContractAction
     RestartMap,
     SpawnBoss,
     SetHostname,
+    SetJoinPassword,
     ClearJoinPassword
 }
 
@@ -47,6 +48,7 @@ public sealed record ControlCenterCapabilitiesSnapshot(
     IReadOnlyList<string> DiagnosticAliases,
     string TransitionState,
     bool SetHostname,
+    bool SetJoinPassword,
     bool ClearJoinPassword,
     string MapProfile,
     string PowerSupport,

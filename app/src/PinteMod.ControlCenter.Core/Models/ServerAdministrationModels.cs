@@ -16,6 +16,7 @@ public enum ServerAdministrationAction
     RestartMap,
     SpawnBoss,
     SetHostname,
+    SetJoinPassword,
     ClearJoinPassword
 }
 

@@ -372,6 +372,16 @@ public sealed class PlayerAdministrationViewModelTests
 
     private sealed class CapturingServerAdministrationService : IServerAdministrationCommandService
     {
+        public Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+            string requestId,
+            string joinPassword,
+            RconEndpoint endpoint,
+            CancellationToken cancellationToken = default) =>
+            ExecuteAsync(
+                new ServerAdministrationRequest(ServerAdministrationAction.SetJoinPassword, RequestId: requestId),
+                endpoint,
+                cancellationToken);
+
         public Task<ServerAdministrationExecutionResult> ExecuteAsync(
             ServerAdministrationRequest request,
             RconEndpoint endpoint,

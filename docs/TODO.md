@@ -355,3 +355,15 @@ Dernière mise à jour : 2026-08-12
 - [Terminé] Corriger l'écart terrain entre les scalaires JSON natifs produits par BOIII et les quatre schémas/lecteurs contractuels ; 419/419 tests Debug et Release.
 - [À valider] Relancer la candidate terrain `3bf033c`, confirmer l'identité locale puis effectuer Restart Map, Spawn Boss, Set Hostname et Clear Join Password en une passe groupée.
 - [À faire] Reporter les mêmes types JSON natifs dans les quatre schémas source de PinteModReal avant sa prochaine publication, sans modifier le GSC runtime déjà conforme.
+
+## Contrat identité v0.1.2 et ergonomie fenêtre — 2026-08-14
+
+- **Terminé** — Isoler les onglets serveurs sous une barre de déplacement dédiée et testée.
+- **Terminé** — Persister uniquement le hostname public côté PinteMod, sans écrire le CFG serveur ni aucun secret.
+- **Terminé** — Ajouter la définition de `g_password` par commande fermée, validation stricte et endpoint loopback uniquement.
+- **Terminé** — Garder le mot de passe hors binding, snapshot, feedback, activité, configuration et journal applicatif.
+- **Terminé** — Valider 39/39 tests PinteModReal et 438/438 tests Control Center en Debug et Release.
+- **À valider** — Chargement terrain du GSC v0.1.2 sur la copie Server3 et rendu de la nouvelle barre de déplacement.
+- **À valider** — Persistance du hostname après redémarrage complet du processus de test ; le titre de fenêtre BOIII n’est pas une autorité.
+- **À valider** — Test de confidentialité avec un mot de passe synthétique unique sur loopback et recherche exhaustive de toute fuite.
+- **Bloqué** — Publication de SET mot de passe tant que le test de fuite terrain n’est pas réussi.

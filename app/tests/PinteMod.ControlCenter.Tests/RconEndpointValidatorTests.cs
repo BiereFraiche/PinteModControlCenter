@@ -37,6 +37,17 @@ public sealed class RconEndpointValidatorTests
         Assert.IsFalse(RconEndpointValidator.IsAllowed(Endpoint(address)));
     }
 
+    [DataTestMethod]
+    [DataRow("127.0.0.1", true)]
+    [DataRow("::1", true)]
+    [DataRow("::ffff:127.0.0.1", true)]
+    [DataRow("192.168.50.25", false)]
+    [DataRow("portable", false)]
+    public void LoopbackRequirement_IsStrict(string address, bool expected)
+    {
+        Assert.AreEqual(expected, RconEndpointValidator.IsLoopbackAddress(address));
+    }
+
     private static RconEndpoint Endpoint(string address) =>
         new(address, 27018, TimeSpan.FromSeconds(3));
 }

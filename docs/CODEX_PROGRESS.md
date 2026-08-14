@@ -3499,3 +3499,39 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - audit packaging : PASS, 471 entrées ;
 - SHA-256 : `35EBBE5723D5CE20387A551D467078EC13E89E697F9DBDA7A9CFCE0FB607FFDB` ;
 - révision et version vérifiées dans l'assembly publié.
+
+## 2026-08-14 — Identité persistante, mot de passe loopback et barre de déplacement
+
+### Objectif
+
+- corriger le nom public perdu au redémarrage, rendre possible la définition sûre de `g_password` sur la machine serveur et séparer les onglets de la zone servant à déplacer la fenêtre.
+
+### Réalisé
+
+- ajout d’une barre de déplacement dédiée de 34 px au-dessus des onglets serveurs ; les onglets et boutons restent entièrement interactifs dans une seconde rangée ;
+- contrat PinteMod v0.1.2 : le hostname public est persisté dans `pintemod/config/control_center_identity.json`, qui ne contient aucun secret, puis restauré au chargement ;
+- ajout de `ezzccsetjoinpassword` avec alphabet fermé de 4 à 32 caractères, feedback corrélé et observation uniquement du booléen `join_password_enabled` ;
+- le Control Center n’autorise cette mutation qu’avec une adresse RCON loopback ; le mode LAN ne peut ni afficher ni transmettre la valeur ;
+- `PasswordBox` non bindé, effacé avant l’attente du résultat ; aucune valeur dans les modèles, l’activité opérateur, le feedback ou la configuration ;
+- le mot de passe reste éphémère et n’est jamais persisté par PinteMod ou le Control Center ;
+- copie de test `E:\Dev\servtest\Server3` mise à jour sans lancement de serveur, avec sauvegarde `.pre-v0.1.2.bak` ; production inchangée.
+
+### Fichiers et dépôts
+
+- Control Center : Core, Infrastructure, WPF, schémas, tests et documents de suivi ;
+- PinteModReal branche `codex/pintemod-contracts-3-7`, commit local `7da248d` ;
+- `UI_FEEDBACK.md` inchangé.
+
+### Validation automatique
+
+- tests PinteModReal : 39/39 PASS ;
+- Debug Control Center : 0 avertissement, 0 erreur, 438/438 tests ;
+- Release Control Center : 0 avertissement, 0 erreur, 438/438 tests ;
+- aucun serveur, BAT ou EXE BOIII lancé ; aucun retry ou commande RCON libre ajouté.
+
+### Validation humaine requise
+
+- démarrer manuellement la copie de test et confirmer `Control Center Contracts v0.1.2 loaded` ;
+- vérifier le déplacement de fenêtre depuis la nouvelle barre ;
+- tester le hostname, redémarrer le processus de test et confirmer sa restauration dans l’identité locale ;
+- utiliser un mot de passe synthétique unique sur loopback, vérifier la connexion puis rechercher cette chaîne dans les sorties/logs avant toute autorisation de publication.

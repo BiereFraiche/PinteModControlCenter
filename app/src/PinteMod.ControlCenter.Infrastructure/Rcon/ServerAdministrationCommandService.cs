@@ -20,17 +20,59 @@ public sealed class ServerAdministrationCommandService(
         RconEndpoint endpoint,
         CancellationToken cancellationToken = default) =>
         _operationGate.ExecuteAsync(
-            token => ExecuteCoreAsync(request, endpoint, token),
+            token => ExecuteCoreAsync(request, endpoint, null, token),
             cancellationToken);
+
+    public Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+        string requestId,
+        string joinPassword,
+        RconEndpoint endpoint,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ServerAdministrationRequest(
+            ServerAdministrationAction.SetJoinPassword,
+            RequestId: requestId);
+        return _operationGate.ExecuteAsync(
+            token => ExecuteCoreAsync(request, endpoint, joinPassword, token),
+            cancellationToken);
+    }
 
     private async Task<ServerAdministrationExecutionResult> ExecuteCoreAsync(
         ServerAdministrationRequest request,
         RconEndpoint endpoint,
+        string? sensitiveJoinPassword,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (!TryBuildCommand(request, out var command))
+        string command;
+        if (request.Action == ServerAdministrationAction.SetJoinPassword)
+        {
+            if (!ControlCenterCommandValidator.IsValidRequestId(request.RequestId) ||
+                !ControlCenterCommandValidator.IsValidJoinPassword(sensitiveJoinPassword) ||
+                request.TargetRound is not null ||
+                request.Option is not null ||
+                request.TargetXuid is not null)
+            {
+                return Result(
+                    request,
+                    ServerAdministrationExecutionStatus.InvalidRequest,
+                    "Mot de passe joueur refusé par la liste blanche fermée.",
+                    false);
+            }
+
+            if (!RconEndpointValidator.IsLoopbackAddress(endpoint.Address))
+            {
+                return Result(
+                    request,
+                    ServerAdministrationExecutionStatus.InvalidConfiguration,
+                    "Définir le mot de passe joueur exige une adresse RCON loopback.",
+                    false);
+            }
+
+            command = $"ezzccsetjoinpassword {request.RequestId} {sensitiveJoinPassword}";
+        }
+        else if (!TryBuildCommand(request, out command))
         {
             return Result(
                 request,
