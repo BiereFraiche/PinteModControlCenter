@@ -25,7 +25,7 @@ Application Windows en C# / .NET 8 / WPF pour observer et administrer une sessio
 
 ## Compiler
 
-Depuis `E:\Dev\PinteMod-ControlCenter\app` :
+Depuis le dossier `app` du dépôt :
 
 ```powershell
 dotnet restore .\PinteMod.ControlCenter.sln
@@ -59,19 +59,19 @@ Sans argument, l’application reste entièrement simulée.
 
 ## Paquet portable Windows x64
 
-La candidate stable autonome prête pour la revue finale est disponible ici :
+La version stable autonome est disponible ici :
 
 ```text
-app/artifacts/PinteMod-ControlCenter-v2.2.0-stable-candidate-win-x64.zip
+app/artifacts/PinteMod-ControlCenter-v2.2.0-win-x64.zip
 ```
 
 Il contient le runtime .NET 8 Windows nécessaire : aucun SDK n’est requis sur le poste cible. Décompresser entièrement l’archive puis lancer `PinteMod.ControlCenter.exe`. Le fichier `LISEZ-MOI.txt` rappelle le démarrage, les garanties read-only et le report volontaire des essais RCON à une période sans joueur.
 
-Le paquet ne contient aucune configuration opérateur, secret DPAPI, donnée PinteMod, log, XUID réel, fichier serveur, GSC, PDB ou chemin privé de compilation. Cette candidate stable reprend la RC2 validée, les contrats runtime post-RC2, la personnalisation par serveur et les correctifs de confidentialité, d’ouverture read-only par handle vérifié et de sémantique RCON conservatrice. La lecture locale, les diagnostics, Community Pause, les principales actions serveur et la protection `net_password` ont été validés sur le terrain. Les mutations restent protégées par confirmation, revalidation locale et verrou manuel en cas de résultat incertain.
+Le paquet ne contient aucune configuration opérateur, secret DPAPI, donnée PinteMod, log, XUID réel, fichier serveur, GSC, PDB ou chemin privé de compilation. La version 2.2.0 inclut les contrats runtime locaux, la personnalisation par serveur et les protections de confidentialité, d’ouverture read-only par handle vérifié et de sémantique RCON conservatrice. La lecture locale, les diagnostics, Community Pause, les principales actions serveur et la protection `net_password` ont été validés sur le terrain. Les mutations restent protégées par confirmation, revalidation locale et verrou manuel en cas de résultat incertain.
 
 ### Test de source Local/LAN
 
-La page **Paramètres** permet de sélectionner **Local** ou **LAN**, de saisir une racine PinteMod explicite et de tester en lecture seule `current_session.json` ainsi que les quatre heartbeats. Le mode Local attend le dossier `UnrankedServer` contenant `boiii`. Le mode LAN attend uniquement le partage read-only du dossier `boiii\scriptdata\pintemod`, par exemple `\\portable\PinteModData`. Le test s’exécute hors du thread UI, ne recherche aucun serveur et ne modifie aucun fichier PinteMod.
+La page **Paramètres** permet de sélectionner **Local** ou **LAN**, de saisir une racine PinteMod explicite et de tester en lecture seule `current_session.json` ainsi que les quatre heartbeats. Le mode Local attend le dossier `UnrankedServer` contenant `boiii`. Le mode LAN attend uniquement le partage read-only du dossier `boiii\scriptdata\pintemod`, par exemple `\\serveur-exemple\PinteModData`. Le test s’exécute hors du thread UI, ne recherche aucun serveur et ne modifie aucun fichier PinteMod.
 
 Après un test lisible, l’opérateur peut enregistrer cette source pour le prochain démarrage. La configuration non sensible est stockée sous `%LOCALAPPDATA%\PinteMod\ControlCenter\operator-settings.json`. Si la source enregistrée est inaccessible, l’application revient en simulation avec un avertissement. Les arguments ci-dessous restent prioritaires sur la configuration enregistrée.
 
@@ -110,7 +110,7 @@ Le mode hybride lit uniquement :
 - `boiii/scriptdata/pintemod/logs/pause.log` pour les nouveaux événements de pause ;
 - dans le dossier de la session active seulement : `connections.log`, `community.log`, `ranks.log`, `easter_eggs.log`, `identity.log`, `moderation.log`, `localization.log`, `storage.log` et `validation.log`.
 
-Carte, identifiant de session, version déclarée, cinq heartbeats, profils Ranks, records de manches, Easter Egg Records officiels, diagnostics disponibles, métadonnées joueur autorisées et événements structurés deviennent locaux. Depuis le lot post-RC2, `health/pintemod.json` alimente l’état global PinteMod et `runtime/control_center_snapshot.json` fournit, lorsqu’il est valide, frais et lié à la session active, la manche, la durée, Ranked/Unranked, les compteurs joueur, la vie, les points, le Godmode, l’arme équipée, les munitions, l’inventaire et les atouts. Les logs restent le repli inféré et la source des événements. Une valeur `unknown` n’est jamais transformée en réussite.
+Carte, identifiant de session, version déclarée, cinq heartbeats, profils Ranks, records de manches, Easter Egg Records officiels, diagnostics disponibles, métadonnées joueur autorisées et événements structurés deviennent locaux. Dans la version 2.2.0, `health/pintemod.json` alimente l’état global PinteMod et `runtime/control_center_snapshot.json` fournit, lorsqu’il est valide, frais et lié à la session active, la manche, la durée, Ranked/Unranked, les compteurs joueur, la vie, les points, le Godmode, l’arme équipée, les munitions, l’inventaire et les atouts. Les logs restent le repli inféré et la source des événements. Une valeur `unknown` n’est jamais transformée en réussite.
 
 Seuls les fichiers `.json` actifs directement présents dans `ranks_v2/players` et `ranks_v2/maps` sont lus. L’ancien dossier `ranks/`, les sous-dossiers, `.tmp`, `.bak` et sauvegardes ne sont jamais utilisés comme sources actives. Les XUID complets servent uniquement d’identifiants métier internes ; la page Records les abrège.
 

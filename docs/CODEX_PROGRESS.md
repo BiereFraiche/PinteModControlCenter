@@ -3099,7 +3099,7 @@ Corriger le décalage visuel provoqué par l’ajout de boutons dans la fiche jo
 
 ### Captures
 
-- Capture source du défaut fournie par l’opérateur : `C:\Users\flori\Pictures\Screenshots\Capture d'écran 2026-08-12 180011.png`.
+- Capture source du défaut fournie par l’opérateur : `<CAPTURE_OPÉRATEUR_LOCALE>/responsive-defaut.png`.
 - Aucune nouvelle capture automatique produite ; la capture corrigée reste à réaliser pendant la validation humaine.
 
 ### Paquet testable
@@ -3391,13 +3391,13 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 ### État constaté
 
-- l’ancienne copie `UnrankedServer` était obsolète ; elle a été remplacée humainement par une copie récente de Server3 sous `E:\Dev\servtest\Server3` ;
+- l’ancienne copie `UnrankedServer` était obsolète ; elle a été remplacée humainement par une copie récente sous `<COPIE_SERVEUR_TEST>` ;
 - comparaison avec PinteModReal `e279a59` : 32 GSC identiques, `ezz_admin_events.gsc` à mettre à jour, module contrats absent et `ezz_admin_music.gsc` spécifique à Server3 ;
 - aucune modification du Server3 de production.
 
 ### Préparation effectuée
 
-- sauvegarde récupérable : `E:\Dev\servtest\backups\Server3-before-cc-contracts-20260814` ;
+- sauvegarde récupérable : `<SAUVEGARDE_SERVEUR_TEST>` ;
 - remplacement ciblé de `ezz_admin_events.gsc` par la candidate validée ;
 - ajout de `ezz_admin_control_center_contracts.gsc` ;
 - conservation de la version Server3 de `ezz_admin_music.gsc` ;
@@ -3422,7 +3422,7 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 ### Validation read-only du Control Center
 
-- capture humaine : `C:\Users\flori\Pictures\Screenshots\Capture d'écran 2026-08-14 015645.png` ;
+- capture humaine : `<CAPTURE_OPÉRATEUR_LOCALE>/lecture-hybride.png` ;
 - onglet `Serveur 2` en mode hybride local ;
 - session locale fraîche, carte `zm_castle`, manche/runtime joueur observés ;
 - heartbeat PinteMod frais et connecté ;
@@ -3445,7 +3445,7 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 ### Résultat
 
-- profil actif : `Serveur 2`, racine locale `E:\Dev\servtest\Server3` ;
+- profil actif : `Serveur 2`, racine locale `<COPIE_SERVEUR_TEST>` ;
 - serveur BOIII observé en écoute UDP locale sur `27121` ;
 - configuration opérateur corrigée sur `127.0.0.1:27121` ;
 - secret DPAPI présent, sans lecture ni affichage de sa valeur ;
@@ -3514,7 +3514,7 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - le Control Center n’autorise cette mutation qu’avec une adresse RCON loopback ; le mode LAN ne peut ni afficher ni transmettre la valeur ;
 - `PasswordBox` non bindé, effacé avant l’attente du résultat ; aucune valeur dans les modèles, l’activité opérateur, le feedback ou la configuration ;
 - le mot de passe reste éphémère et n’est jamais persisté par PinteMod ou le Control Center ;
-- copie de test `E:\Dev\servtest\Server3` mise à jour sans lancement de serveur, avec sauvegarde `.pre-v0.1.2.bak` ; production inchangée.
+- copie `<COPIE_SERVEUR_TEST>` mise à jour sans lancement de serveur, avec sauvegarde `.pre-v0.1.2.bak` ; production inchangée.
 
 ### Fichiers et dépôts
 
@@ -3620,7 +3620,7 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 - commit PinteModReal : `fdb9a55` sur `codex/pintemod-contracts-3-7` ;
 - commit Control Center : `e9be7ca` sur `codex/post-rc2-runtime-contracts` ;
-- GSC v0.1.4 préparé dans `E:\Dev\servtest\Server3\boiii\custom_scripts`, hash identique à la source validée ;
+- GSC v0.1.4 préparé dans `<COPIE_SERVEUR_TEST>\boiii\custom_scripts`, hash identique à la source validée ;
 - exécutable : `app/artifacts/post-rc2-net-password-v014-e9be7ca-win-x64/PinteMod.ControlCenter.exe` ;
 - ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-e9be7ca-win-x64.zip` ;
 - audit packaging : PASS, 471 entrées ;
@@ -3792,3 +3792,28 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 - transmettre le paquet de revue stable à ChatGPT avant toute publication GitHub ;
 - aucune nouvelle manipulation serveur n’est requise à ce stade.
+
+## 2026-08-16 — Corrections finales de métadonnées et neutralisation
+
+### Objectif
+
+- lever les deux blocages documentaires de la revue stable sans modifier le comportement applicatif.
+
+### Réalisé
+
+- `README.md`, `README_FR.md`, `app/README.md` et `LISEZ-MOI.txt` annoncent désormais sans ambiguïté la version stable `2.2.0` et 460/460 tests ;
+- suppression des mentions de candidate/RC2 en attente dans les surfaces distribuées ;
+- lien de téléchargement préparé pour le tag stable `v2.2.0` ;
+- remplacement de l’adresse terrain du fixture par l’adresse de documentation réservée `198.51.100.42` ;
+- neutralisation des chemins de captures, copie serveur et sauvegarde dans les documents de suivi ;
+- exemple UNC remplacé par `\\serveur-exemple\PinteModData` ;
+- aucun code métier, contrat, commande RCON, lecteur local ou GSC modifié ;
+- `UI_FEEDBACK.md` reste inchangé.
+
+### Validation
+
+- tests ciblés : 12/12 réussis ;
+- Debug : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- scans ciblés : aucune ancienne mention RC2/292 tests dans les documents distribués, aucune adresse ou chemin terrain signalé restant dans le périmètre corrigé ;
+- reconstruction du paquet stable avec une nouvelle révision et un nouveau SHA-256 : en cours.

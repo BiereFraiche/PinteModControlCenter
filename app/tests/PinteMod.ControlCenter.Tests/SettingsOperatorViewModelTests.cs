@@ -110,7 +110,7 @@ public sealed class SettingsOperatorViewModelTests
             ProfileDisplayName = "Serveur rose",
             OperatorServerRoot = "C:\\Unverified\\Server",
             ActivateDataSourceOnStartup = true,
-            RconAddress = "192.168.1.191"
+            RconAddress = "198.51.100.42" // Adresse TEST-NET-2 réservée aux exemples.
         };
         viewModel.SelectedAccentTheme = viewModel.AccentColorOptions.Single(option => option.Key == "pink");
 

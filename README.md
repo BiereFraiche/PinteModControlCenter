@@ -5,18 +5,18 @@
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-292%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-460%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current release candidate:** v2.2.0-rc.2, containing the four final security and packaging corrections requested after Preview 13.
-> Debug and Release builds complete with **0 warnings, 0 errors and 292/292 tests passing**.
+> **Current stable release:** v2.2.0.
+> Debug and Release builds complete with **0 warnings, 0 errors and 460/460 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download v2.2.0-rc.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.2)
+[Download v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
 ![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
 
@@ -137,18 +137,18 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-The corrected V1 candidate has completed its automated validation. The final independent closure review of RC2 is still pending:
+PinteMod Control Center v2.2.0 has completed its automated and field validation:
 
 ```text
 Debug build     PASS — 0 warnings, 0 errors
 Release build   PASS — 0 warnings, 0 errors
-Debug tests     PASS — 292/292
-Release tests   PASS — 292/292
+Debug tests     PASS — 460/460
+Release tests   PASS — 460/460
 ZIP audit       PASS — no PDB, private build path, forbidden XUID, secret, server file or unsafe path
-Global review   PENDING — RC2 closure review required
+Field checks    PASS — local reads, diagnostics, confirmed actions and net_password
 ```
 
-RC1 was withdrawn after the stricter review. RC2 is the only candidate to review or test. A final grouped field validation remains the operational gate before promoting it to the stable `v2.2.0` tag. No test should be performed while players could be disrupted.
+The stable package is built from an identified Git commit, published as a self-contained Windows x64 archive and verified before release. Operational mutations remain manual, confirmed and protected by conservative delivery semantics.
 
 ## Related project
 

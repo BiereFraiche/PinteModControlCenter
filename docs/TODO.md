@@ -409,3 +409,12 @@ Dernière mise à jour : 2026-08-12
 - **À valider** — Revue finale ChatGPT du paquet stable et des sources du commit `8653210`.
 - **Terminé** — Regrouper sources, binaire, empreinte, preuve et prompt dans un unique ZIP de revue `PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip`.
 - **Bloqué** — Publication GitHub `v2.2.0` jusqu’au verdict ChatGPT sans blocage et à un ordre explicite de publication.
+
+## Contre-revue stable — corrections documentaires finales — 2026-08-16
+
+- **Terminé** — Remplacer toutes les annonces RC2/292 tests des README distribués par la version stable `2.2.0` et 460/460 tests.
+- **Terminé** — Présenter `LISEZ-MOI.txt` comme version stable et utiliser un partage UNC manifestement générique.
+- **Terminé** — Neutraliser l’adresse LAN terrain du fixture et tous les chemins locaux de capture/copie serveur signalés.
+- **Terminé** — Exécuter 12/12 tests ciblés puis 460/460 tests Debug et Release, sans avertissement ni erreur.
+- **En cours** — Figer la nouvelle révision, reconstruire le ZIP `v2.2.0`, recalculer son SHA-256 et produire l’unique paquet de contre-revue.
+- **Bloqué** — Publication GitHub jusqu’au verdict final sans blocage et à un ordre explicite.

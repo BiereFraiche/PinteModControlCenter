@@ -1,7 +1,7 @@
-PINTE MOD CONTROL CENTER v2.2.0 — CANDIDATE STABLE
-===================================================
+PINTE MOD CONTROL CENTER v2.2.0 — VERSION STABLE
+=================================================
 
-Cette version est la candidate stable destinée à la revue finale. Elle peut être utilisée sans installer
+Cette version stable peut être utilisée sans installer
 le SDK .NET lorsque le paquet portable Windows x64 complet est fourni.
 
 DÉMARRAGE
@@ -83,4 +83,5 @@ copiés dans une archive de revue.
 - Changement de carte et événements génériques restent simulés tant qu’un contrat
   sûr n’est pas disponible. Redémarrage de carte et boss utilisent les contrats
   fermés lorsqu’ils sont publiés comme disponibles par PinteMod.
-- Depuis un autre PC, la source LAN attend le partage read-only \\portable\PinteModData.
+- Depuis un autre PC, la source LAN attend un partage read-only explicite tel que
+  \\serveur-exemple\PinteModData.

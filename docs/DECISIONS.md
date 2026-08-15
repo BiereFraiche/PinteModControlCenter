@@ -790,7 +790,7 @@ Dernière mise à jour : 2026-08-12
 
 ## ADR-100 — La validation des contrats utilise une copie récente et isolée de Server3
 
-**Décision.** La copie obsolète n’est pas utilisée pour conclure sur les contrats v1. Une copie récente de Server3 est préparée sous `E:\Dev\servtest\Server3`, avec sauvegarde externe récupérable, réseau limité au LAN et port distinct `27121`.
+**Décision.** La copie obsolète n’est pas utilisée pour conclure sur les contrats v1. Une copie récente est préparée sous `<COPIE_SERVEUR_TEST>`, avec sauvegarde externe récupérable, réseau limité au LAN et port distinct de la production.
 
 **Déploiement minimal.** Seuls `ezz_admin_events.gsc` et le nouveau `ezz_admin_control_center_contracts.gsc` proviennent de la candidate `e279a59`. La variante `ezz_admin_music.gsc` présente sur Server3 est conservée afin de ne pas écraser une évolution terrain sans rapport avec les contrats.
 
@@ -889,3 +889,9 @@ Dernière mise à jour : 2026-08-12
 **Sécurité.** La validation existante du hostname et la limite de 64 caractères bruts restent appliquées avant transport. L’éditeur refuse une insertion qui dépasserait cette limite. Aucun contenu riche, couleur arbitraire, commande libre ou nouveau chemin RCON n’est introduit.
 
 **Validation humaine.** La palette, la coloration partielle et l’aperçu direct ont été validés. L’aperçu reste explicitement indicatif ; la chaîne BOIII encodée demeure l’autorité.
+
+## ADR-110 — Les surfaces publiques décrivent uniquement la version stable
+
+**Décision.** Une fois les validations fonctionnelles et terrain terminées, les README racine, le README applicatif et `LISEZ-MOI.txt` annoncent `v2.2.0` stable et la baseline actuelle de 460 tests. Les mentions de candidate RC2 ou de promotion encore en attente sont réservées à l’historique de développement et ne figurent plus dans les documents distribués comme état courant.
+
+**Neutralisation.** Les fixtures utilisent des plages réservées à la documentation et les preuves historiques remplacent les chemins utilisateur, copies serveur, sauvegardes et partages LAN réels par des marqueurs génériques. Cette neutralisation ne modifie aucune règle de validation réseau ni aucun comportement produit.
