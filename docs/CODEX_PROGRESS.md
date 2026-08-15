@@ -3767,7 +3767,12 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - métadonnée applicative passée de `2.2.0-rc.2` à `2.2.0` et mentions visuelles « Prototype » retirées ;
 - Debug : 0 avertissement, 0 erreur et 460/460 tests réussis ;
 - Release : 0 avertissement, 0 erreur et 460/460 tests réussis ;
-- publication et audit packaging de la candidate stable en cours ;
+- publication Windows x64 autonome terminée ;
+- version embarquée : `2.2.0+8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
+- audit packaging : PASS, 471 entrées ZIP et aucun PDB ;
+- SHA-256 : `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D` ;
+- paquet unique de revue ChatGPT : `app/artifacts/PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip` ;
+- SHA-256 du paquet de revue : `9585BD18C066A6C081C2EA2502E1EA0A4E6987728E6B12F09363B75D636883A6` ;
 - aucune publication GitHub effectuée.
 
 ### Fichiers créés ou modifiés à ce stade
@@ -3780,8 +3785,10 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - `docs/CODEX_PROGRESS.md` ;
 - `docs/TODO.md` ;
 - `docs/DECISIONS.md`.
+- `docs/FINAL_STABLE_VALIDATION.md` ;
+- `docs/PROMPT_REVUE_CHATGPT_V2.2.0_STABLE.md`.
 
 ### Validation humaine restante
 
-- transmettre l’unique ZIP stable à ChatGPT pour la revue finale avant toute publication GitHub ;
+- transmettre le paquet de revue stable à ChatGPT avant toute publication GitHub ;
 - aucune nouvelle manipulation serveur n’est requise à ce stade.

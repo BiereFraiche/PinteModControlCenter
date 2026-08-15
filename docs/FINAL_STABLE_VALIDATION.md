@@ -1,0 +1,59 @@
+# Validation finale — PinteMod Control Center v2.2.0
+
+Date : 2026-08-16
+
+## Révision auditée
+
+- branche locale : `codex/post-rc2-runtime-contracts` ;
+- commit applicatif : `8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
+- version informative embarquée : `2.2.0+8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
+- aucun envoi GitHub effectué pendant cette passe.
+
+## Compilation et tests
+
+- Debug : 0 avertissement, 0 erreur, 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 460/460 tests réussis ;
+- runtime de publication : `win-x64` ;
+- publication : autonome (`self-contained=true`).
+
+## Validation terrain finale
+
+- `net_password` absent côté client : connexion refusée ;
+- `net_password` incorrect : connexion refusée ;
+- `net_password` correct : connexion acceptée ;
+- valeur de test synthétique non communiquée, non enregistrée et non incluse dans les preuves.
+
+## Paquet stable candidat
+
+- fichier : `PinteMod-ControlCenter-v2.2.0-stable-candidate-win-x64.zip` ;
+- contenu : 471 entrées ZIP, 245 fichiers publiés ;
+- PDB : aucun ;
+- audit `Test-PublishedPackage.ps1` : `PACKAGE_AUDIT_PASS` ;
+- SHA-256 : `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D`.
+
+Le scan interdit notamment les chemins développeur, paramètres opérateur connus, données de la copie Server3, adresse LAN de test, secrets RCON/DPAPI, fichiers runtime PinteMod, logs, `.tmp`, `.bak` et PDB.
+
+## Garanties conservées
+
+- simulation par défaut ;
+- mode local/LAN uniquement sur configuration explicite ;
+- aucune découverte automatique ;
+- aucun serveur web ni port entrant ;
+- aucun lancement de BOIII, BAT ou processus serveur ;
+- aucune écriture directe dans PinteMod et aucune modification GSC ;
+- commandes RCON fermées, confirmées et sans retry automatique ;
+- ciblage joueur interne exclusivement par BOIII_XUID ;
+- aucun XUID complet présenté dans l’interface ;
+- résultat incertain conservateur et verrou humain ;
+- `CommandSent = false` pour toutes les actions simulées.
+
+## Validation restante
+
+- une seule revue ChatGPT du paquet stable et des sources correspondantes ;
+- publication GitHub uniquement après verdict sans blocage et ordre explicite de l’opérateur.
+
+## Paquet unique de revue ChatGPT
+
+- fichier : `PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip` ;
+- contenu : sources exactes du commit `8653210`, ZIP stable audité, manifeste SHA-256, preuve finale et prompt de revue ;
+- SHA-256 : `9585BD18C066A6C081C2EA2502E1EA0A4E6987728E6B12F09363B75D636883A6`.

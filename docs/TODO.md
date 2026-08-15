@@ -405,4 +405,7 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Validation terrain `net_password` réussie : refus sans valeur, refus avec mauvaise valeur, acceptation avec la bonne valeur, puis nettoyage côté client et serveur.
 - **Terminé** — Code fonctionnel gelé ; métadonnées et libellés alignés sur la version `2.2.0` stable.
 - **Terminé** — Audit final Debug/Release : 0 avertissement, 0 erreur et 460/460 tests réussis dans chaque configuration.
-- **En cours** — Publier, auditer et archiver l’unique candidate stable Windows x64 pour revue ChatGPT.
+- **Terminé** — Publier et auditer l’unique candidate stable Windows x64 : 471 entrées, audit PASS, SHA-256 `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D`.
+- **À valider** — Revue finale ChatGPT du paquet stable et des sources du commit `8653210`.
+- **Terminé** — Regrouper sources, binaire, empreinte, preuve et prompt dans un unique ZIP de revue `PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip`.
+- **Bloqué** — Publication GitHub `v2.2.0` jusqu’au verdict ChatGPT sans blocage et à un ordre explicite de publication.
