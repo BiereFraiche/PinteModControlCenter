@@ -3744,3 +3744,44 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - personnalisation par onglet, persistance des couleurs et éditeur de hostname multicolore validés le 2026-08-14 ;
 - aucun correctif graphique supplémentaire demandé ;
 - prochain et dernier verrou fonctionnel : validation terrain et confidentialité de `net_password`, puis gel du code et audit de publication stable.
+
+## 2026-08-16 — Validation terrain finale de `net_password`
+
+### Objectif
+
+- vérifier sur la copie serveur de test que le mécanisme réellement utilisé par Ezz BOIII protège les connexions directes avant le gel de la candidate stable.
+
+### Réalisé
+
+- `net_password` absent côté client : connexion refusée ;
+- `net_password` incorrect : connexion refusée ;
+- `net_password` correct : connexion acceptée ;
+- test effectué avec une valeur synthétique non communiquée et non ajoutée aux sources, contrats, journaux ou documents ;
+- aucun serveur, fichier PinteMod, GSC ou secret n’a été modifié par Codex pendant cette validation humaine ;
+- `UI_FEEDBACK.md` reste inchangé.
+
+### État
+
+- dernier verrou fonctionnel terrain levé ;
+- code fonctionnel gelé ;
+- métadonnée applicative passée de `2.2.0-rc.2` à `2.2.0` et mentions visuelles « Prototype » retirées ;
+- Debug : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- publication et audit packaging de la candidate stable en cours ;
+- aucune publication GitHub effectuée.
+
+### Fichiers créés ou modifiés à ce stade
+
+- `app/src/PinteMod.ControlCenter/PinteMod.ControlCenter.csproj` ;
+- `app/src/PinteMod.ControlCenter/MainWindow.xaml` ;
+- `app/src/PinteMod.ControlCenter/Views/SettingsView.xaml` ;
+- `app/README.md` ;
+- `app/packaging/LISEZ-MOI.txt` ;
+- `docs/CODEX_PROGRESS.md` ;
+- `docs/TODO.md` ;
+- `docs/DECISIONS.md`.
+
+### Validation humaine restante
+
+- transmettre l’unique ZIP stable à ChatGPT pour la revue finale avant toute publication GitHub ;
+- aucune nouvelle manipulation serveur n’est requise à ce stade.

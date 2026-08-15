@@ -383,10 +383,10 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Afficher directement le numéro de meilleure manche sans préfixe `M`.
 - **Terminé** — Exécuter les suites complètes Debug et Release : 0 avertissement, 0 erreur et 447/447 tests dans chaque configuration.
 - **Terminé** — Préparer et auditer la candidate autonome `e9be7ca` liée au correctif PinteMod v0.1.4.
-- **À valider** — Redémarrer manuellement la copie Server3, confirmer `Control Center Contracts v0.1.4 loaded`, puis tester refus sans `net_password` et acceptation avec la bonne valeur.
+- **Terminé** — Validation terrain du contrat v0.1.4 : connexion refusée sans `net_password`, refusée avec une valeur incorrecte et acceptée avec la bonne valeur.
 - **À valider** — Vérifier visuellement les deux flèches de détails sur Dashboard et Records en fenêtre grande et réduite.
 - **Terminé** — Rendre `DÉTAILS` et `IDENTIFIANT` discrets (8 px, opacité réduite, petite flèche) et mieux distinguer les champs actifs Nom/Mot de passe.
-- **Bloqué** — Publication stable tant que le test terrain `net_password` et le contrôle de confidentialité avec valeur synthétique ne sont pas terminés.
+- **Terminé** — Verrou terrain `net_password` levé avec une valeur synthétique ; aucune valeur n’a été transmise dans la conversation ni ajoutée au produit.
 - **Terminé** — Découpler la version informative du module de la compatibilité réelle `schema_version` / `command_contract_version`, tout en imposant un format sémantique borné.
 - **Terminé** — Remplacer le bandeau Serveur statique « aucun transport RCON » par l’état réel de la configuration.
 - **Terminé** — Valider le correctif compatible : 450/450 tests Debug et Release, audit du paquet autonome PASS.
@@ -402,5 +402,7 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Valider 460/460 tests Debug et Release, 0 avertissement, 0 erreur ; paquet autonome audité PASS.
 - **Terminé** — Validation humaine de deux thèmes distincts, de leur persistance et du comportement par onglet.
 - **Terminé** — Validation humaine de l’éditeur multicolore et de son aperçu direct.
-- **Bloqué** — Publication stable tant que la validation terrain `net_password` et le contrôle de confidentialité avec une valeur synthétique ne sont pas terminés.
-- **À faire** — Après validation `net_password`, geler le code, exécuter l’audit final Debug/Release/packaging et préparer une unique candidate stable pour revue ChatGPT.
+- **Terminé** — Validation terrain `net_password` réussie : refus sans valeur, refus avec mauvaise valeur, acceptation avec la bonne valeur, puis nettoyage côté client et serveur.
+- **Terminé** — Code fonctionnel gelé ; métadonnées et libellés alignés sur la version `2.2.0` stable.
+- **Terminé** — Audit final Debug/Release : 0 avertissement, 0 erreur et 460/460 tests réussis dans chaque configuration.
+- **En cours** — Publier, auditer et archiver l’unique candidate stable Windows x64 pour revue ChatGPT.

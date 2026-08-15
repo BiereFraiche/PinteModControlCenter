@@ -850,6 +850,14 @@ Dernière mise à jour : 2026-08-12
 
 **Autorité BOIII.** Le code public Ezz BOIII enregistre `net_password`, publie son hash dans `getInfo` et compare ce hash côté client avant la connexion. Le contrat PinteMod v0.1.4 définit, efface et observe exclusivement `net_password`. `g_password` n’est plus présenté comme une protection des connexions directes.
 
+**Validation terrain du 2026-08-16.** Le comportement autoritaire est confirmé sur la copie de test : absence et valeur incorrecte refusées, valeur correcte acceptée. Cette validation lève le dernier verrou fonctionnel avant le gel et l’audit de la candidate stable, sans autoriser la persistance ou l’exposition de la valeur.
+
+## ADR-107 — La candidate post-RC2 devient la version stable `2.2.0`
+
+**Décision.** Après validation terrain de `net_password`, le code fonctionnel est gelé et l’`InformationalVersion` devient `2.2.0`. Les mentions « Prototype » et « Release Candidate 2 » sont retirées des surfaces distribuées afin que le binaire, l’interface, le README et le fichier de démarrage décrivent la même version.
+
+**Portée.** Cette promotion ne crée aucune commande, aucun lecteur, aucun accès réseau supplémentaire et ne modifie aucun contrat PinteMod/GSC. La publication GitHub reste distincte et exige toujours un ordre explicite après la revue du ZIP stable.
+
 **Confidentialité.** La valeur reste éphémère, transmise uniquement par la commande fermée et loopback, absente des snapshots, feedbacks, ViewModels, fichiers et journaux applicatifs. Seul `join_password_enabled` est publié. Le hash BOIII étant actuellement FNV1a-64 non salé, l’interface parle d’« isolation réseau BOIII » et recommande implicitement une valeur longue et aléatoire, sans revendiquer une protection cryptographique forte.
 
 **Présentation.** Les diagnostics secondaires des services et les XUID déjà abrégés des profils Ranks sont repliés par défaut dans des contrôles accessibles. L’état principal reste visible. Les déclencheurs utilisent une typographie secondaire de 8 px et une flèche atténuée afin de ne pas concurrencer les données principales. Le numéro de meilleure manche est affiché sans préfixe `M`. Les champs actifs Nom et Mot de passe réseau utilisent un fond relevé et une bordure bleue ; le bouton Nom reste désactivé tant que la valeur saisie est identique au nom observé.
