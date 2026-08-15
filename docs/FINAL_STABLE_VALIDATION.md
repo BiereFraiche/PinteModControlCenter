@@ -49,8 +49,8 @@ Le scan interdit notamment les chemins développeur, paramètres opérateur conn
 
 ## Validation restante
 
-- une seule revue ChatGPT du paquet stable et des sources correspondantes ;
-- publication GitHub uniquement après verdict sans blocage et ordre explicite de l’opérateur.
+- aucune validation fonctionnelle, terrain ou packaging restante ;
+- publication GitHub uniquement sur ordre explicite de l’opérateur.
 
 ## Contre-revue finale
 
@@ -60,3 +60,10 @@ Le scan interdit notamment les chemins développeur, paramètres opérateur conn
 - aucune nouvelle validation terrain requise ;
 - paquet : `PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip` ;
 - SHA-256 du paquet de contre-revue : `6E768490EB449D322D98439EFC6E58B9B42E3F48711A5C201CEF2DBF1AE1D30C`.
+
+## Verdict final
+
+- `VALIDÉ` le 2026-08-16 ;
+- aucun blocage obligatoire ;
+- autorisation de publier `v2.2.0` sur GitHub : oui ;
+- paquet stable autorisé : commit `25e0e16`, SHA-256 `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.

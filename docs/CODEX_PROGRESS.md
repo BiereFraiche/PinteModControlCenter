@@ -3824,3 +3824,15 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - paquet d’ultime contre-revue : `app/artifacts/PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip` ;
 - SHA-256 du paquet de contre-revue : `6E768490EB449D322D98439EFC6E58B9B42E3F48711A5C201CEF2DBF1AE1D30C` ;
 - aucune publication GitHub effectuée.
+
+## 2026-08-16 — Verdict final stable
+
+- verdict ChatGPT : `VALIDÉ` ;
+- blocages obligatoires : aucun ;
+- commit applicatif autorisé : `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ProductVersion confirmé : `2.2.0+25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ZIP stable confirmé : `PinteMod-ControlCenter-v2.2.0-win-x64.zip` ;
+- SHA-256 confirmé : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0` ;
+- publication GitHub `v2.2.0` autorisée par la revue, mais non exécutée faute d’ordre opérateur explicite ;
+- aucune nouvelle correction ni validation terrain demandée ;
+- remarque facultative seulement : harmonisation future de quelques descriptions README concernant Restart Map/Boss.

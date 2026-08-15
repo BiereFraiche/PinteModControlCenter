@@ -895,3 +895,9 @@ Dernière mise à jour : 2026-08-12
 **Décision.** Une fois les validations fonctionnelles et terrain terminées, les README racine, le README applicatif et `LISEZ-MOI.txt` annoncent `v2.2.0` stable et la baseline actuelle de 460 tests. Les mentions de candidate RC2 ou de promotion encore en attente sont réservées à l’historique de développement et ne figurent plus dans les documents distribués comme état courant.
 
 **Neutralisation.** Les fixtures utilisent des plages réservées à la documentation et les preuves historiques remplacent les chemins utilisateur, copies serveur, sauvegardes et partages LAN réels par des marqueurs génériques. Cette neutralisation ne modifie aucune règle de validation réseau ni aucun comportement produit.
+
+## ADR-111 — La v2.2.0 est validée, la publication reste un acte explicite
+
+**Décision.** La contre-revue finale autorise la publication du paquet `25e0e16` sans correction supplémentaire. Le code, les tests, la validation terrain et le packaging sont clôturés pour v2.2.0.
+
+**Publication.** L’autorisation de revue ne déclenche pas automatiquement une mutation GitHub. La branche, le tag et la release ne sont créés ou modifiés qu’après un ordre explicite de l’opérateur. La remarque facultative Restart Map/Boss pourra être traitée séparément sans bloquer cette version.

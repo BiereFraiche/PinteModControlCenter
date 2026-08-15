@@ -405,10 +405,10 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Validation terrain `net_password` réussie : refus sans valeur, refus avec mauvaise valeur, acceptation avec la bonne valeur, puis nettoyage côté client et serveur.
 - **Terminé** — Code fonctionnel gelé ; métadonnées et libellés alignés sur la version `2.2.0` stable.
 - **Terminé** — Audit final Debug/Release : 0 avertissement, 0 erreur et 460/460 tests réussis dans chaque configuration.
-- **Terminé** — Publier et auditer l’unique candidate stable Windows x64 : 471 entrées, audit PASS, SHA-256 `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D`.
-- **À valider** — Revue finale ChatGPT du paquet stable et des sources du commit `8653210`.
+- **Terminé** — Première candidate stable auditée, puis remplacée par le paquet final `25e0e16` après correction documentaire.
+- **Terminé** — Première revue ChatGPT terminée avec deux corrections documentaires, désormais levées.
 - **Terminé** — Regrouper sources, binaire, empreinte, preuve et prompt dans un unique ZIP de revue `PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip`.
-- **Bloqué** — Publication GitHub `v2.2.0` jusqu’au verdict ChatGPT sans blocage et à un ordre explicite de publication.
+- **Terminé** — Blocage de revue levé par le verdict final `VALIDÉ`.
 
 ## Contre-revue stable — corrections documentaires finales — 2026-08-16
 
@@ -418,5 +418,6 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Exécuter 12/12 tests ciblés puis 460/460 tests Debug et Release, sans avertissement ni erreur.
 - **Terminé** — Figer la révision `25e0e16`, reconstruire `PinteMod-ControlCenter-v2.2.0-win-x64.zip`, audit PASS et SHA-256 `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
 - **Terminé** — Produire l’unique paquet d’ultime contre-revue contenant sources exactes, ZIP stable, preuve et prompt : `PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip`.
-- **À valider** — Transmettre ce paquet à ChatGPT et obtenir le verdict final de packaging/métadonnées.
-- **Bloqué** — Publication GitHub jusqu’au verdict final sans blocage et à un ordre explicite.
+- **Terminé** — Verdict ChatGPT final : `VALIDÉ`, aucun blocage, publication `v2.2.0` autorisée.
+- **À faire** — Publier GitHub uniquement après l’ordre explicite de l’opérateur.
+- **À faire (facultatif)** — Harmoniser ultérieurement les descriptions historiques de Restart Map/Boss dans quelques passages non bloquants des README.
