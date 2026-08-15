@@ -416,5 +416,7 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Présenter `LISEZ-MOI.txt` comme version stable et utiliser un partage UNC manifestement générique.
 - **Terminé** — Neutraliser l’adresse LAN terrain du fixture et tous les chemins locaux de capture/copie serveur signalés.
 - **Terminé** — Exécuter 12/12 tests ciblés puis 460/460 tests Debug et Release, sans avertissement ni erreur.
-- **En cours** — Figer la nouvelle révision, reconstruire le ZIP `v2.2.0`, recalculer son SHA-256 et produire l’unique paquet de contre-revue.
+- **Terminé** — Figer la révision `25e0e16`, reconstruire `PinteMod-ControlCenter-v2.2.0-win-x64.zip`, audit PASS et SHA-256 `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
+- **Terminé** — Produire l’unique paquet d’ultime contre-revue contenant sources exactes, ZIP stable, preuve et prompt : `PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip`.
+- **À valider** — Transmettre ce paquet à ChatGPT et obtenir le verdict final de packaging/métadonnées.
 - **Bloqué** — Publication GitHub jusqu’au verdict final sans blocage et à un ordre explicite.

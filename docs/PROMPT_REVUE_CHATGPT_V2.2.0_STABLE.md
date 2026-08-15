@@ -1,6 +1,6 @@
 # Revue finale — PinteMod Control Center v2.2.0 stable
 
-Analyse le paquet de revue joint contenant les sources du commit exact et le ZIP Windows x64 autonome.
+Analyse le paquet de contre-revue joint contenant les sources du commit exact et le ZIP Windows x64 stable autonome.
 
 ## Objectif
 
@@ -8,10 +8,10 @@ Déterminer si PinteMod Control Center v2.2.0 peut être publié comme version s
 
 ## Révision et paquet attendus
 
-- commit : `8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
-- ProductVersion : `2.2.0+8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
-- ZIP : `PinteMod-ControlCenter-v2.2.0-stable-candidate-win-x64.zip` ;
-- SHA-256 attendu : `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D` ;
+- commit : `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ProductVersion : `2.2.0+25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ZIP : `PinteMod-ControlCenter-v2.2.0-win-x64.zip` ;
+- SHA-256 attendu : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0` ;
 - preuves déclarées : Debug et Release, 0 avertissement, 0 erreur, 460/460 tests dans chaque configuration ;
 - audit packaging : PASS, 471 entrées.
 
@@ -27,7 +27,8 @@ Déterminer si PinteMod Control Center v2.2.0 peut être publié comme version s
 8. Vérifier que BOIII_XUID reste l’identité autoritaire interne et qu’aucun XUID complet n’est bindé ou présenté.
 9. Vérifier le contrat `net_password` : valeur éphémère, non persistée/non affichée, transport loopback seulement et feedback limité à un état booléen.
 10. Vérifier que le changement de carte et les événements génériques restent simulés lorsqu’aucun contrat sûr n’est disponible.
-11. Vérifier que les libellés, métadonnées et documents distribués décrivent bien la version stable `2.2.0`.
+11. Vérifier que les libellés, métadonnées et documents distribués décrivent sans ambiguïté la version stable `2.2.0` et 460/460 tests.
+12. Vérifier l’absence des chemins locaux et de l’adresse terrain signalés lors de la revue précédente.
 
 ## Réponse demandée
 

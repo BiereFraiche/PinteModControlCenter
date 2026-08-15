@@ -3816,4 +3816,11 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - Debug : 0 avertissement, 0 erreur et 460/460 tests réussis ;
 - Release : 0 avertissement, 0 erreur et 460/460 tests réussis ;
 - scans ciblés : aucune ancienne mention RC2/292 tests dans les documents distribués, aucune adresse ou chemin terrain signalé restant dans le périmètre corrigé ;
-- reconstruction du paquet stable avec une nouvelle révision et un nouveau SHA-256 : en cours.
+- commit applicatif stable : `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ProductVersion : `2.2.0+25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ZIP stable : `app/artifacts/PinteMod-ControlCenter-v2.2.0-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées et aucun PDB ;
+- SHA-256 : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0` ;
+- paquet d’ultime contre-revue : `app/artifacts/PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip` ;
+- SHA-256 du paquet de contre-revue : `6E768490EB449D322D98439EFC6E58B9B42E3F48711A5C201CEF2DBF1AE1D30C` ;
+- aucune publication GitHub effectuée.

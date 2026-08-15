@@ -5,8 +5,8 @@ Date : 2026-08-16
 ## Révision auditée
 
 - branche locale : `codex/post-rc2-runtime-contracts` ;
-- commit applicatif : `8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
-- version informative embarquée : `2.2.0+8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
+- commit applicatif : `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- version informative embarquée : `2.2.0+25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
 - aucun envoi GitHub effectué pendant cette passe.
 
 ## Compilation et tests
@@ -23,13 +23,13 @@ Date : 2026-08-16
 - `net_password` correct : connexion acceptée ;
 - valeur de test synthétique non communiquée, non enregistrée et non incluse dans les preuves.
 
-## Paquet stable candidat
+## Paquet stable
 
-- fichier : `PinteMod-ControlCenter-v2.2.0-stable-candidate-win-x64.zip` ;
+- fichier : `PinteMod-ControlCenter-v2.2.0-win-x64.zip` ;
 - contenu : 471 entrées ZIP, 245 fichiers publiés ;
 - PDB : aucun ;
 - audit `Test-PublishedPackage.ps1` : `PACKAGE_AUDIT_PASS` ;
-- SHA-256 : `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D`.
+- SHA-256 : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
 
 Le scan interdit notamment les chemins développeur, paramètres opérateur connus, données de la copie Server3, adresse LAN de test, secrets RCON/DPAPI, fichiers runtime PinteMod, logs, `.tmp`, `.bak` et PDB.
 
@@ -52,8 +52,11 @@ Le scan interdit notamment les chemins développeur, paramètres opérateur conn
 - une seule revue ChatGPT du paquet stable et des sources correspondantes ;
 - publication GitHub uniquement après verdict sans blocage et ordre explicite de l’opérateur.
 
-## Paquet unique de revue ChatGPT
+## Contre-revue finale
 
-- fichier : `PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip` ;
-- contenu : sources exactes du commit `8653210`, ZIP stable audité, manifeste SHA-256, preuve finale et prompt de revue ;
-- SHA-256 : `9585BD18C066A6C081C2EA2502E1EA0A4E6987728E6B12F09363B75D636883A6`.
+- sources exactes du commit applicatif `25e0e16` ;
+- ZIP stable audité et son manifeste SHA-256 ;
+- présente preuve finale et prompt de contre-revue ;
+- aucune nouvelle validation terrain requise ;
+- paquet : `PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip` ;
+- SHA-256 du paquet de contre-revue : `6E768490EB449D322D98439EFC6E58B9B42E3F48711A5C201CEF2DBF1AE1D30C`.
