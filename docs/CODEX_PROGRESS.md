@@ -3888,3 +3888,35 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 - la référence publique existante `design/pintemod-control-center-reference.png` est affichée dans les README ;
 - aucune nouvelle capture nécessaire pour cette passe documentaire.
+
+## 2026-08-16 — Présentation publique de la vision v2.3
+
+### Objectif
+
+- annoncer la suite du projet de façon attractive et transparente, sans présenter la roadmap comme une fonctionnalité déjà livrée.
+
+### Réalisé
+
+- lecture intégrale du cadrage « v2.3 Adaptive BOIII Core / Capability Engine » transmis par l’opérateur ;
+- ajout d’un teaser français et anglais dans les README racine ;
+- création de `docs/V2.3_VISION.md`, page publique bilingue présentant le Capability Engine, les niveaux Simulation/BOIII/GSC/Bridge/PinteMod, l’analyse GSC read-only et la roadmap progressive ;
+- séparation explicite entre la stable v2.2.0 immuable et le futur chantier v2.3 ;
+- maintien des garanties publiques : BOIII Zombies uniquement, aucun plugin, raw RCON, cloud, port entrant, découverte automatique ou modification de GSC tiers ;
+- aucune modification de code, binaire, contrat, commande, package stable, tag ou release ;
+- `UI_FEEDBACK.md` reste inchangé.
+
+### Fichiers créés ou modifiés
+
+- `README.md` ;
+- `README_FR.md` ;
+- `docs/V2.3_VISION.md` ;
+- `docs/CODEX_PROGRESS.md` ;
+- `docs/TODO.md` ;
+- `docs/DECISIONS.md`.
+
+### Validation
+
+- passe exclusivement documentaire : aucune compilation ni suite de tests relancée ;
+- baseline produit inchangée : Debug/Release, 0 avertissement, 0 erreur et 460/460 tests ;
+- aucun blocage rencontré ;
+- aucune validation terrain ou capture nécessaire.

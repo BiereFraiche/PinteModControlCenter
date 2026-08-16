@@ -423,3 +423,29 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Harmoniser les descriptions historiques de Restart Map/Boss dans les README Control Center.
 - **Terminé** — Ajouter une mise en avant bilingue du Control Center dans les README publics de PinteMod.
 - **Terminé** — Vérifier les deux assets publics et confirmer le SHA-256 GitHub/local `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
+
+## Vision v2.3 — Adaptive BOIII Core
+
+### Terminé
+
+- [Documentation] Présenter publiquement la vision v2.3 dans les README français/anglais sans modifier la promesse de la stable v2.2.0.
+- [Documentation] Ajouter une page bilingue synthétique sur le Capability Engine, l’analyse GSC read-only et le futur Bridge first-party.
+
+### À faire
+
+- [Architecture] Démarrer la Phase 1 sur une branche post-stable dédiée, jamais directement sur `main`.
+- [Architecture] Auditer les hypothèses PinteMod codées en dur et les abstractions v2.2.0 déjà réutilisables.
+- [Architecture] Concevoir et tester le Capability Engine minimal dans Core.
+- [Architecture] Adapter les providers Simulation, BOIII natif minimal et PinteMod sans modifier le comportement v2.2.0.
+- [Interface graphique] Rendre uniquement les surfaces nécessaires capability-aware sans refaire le design.
+- [Lecture locale] Prototyper un analyseur GSC strictement borné, confiné et read-only qui ne produit que des candidats non exécutables.
+- [Documentation] Produire les documents détaillés d’architecture, modèle de capabilities, import GSC, Bridge et roadmap de Phase 1.
+
+### À valider
+
+- [Revue] Soumettre la Phase 1 complète à une revue humaine/ChatGPT avant tout catalogue GSC exécutable ou développement du Bridge.
+
+### Bloqué
+
+- [Bridge] Installation, mise à jour ou suppression du Bridge interdites tant que sa conception, ses contrats, ses hashes et sa validation séparée ne sont pas approuvés.
+- [RCON] Toute exécution issue d’un GSC importé reste interdite tant que le descripteur fermé et le parcours d’approbation n’existent pas et ne sont pas validés.
