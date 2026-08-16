@@ -38,6 +38,20 @@ Créé et maintenu par **BiereFraiche**, avec l’assistance de développement d
 - catalogue de cartes officiel/custom local sans lecture automatique de `server_zm.cfg` ;
 - confirmation humaine, verrou transversal et aucun retry automatique.
 
+## Prochaine étape : v2.3 Adaptive BOIII Core
+
+La stable v2.2.0 est le socle, pas la ligne d’arrivée. Le prochain grand chantier vise à rendre le Control Center **utile avec BOIII seul**, puis progressivement plus riche lorsque des capacités fiables sont réellement disponibles :
+
+- un **Capability Engine** pour que l’interface s’adapte aux preuves, à leur provenance et à leur fraîcheur, sans supposer qu’un seul package serveur fournit tout ;
+- une progression de la Simulation vers BOIII natif, un catalogue GSC importé explicitement, un Bridge Control Center first-party optionnel, puis l’expérience PinteMod complète ;
+- un **analyseur GSC read-only** conservateur qui découvre des candidats à examiner sans compiler, exécuter ou modifier les scripts tiers ;
+- un futur Bridge versionné appartenant au Control Center, installé uniquement avec consentement explicite et jamais fusionné dans les GSC tiers ;
+- une interface first-party adaptative, sans système de plugins, sans RCON libre, sans cloud et sans nouveau port entrant.
+
+Il s’agit d’une roadmap progressive, pas d’une promesse de fonctionnalité déjà incluse dans la v2.2.0. La sécurité, la configuration explicite et les résultats vérifiables restent prioritaires.
+
+**[Découvrir la vision publique v2.3 →](docs/V2.3_VISION.md)**
+
 ## Garanties de sécurité
 
 - aucun serveur web, compte, cloud ou port entrant ;

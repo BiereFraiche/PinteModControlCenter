@@ -915,3 +915,13 @@ Dernière mise à jour : 2026-08-12
 **Décision.** Les README anglais et français du dépôt public PinteMod présentent le Control Center comme application compagnon officielle et pointent vers sa release stable. Cette mise en avant est strictement documentaire : elle ne modifie aucun GSC, outil serveur, contrat ou contenu de la release PinteMod.
 
 **Compatibilité.** La documentation précise que les actions réelles du Control Center ne deviennent disponibles que lorsque le runtime PinteMod installé publie des capabilities fraîches et compatibles. Une fonction absente ou non vérifiable reste désactivée ou simulée ; la promotion croisée ne devient pas une promesse artificielle de compatibilité.
+
+## ADR-114 — La vision v2.3 est publique sans modifier la stable v2.2.0
+
+**Décision.** Les README présentent le futur chantier `Adaptive BOIII Core / Capability Engine` et renvoient vers une page de vision bilingue. Cette page décrit une roadmap et non des fonctions déjà livrées. La release, le tag, les binaires et la promesse fonctionnelle v2.2.0 restent inchangés.
+
+**Positionnement.** Le Control Center reste exclusivement dédié à BOIII Zombies. La v2.3 doit rendre le produit utile avec BOIII natif, puis plus riche avec des GSC explicitement analysés, un Bridge first-party optionnel ou PinteMod. Elle ne devient ni multi-jeux, ni une plateforme de plugins.
+
+**Sécurité.** L’analyse GSC annoncée reste statique, bornée, confinée et read-only ; aucun candidat découvert ne devient exécutable automatiquement. Le futur Bridge ne pourra posséder que ses propres fichiers identifiables et ne modifiera jamais un GSC tiers. Aucun raw RCON, cloud, port entrant, découverte automatique ou faux succès n’est accepté dans la vision publique.
+
+**Développement.** Le travail fonctionnel v2.3 commencera uniquement sur une branche post-stable dédiée. La Phase 1 doit s’arrêter après le Capability Engine minimal, les providers internes, l’UI capability-aware ciblée, le prototype GSC read-only et la conception du Bridge, puis passer en revue avant toute phase suivante.

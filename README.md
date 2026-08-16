@@ -39,6 +39,20 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 - hybrid map catalogue combining official maps, an explicitly pasted rotation, local custom entries and the currently observed map;
 - shared mutation lock, human confirmation, conservative UDP delivery semantics and no automatic retry.
 
+## Next: v2.3 Adaptive BOIII Core
+
+The stable v2.2.0 is the foundation, not the finish line. The next research and development track aims to make the Control Center **useful with native BOIII alone** and progressively richer when trusted capabilities are available:
+
+- a **Capability Engine** so the interface reacts to evidence, provenance and freshness instead of assuming that one server package provides everything;
+- an adaptive path from Simulation to native BOIII, an explicitly imported GSC catalogue, an optional first-party Control Center Bridge, and the full PinteMod experience;
+- a conservative **read-only GSC analyzer** that discovers review candidates without compiling, executing or modifying third-party scripts;
+- a future versioned Bridge owned by the Control Center, installed only with explicit consent and never merged into third-party GSC files;
+- an adaptive first-party UI with no plugin system, no raw RCON, no cloud dependency and no new inbound port.
+
+This work is a phased roadmap, not a feature claim for v2.2.0. Security, explicit configuration and verifiable results remain the priority.
+
+**[Explore the public v2.3 vision →](docs/V2.3_VISION.md)**
+
 ## Safety model
 
 The Control Center is deliberately local-first:
