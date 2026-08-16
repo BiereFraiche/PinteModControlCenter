@@ -901,3 +901,17 @@ Dernière mise à jour : 2026-08-12
 **Décision.** La contre-revue finale autorise la publication du paquet `25e0e16` sans correction supplémentaire. Le code, les tests, la validation terrain et le packaging sont clôturés pour v2.2.0.
 
 **Publication.** L’autorisation de revue ne déclenche pas automatiquement une mutation GitHub. La branche, le tag et la release ne sont créés ou modifiés qu’après un ordre explicite de l’opérateur. La remarque facultative Restart Map/Boss pourra être traitée séparément sans bloquer cette version.
+
+## ADR-112 — La release stable pointe sur le commit applicatif audité
+
+**Décision.** Le tag public `v2.2.0` cible exactement `25e0e16b6883d77ea1e0ad91caa866aa78d25173`, révision embarquée dans le binaire et autorisée par la revue finale. Les commits ultérieurs sur `main` ne modifient que les README, les preuves de revue et le suivi de publication.
+
+**Assets.** La release publique contient uniquement `PinteMod-ControlCenter-v2.2.0-win-x64.zip` et son fichier `.sha256`. Les paquets de revue, anciennes RC, configurations opérateur, données runtime et preuves internes ne sont pas joints à la stable.
+
+**Traçabilité.** Le digest déclaré par GitHub pour le ZIP doit être identique au SHA-256 local validé `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`. Toute reconstruction future exige une nouvelle version ou une décision explicite ; le binaire stable publié n’est pas remplacé silencieusement.
+
+## ADR-113 — PinteMod présente le Control Center sans coupler leurs releases
+
+**Décision.** Les README anglais et français du dépôt public PinteMod présentent le Control Center comme application compagnon officielle et pointent vers sa release stable. Cette mise en avant est strictement documentaire : elle ne modifie aucun GSC, outil serveur, contrat ou contenu de la release PinteMod.
+
+**Compatibilité.** La documentation précise que les actions réelles du Control Center ne deviennent disponibles que lorsque le runtime PinteMod installé publie des capabilities fraîches et compatibles. Une fonction absente ou non vérifiable reste désactivée ou simulée ; la promotion croisée ne devient pas une promesse artificielle de compatibilité.
