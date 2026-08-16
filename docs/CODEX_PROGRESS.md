@@ -3836,3 +3836,55 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - publication GitHub `v2.2.0` autorisée par la revue, mais non exécutée faute d’ordre opérateur explicite ;
 - aucune nouvelle correction ni validation terrain demandée ;
 - remarque facultative seulement : harmonisation future de quelques descriptions README concernant Restart Map/Boss.
+
+## 2026-08-16 — Publication publique v2.2.0
+
+### Objectif
+
+- publier la version stable validée, rendre le dépôt Control Center public et présenter officiellement l’application depuis le dépôt PinteMod.
+
+### Réalisé
+
+- harmonisation des README Control Center français/anglais avec les fonctions réellement disponibles : multi-serveurs, personnalisation, Restart Map, boss compatibles, hostname public et mot de passe BOIII éphémère ;
+- correction des passages historiques correspondants dans `app/README.md` ;
+- ajout de notes de version stables réutilisables dans `docs/RELEASE_NOTES_v2.2.0.md` ;
+- fusion de la branche stable dans `main` via la PR Control Center `#4`, merge commit `7f5e8f34163b282e4c98681da606b27c768798ea` ;
+- dépôt `BiereFraiche/PinteModControlCenter` rendu public ;
+- tag `v2.2.0` fixé sur le commit applicatif validé `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- release stable publique créée avec uniquement le ZIP Windows x64 et son fichier `.sha256` ;
+- mise en avant bilingue du Control Center ajoutée aux README de `BiereFraiche/PinteMod` via la PR `#1`, fusionnée au commit `7587764d15d408fe44a5e67642b67a4df20b8722` ;
+- aucun GSC, fichier serveur, contrat runtime, commande ou comportement applicatif modifié ;
+- `UI_FEEDBACK.md` reste inchangé.
+
+### Preuves publiques
+
+- dépôt : `https://github.com/BiereFraiche/PinteModControlCenter` ;
+- release : `https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0` ;
+- asset : `PinteMod-ControlCenter-v2.2.0-win-x64.zip`, 70 145 250 octets ;
+- SHA-256 GitHub et local : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0` ;
+- fichier d’empreinte : 108 octets, téléversé séparément ;
+- release non brouillon, non prerelease et marquée comme version stable actuelle ;
+- README anglais et français vérifiés sur les branches `main` publiques des deux dépôts.
+
+### Validation
+
+- aucune recompilation ni réexécution fonctionnelle : cette passe modifie uniquement la documentation et la publication ;
+- baseline inchangée : Debug et Release, 0 avertissement, 0 erreur, 460/460 tests ;
+- paquet publié strictement identique au ZIP final déjà audité et validé ;
+- audit précédent conservé : PASS, 471 entrées, aucun PDB, secret, configuration opérateur ou fichier runtime ;
+- aucun blocage connu restant et aucune validation humaine supplémentaire demandée.
+
+### Fichiers créés ou modifiés
+
+- `README.md` ;
+- `README_FR.md` ;
+- `app/README.md` ;
+- `docs/RELEASE_NOTES_v2.2.0.md` ;
+- `docs/CODEX_PROGRESS.md` ;
+- `docs/TODO.md` ;
+- `docs/DECISIONS.md`.
+
+### Captures
+
+- la référence publique existante `design/pintemod-control-center-reference.png` est affichée dans les README ;
+- aucune nouvelle capture nécessaire pour cette passe documentaire.

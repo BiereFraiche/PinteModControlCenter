@@ -419,5 +419,7 @@ Dernière mise à jour : 2026-08-12
 - **Terminé** — Figer la révision `25e0e16`, reconstruire `PinteMod-ControlCenter-v2.2.0-win-x64.zip`, audit PASS et SHA-256 `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
 - **Terminé** — Produire l’unique paquet d’ultime contre-revue contenant sources exactes, ZIP stable, preuve et prompt : `PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip`.
 - **Terminé** — Verdict ChatGPT final : `VALIDÉ`, aucun blocage, publication `v2.2.0` autorisée.
-- **À faire** — Publier GitHub uniquement après l’ordre explicite de l’opérateur.
-- **À faire (facultatif)** — Harmoniser ultérieurement les descriptions historiques de Restart Map/Boss dans quelques passages non bloquants des README.
+- **Terminé** — Dépôt rendu public, branche stable fusionnée et release GitHub `v2.2.0` publiée sur le commit applicatif validé `25e0e16`.
+- **Terminé** — Harmoniser les descriptions historiques de Restart Map/Boss dans les README Control Center.
+- **Terminé** — Ajouter une mise en avant bilingue du Control Center dans les README publics de PinteMod.
+- **Terminé** — Vérifier les deux assets publics et confirmer le SHA-256 GitHub/local `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
