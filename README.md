@@ -7,6 +7,7 @@
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-460%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
+[![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
@@ -23,6 +24,7 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 ## Highlights
 
 - dark, responsive WPF dashboard designed for 1920×1080 and smaller windows;
+- up to eight isolated server tabs, each with its own data source, RCON context and visual accent;
 - current map/session, service health, players, events and operator status;
 - local read-only Ranks, round records and official Easter Egg Records;
 - structured Live Console with filters, search, pause, auto-scroll and neutralized copy;
@@ -30,6 +32,8 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 - manual, allowlisted BOIII RCON diagnostics;
 - Community Soft Pause v0.3 observation plus confirmed Pause/Resume controls;
 - confirmed server actions for rounds, power, Pack-a-Punch, music, passages, zombies and power-up lifetime;
+- contract-backed restart-map, boss spawn and public-server-name controls when PinteMod publishes fresh compatible capabilities;
+- ephemeral BOIII connection-password control, restricted to a loopback RCON endpoint and never persisted or displayed;
 - XUID-targeted player assistance, inventory grants, power-ups, moderation and roles;
 - local read-only moderation history;
 - hybrid map catalogue combining official maps, an explicitly pasted rotation, local custom entries and the currently observed map;
@@ -119,7 +123,9 @@ No BOIII server, BAT file or external tool is launched by these commands.
 
 ## Real and simulated controls
 
-Stable, audited contracts are enabled only when their targeting and verification rules are known. Map change/restart and generic boss/event controls remain visibly simulated because PinteMod v2.1.1 does not yet expose a sufficiently safe generic contract for them.
+Stable, audited controls are enabled only when their targeting and verification rules are known. Restart Map, supported boss aliases, public hostname changes and clearing the connection password use closed PinteMod contracts with local correlated feedback. Setting the BOIII connection password is available only through an explicitly configured loopback RCON endpoint and the value remains ephemeral.
+
+Generic Change Map and generic events remain visibly simulated because no sufficiently safe, authoritative contract exists for them. A missing, stale or incompatible capability never becomes an available real action.
 
 Detailed future PinteMod requirements are documented in [`docs/PINTEMOD_REQUIREMENTS_NEXT.md`](docs/PINTEMOD_REQUIREMENTS_NEXT.md), including a dedicated heartbeat, authoritative runtime snapshot, map capabilities and structured mutation feedback.
 

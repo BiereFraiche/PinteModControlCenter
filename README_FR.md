@@ -2,6 +2,12 @@
 
 [English documentation](README.md)
 
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
+![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
+![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
+![Tests](https://img.shields.io/badge/tests-460%20réussis-24C875)
+[![Version](https://img.shields.io/badge/version-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
+
 PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WPF** destinée à observer et administrer un serveur dédié **Call of Duty: Black Ops III Zombies** utilisant [PinteMod](https://github.com/BiereFraiche/PinteMod) avec BOIII/Ezz.
 
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
@@ -17,6 +23,7 @@ Créé et maintenu par **BiereFraiche**, avec l’assistance de développement d
 ## Fonctionnalités principales
 
 - Dashboard sombre et redimensionnable ;
+- jusqu’à huit onglets serveurs isolés, chacun avec sa source, son contexte RCON et sa couleur d’accent ;
 - carte, session, services, joueurs et événements ;
 - Ranks, records de manches et Easter Egg Records officiels ;
 - Live Console structurée avec filtres, recherche, pause, auto-scroll et copie neutralisée ;
@@ -24,6 +31,8 @@ Créé et maintenu par **BiereFraiche**, avec l’assistance de développement d
 - diagnostics RCON manuels à liste blanche ;
 - observation et commandes confirmées Community Pause/Reprendre ;
 - administration serveur : manche, courant, Pack-a-Punch, musique, passages, zombies et durée des power-ups ;
+- redémarrage de carte, apparition de boss compatibles et nom public du serveur via contrats PinteMod fermés et observables ;
+- mot de passe de connexion BOIII éphémère, limité au RCON loopback, jamais persisté ni affiché ;
 - actions joueur par BOIII_XUID : assistance, armes, atouts, power-ups, téléportation, modération et rôles ;
 - historique de modération local read-only ;
 - catalogue de cartes officiel/custom local sans lecture automatique de `server_zm.cfg` ;
@@ -104,9 +113,11 @@ dotnet run --project .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csp
 
 Ces commandes ne lancent aucun serveur BOIII, BAT ou outil externe.
 
-## Limites volontaires
+## Contrôles réels et limites volontaires
 
-Le changement/redémarrage de carte et les commandes génériques de boss/événements restent affichés en simulation. PinteMod v2.1.1 ne fournit pas encore de contrat générique suffisamment sûr et autoritaire pour les activer sans risque.
+Les actions réelles ne sont proposées que lorsque leur ciblage et leur preuve locale sont connus. **Redémarrer la carte**, les alias de boss compatibles, le nom public du serveur et la suppression du mot de passe utilisent des contrats PinteMod fermés avec retour local corrélé. La définition du mot de passe de connexion BOIII est limitée à un endpoint RCON loopback explicitement configuré et sa valeur reste éphémère.
+
+Le changement générique de carte et les événements génériques restent affichés en simulation faute de contrat suffisamment sûr et autoritaire. Une capacité absente, périmée ou incompatible n’autorise jamais une action réelle.
 
 Les besoins futurs sont documentés dans [`docs/PINTEMOD_REQUIREMENTS_NEXT.md`](docs/PINTEMOD_REQUIREMENTS_NEXT.md) : heartbeat global, snapshot runtime serveur/joueurs, capacités par carte et feedback structuré des mutations.
 
