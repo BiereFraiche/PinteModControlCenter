@@ -8,13 +8,20 @@
     <Version>2.2.0</Version>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
     <FileVersion>2.2.0.0</FileVersion>
-    <InformationalVersion>2.2.0-rc.2</InformationalVersion>
+    <InformationalVersion>2.2.0</InformationalVersion>
     <Product>PinteMod Control Center</Product>
     <Description>Interface opérateur locale ou LAN pour PinteMod.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\PinteMod.ControlCenter.Core\PinteMod.ControlCenter.Core.csproj" />
     <ProjectReference Include="..\PinteMod.ControlCenter.Infrastructure\PinteMod.ControlCenter.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\contracts\control-center\v1\*.schema.json"
+             Link="contracts\control-center\v1\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\packaging\LISEZ-MOI.txt"

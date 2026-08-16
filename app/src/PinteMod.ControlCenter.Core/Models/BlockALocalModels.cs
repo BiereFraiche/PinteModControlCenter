@@ -93,6 +93,15 @@ public sealed record BlockALocalSnapshot(
     public LocalSourceMetadata CommunityPauseLogSource { get; init; } =
         LocalSourceMetadata.Unavailable("Journal Community Pause non lu.");
 
+    public LocalReadResult<PinteModHeartbeatSnapshot> PinteModHeartbeat { get; init; } =
+        new(null, LocalSourceMetadata.Unavailable("Heartbeat PinteMod non lu."), null);
+
+    public LocalReadResult<ControlCenterRuntimeSnapshot> RuntimeSnapshot { get; init; } =
+        new(null, LocalSourceMetadata.Unavailable("Snapshot runtime PinteMod non lu."), null);
+
+    public ControlCenterContractSnapshot ControlCenterContracts { get; init; } =
+        ControlCenterContractSnapshot.Unavailable;
+
     public static BlockALocalSnapshot Simulation { get; } = new(
         new(null, SimulationMetadata, null),
         new(null, SimulationMetadata, null),

@@ -10,6 +10,11 @@
                     <TextBlock Text="Tester une racine PinteMod sur cette machine ou via un partage LAN explicite."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" TextWrapping="Wrap" />
 
+                    <TextBlock Text="NOM DE L’ONGLET SERVEUR" Style="{StaticResource EyebrowTextStyle}" />
+                    <TextBox Text="{Binding ProfileDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="48" Margin="0,7,0,12"
+                             ToolTip="Nom local d’affichage uniquement · ne modifie pas le nom public de BOIII" />
+
                     <TextBlock Text="EMPLACEMENT" Style="{StaticResource EyebrowTextStyle}" />
                     <ComboBox ItemsSource="{Binding OperatorModes}"
                               SelectedItem="{Binding SelectedOperatorMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -61,6 +66,27 @@
                     <TextBlock Text="INTERFACE" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="Actualisation hybride active ; les autres préférences restent à venir."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,18" />
+                    <TextBlock Text="COULEUR DE CET ONGLET SERVEUR" Style="{StaticResource EyebrowTextStyle}" />
+                    <ComboBox ItemsSource="{Binding AccentColorOptions}"
+                              SelectedItem="{Binding SelectedAccentTheme, Mode=TwoWay}"
+                              Margin="0,7,0,6">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="12" Height="12" Fill="{Binding PreviewBrush}" Margin="0,0,8,0" />
+                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="L’accent du Control Center suit automatiquement l’onglet actif. Les couleurs d’état restent inchangées."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,8"
+                               TextWrapping="Wrap" />
+                    <Button Content="ENREGISTRER L’APPARENCE"
+                            Command="{Binding SaveAppearanceCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,0,0,18"
+                            ToolTip="Enregistre seulement le nom et la couleur de l’onglet · ne modifie ni la source ni RCON" />
                     <Grid Margin="0,0,0,14">
                         <CheckBox Content="Actualisation automatique" IsChecked="{Binding AutomaticRefresh, Mode=OneWay}" IsEnabled="{Binding AutomaticRefreshAvailable, Mode=OneWay}" />
                         <Border HorizontalAlignment="Right" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="7,3"><TextBlock Text="{Binding AutomaticRefreshStatus}" Style="{StaticResource EyebrowTextStyle}" /></Border>
@@ -160,7 +186,7 @@
                                Foreground="{StaticResource WarningBrush}" FontSize="10" FontWeight="SemiBold"
                                Margin="0,0,0,12" TextWrapping="Wrap" />
 
-                    <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    <Border Background="{DynamicResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,14">
                         <StackPanel>
                             <TextBlock Text="COMMENT FAIRE" Style="{StaticResource EyebrowTextStyle}" />
@@ -203,7 +229,7 @@
                         <Button Grid.Column="1" Content="ENREGISTRER LE SECRET" Click="SaveRconSecret_Click"
                                 Style="{StaticResource PrimaryButtonStyle}" Margin="10,0,0,0" Padding="12,7" />
                     </Grid>
-                    <TextBlock Text="{Binding RconSecretStatus}" Foreground="{StaticResource AccentBrightBrush}"
+                    <TextBlock Text="{Binding RconSecretStatus}" Foreground="{DynamicResource AccentBrightBrush}"
                                FontSize="9" FontWeight="Bold" Margin="0,6,0,0" />
 
                     <TextBlock Text="3 · LANCER UN TEST MANUEL" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
@@ -281,10 +307,10 @@
             <Border Style="{StaticResource CardStyle}" Margin="4">
                 <StackPanel>
                     <TextBlock Text="SOURCE DE DONNÉES" Style="{StaticResource SectionTitleStyle}" />
-                    <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="6" Padding="12" Margin="0,14,0,12">
+                    <Border Background="{DynamicResource AccentSoftBrush}" CornerRadius="6" Padding="12" Margin="0,14,0,12">
                         <Grid>
                             <StackPanel Margin="0,0,100,0"><TextBlock Text="FOURNISSEUR ACTIF" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding ActiveProviderName}" Margin="0,6,0,0" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" /></StackPanel>
-                            <TextBlock Text="{Binding DataMode}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="10" />
+                            <TextBlock Text="{Binding DataMode}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrightBrush}" FontWeight="Bold" FontSize="10" />
                         </Grid>
                     </Border>
                     <TextBlock Text="{Binding DataScope}" Foreground="{StaticResource TextSecondaryBrush}"
@@ -301,7 +327,7 @@
                 <StackPanel>
                     <TextBlock Text="À PROPOS" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="PinteMod Control Center" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,0" />
-                    <TextBlock Text="Prototype v2.2 · .NET 8 · WPF" Foreground="{StaticResource AccentBrightBrush}" Margin="0,5,0,0" />
+                    <TextBlock Text="Version 2.2.0 · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
                     <TextBlock Text="Base serveur : PinteMod v2.1.1 stable" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,14,0,0" />
                     <TextBlock Text="Application Windows locale, sans compte, serveur web ni port entrant."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,8,0,0" />

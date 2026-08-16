@@ -25,7 +25,7 @@ Application Windows en C# / .NET 8 / WPF pour observer et administrer une sessio
 
 ## Compiler
 
-Depuis `E:\Dev\PinteMod-ControlCenter\app` :
+Depuis le dossier `app` du dépôt :
 
 ```powershell
 dotnet restore .\PinteMod.ControlCenter.sln
@@ -59,19 +59,19 @@ Sans argument, l’application reste entièrement simulée.
 
 ## Paquet portable Windows x64
 
-La candidate autonome corrigée et prête pour la revue finale est disponible ici :
+La version stable autonome est disponible ici :
 
 ```text
-app/artifacts/PinteMod-ControlCenter-v2.2.0-rc.2-win-x64.zip
+app/artifacts/PinteMod-ControlCenter-v2.2.0-win-x64.zip
 ```
 
 Il contient le runtime .NET 8 Windows nécessaire : aucun SDK n’est requis sur le poste cible. Décompresser entièrement l’archive puis lancer `PinteMod.ControlCenter.exe`. Le fichier `LISEZ-MOI.txt` rappelle le démarrage, les garanties read-only et le report volontaire des essais RCON à une période sans joueur.
 
-Le paquet ne contient aucune configuration opérateur, secret DPAPI, donnée PinteMod, log, XUID réel, fichier serveur, GSC, PDB ou chemin privé de compilation. La RC2 remplace la RC1 retirée et ajoute les correctifs finaux de confidentialité, ouverture read-only par handle vérifié et sémantique RCON conservatrice. Les diagnostics RCON, Community Pause et principales actions serveur ont été validés sur le serveur réel. Les autres actions serveur et joueur sont protégées par confirmation et verrou manuel ; leurs essais terrain restent regroupés dans une seule validation finale avant le tag stable.
+Le paquet ne contient aucune configuration opérateur, secret DPAPI, donnée PinteMod, log, XUID réel, fichier serveur, GSC, PDB ou chemin privé de compilation. La version 2.2.0 inclut les contrats runtime locaux, la personnalisation par serveur et les protections de confidentialité, d’ouverture read-only par handle vérifié et de sémantique RCON conservatrice. La lecture locale, les diagnostics, Community Pause, les principales actions serveur et la protection `net_password` ont été validés sur le terrain. Les mutations restent protégées par confirmation, revalidation locale et verrou manuel en cas de résultat incertain.
 
 ### Test de source Local/LAN
 
-La page **Paramètres** permet de sélectionner **Local** ou **LAN**, de saisir une racine PinteMod explicite et de tester en lecture seule `current_session.json` ainsi que les quatre heartbeats. Le mode Local attend le dossier `UnrankedServer` contenant `boiii`. Le mode LAN attend uniquement le partage read-only du dossier `boiii\scriptdata\pintemod`, par exemple `\\portable\PinteModData`. Le test s’exécute hors du thread UI, ne recherche aucun serveur et ne modifie aucun fichier PinteMod.
+La page **Paramètres** permet de sélectionner **Local** ou **LAN**, de saisir une racine PinteMod explicite et de tester en lecture seule `current_session.json` ainsi que les quatre heartbeats. Le mode Local attend le dossier `UnrankedServer` contenant `boiii`. Le mode LAN attend uniquement le partage read-only du dossier `boiii\scriptdata\pintemod`, par exemple `\\serveur-exemple\PinteModData`. Le test s’exécute hors du thread UI, ne recherche aucun serveur et ne modifie aucun fichier PinteMod.
 
 Après un test lisible, l’opérateur peut enregistrer cette source pour le prochain démarrage. La configuration non sensible est stockée sous `%LOCALAPPDATA%\PinteMod\ControlCenter\operator-settings.json`. Si la source enregistrée est inaccessible, l’application revient en simulation avec un avertissement. Les arguments ci-dessous restent prioritaires sur la configuration enregistrée.
 
@@ -110,7 +110,7 @@ Le mode hybride lit uniquement :
 - `boiii/scriptdata/pintemod/logs/pause.log` pour les nouveaux événements de pause ;
 - dans le dossier de la session active seulement : `connections.log`, `community.log`, `ranks.log`, `easter_eggs.log`, `identity.log`, `moderation.log`, `localization.log`, `storage.log` et `validation.log`.
 
-Carte, identifiant de session, version déclarée, quatre services, profils Ranks, records de manches, Easter Egg Records officiels, diagnostics disponibles, métadonnées joueur autorisées et événements structurés deviennent locaux. La manche, la durée, l’état Ranked/Unranked, la présence et les joueurs ne deviennent disponibles que lorsqu’un événement structuré explicite les prouve. Points, vie, inventaire, maximum de joueurs et état du processus BOIII restent inconnus. L’état global PinteMod reste « État inconnu — aucun heartbeat dédié ».
+Carte, identifiant de session, version déclarée, cinq heartbeats, profils Ranks, records de manches, Easter Egg Records officiels, diagnostics disponibles, métadonnées joueur autorisées et événements structurés deviennent locaux. Dans la version 2.2.0, `health/pintemod.json` alimente l’état global PinteMod et `runtime/control_center_snapshot.json` fournit, lorsqu’il est valide, frais et lié à la session active, la manche, la durée, Ranked/Unranked, les compteurs joueur, la vie, les points, le Godmode, l’arme équipée, les munitions, l’inventaire et les atouts. Les logs restent le repli inféré et la source des événements. Une valeur `unknown` n’est jamais transformée en réussite.
 
 Seuls les fichiers `.json` actifs directement présents dans `ranks_v2/players` et `ranks_v2/maps` sont lus. L’ancien dossier `ranks/`, les sous-dossiers, `.tmp`, `.bak` et sauvegardes ne sont jamais utilisés comme sources actives. Les XUID complets servent uniquement d’identifiants métier internes ; la page Records les abrège.
 
@@ -143,7 +143,7 @@ Dix diagnostics seulement sont autorisés :
 - **État des événements** → `ezzeventstatus` ;
 - **Catalogue des power-ups** → `ezzpowerups`.
 
-Les cinq diagnostics du Bloc C sont manuels, read-only, sérialisés avec les autres opérations RCON et leur réponse est neutralisée avant affichage. Ils ne mettent pas automatiquement à jour les snapshots locaux. La sortie stable de `ezzplayers` ne fournit pas de BOIII_XUID et reste informative. Le ciblage réel utilise exclusivement les BOIII_XUID lus dans `connections.log` pour la session active ; le joueur et la source sont relus après confirmation et avant tout envoi.
+Les diagnostics sont manuels, read-only, sérialisés avec les autres opérations RCON et leur réponse est neutralisée avant affichage. Si BOIII ne transporte aucun texte, Carte, Courant, Pack-a-Punch de la carte, Manche et Joueurs peuvent afficher le snapshot runtime uniquement lorsqu’il est local, frais et cohérent avec la session et la carte. L’interface indique explicitement qu’il ne s’agit pas de la sortie console. Health peut montrer un résumé des services locaux, mais ne reconstitue jamais les 51 contrôles. Audit carte, événements et power-ups restent non observables sans futur contrat structuré. La sortie stable de `ezzplayers` ne fournit pas de BOIII_XUID et reste informative ; le ciblage réel utilise exclusivement le BOIII_XUID du snapshot local revalidé après confirmation.
 
 Le module Community Soft Pause v0.3 écrit lui-même son retour dans `feedback.latest.txt` et ajoute un événement `STATUS` à `pause.log` lorsque `ezzpausestatus` est demandé. Le Control Center ne crée ni ne modifie ces fichiers : il les ouvre uniquement en lecture. Les diagnostics ont été validés humainement avec `PASS=51 | WARNING=0 | ERROR=0` et un statut Pause v0.3 cohérent.
 
@@ -151,17 +151,17 @@ Le module Community Soft Pause v0.3 écrit lui-même son retour dans `feedback.l
 
 La page Serveur expose une liste fermée d’actions confirmées : **Terminer/Définir la manche**, **Courant**, **Pack-a-Punch**, **musique de carte**, **passages standard**, **garder un zombie**, **éliminer les zombies** et **délai des power-ups PinteMod**. Elles ne font aucun retry et restent non confirmées après l’envoi, car BOIII imprime leur résultat uniquement dans sa console. Toutes les mutations restent alors verrouillées jusqu’à ce que l’opérateur vérifie la console et clique sur **J’ai vérifié la console**.
 
-Le catalogue de cartes combine les 14 cartes officielles connues, la ligne active `set sv_maprotation "..."` que l’opérateur peut coller explicitement, les cartes custom ajoutées localement et toute carte courante observée. `server_zm.cfg` n’est jamais recherché ni lu automatiquement. L’import accepte uniquement une ligne de rotation stricte et le catalogue est conservé sous `%LOCALAPPDATA%\PinteMod\ControlCenter\map-catalog.json`, sans écriture serveur. Changement/redémarrage de carte, événements et boss restent simulés tant qu’aucun contrat générique sûr n’est disponible.
+Le catalogue de cartes combine les 14 cartes officielles connues, la ligne active `set sv_maprotation "..."` que l’opérateur peut coller explicitement, les cartes custom ajoutées localement et toute carte courante observée. `server_zm.cfg` n’est jamais recherché ni lu automatiquement. L’import accepte uniquement une ligne de rotation stricte et le catalogue est conservé sous `%LOCALAPPDATA%\PinteMod\ControlCenter\map-catalog.json`, sans écriture serveur. Le changement générique de carte et les événements génériques restent simulés. **Redémarrer la carte** et les alias de boss publiés par PinteMod deviennent réels uniquement avec des capabilities fraîches et cohérentes, une confirmation humaine, une revalidation et un feedback local corrélé.
 
-Les pages Dashboard et Joueurs rendent réelles, uniquement pour une présence locale revalidée par BOIII_XUID, les actions **Revive**, **Respawn**, **Points**, **Munitions**, **Godmode**, **Téléportation au viseur**, **Arme**, **Atout**, **Tous les atouts**, **Power-up**, **Mute**, **Unmute**, **Kick**, **Ban**, **Rôle** et **Retrait du rôle**. Les montants, armes, atouts, power-ups, durées et rôles proviennent de listes fermées ; aucun pseudo, slot, texte de commande ou motif libre n’est utilisé. `owner` n’est jamais attribuable depuis l’interface. Après tout envoi potentiel, Dashboard, Joueurs, Serveur et Pause/Reprendre partagent un verrou global jusqu’à vérification humaine.
+Les pages Dashboard et Joueurs rendent réelles, uniquement pour une présence locale revalidée par BOIII_XUID, les actions **Revive**, **Respawn**, **Points**, **Munitions**, **Godmode**, **Téléportation au viseur**, **Arme**, **Pack-a-Punch de l’arme tenue**, **Atout**, **Retrait d’atout**, **Tous les atouts**, **Power-up**, **Mute**, **Unmute**, **Kick**, **Ban**, **Rôle** et **Retrait du rôle**. Le catalogue d’armes contient 19 alias standard/universels et ajoute seulement les spécialités de la carte runtime fraîche. Les montants, armes, atouts, power-ups, durées et rôles proviennent de listes fermées ; aucun pseudo, slot, texte de commande ou motif libre n’est utilisé. `owner` n’est jamais attribuable depuis l’interface. Après tout envoi potentiel, Dashboard, Joueurs, Serveur et Pause/Reprendre partagent un verrou global jusqu’à vérification humaine.
 
 L’historique de modération du joueur sélectionné peut être chargé en lecture seule depuis `boiii/scriptdata/pintemod/moderation/history/<BOIII_XUID>.json`. Le chemin reste interne, le XUID complet n’est jamais exposé, seuls les compteurs et les derniers libellés neutralisés sont affichés, et `.tmp`/`.bak` ne sont jamais utilisés comme source active.
 
 Le paquet BOIII utilise le préfixe `FF FF FF FF`, puis `rcon <secret> <commande>` en UTF-8. Le délai est limité à trois secondes. Un verrou partagé sérialise les transports des quatre services et un coordinateur unique sérialise les parcours UI complets, confirmation et vérification comprises. À la fermeture, les nouvelles opérations sont refusées et l’application attend la fin des opérations déjà acceptées avant de disposer ses lecteurs. Aucune commande n’est exécutée au démarrage ou pendant l’actualisation automatique. Les actions non autorisées restent gérées par `ISimulationActionService` avec `CommandSent = false` ou désactivées avec le libellé « À venir ».
 
-BOIII peut accuser réception d’une commande GSC avec un datagramme sans texte, comportement également pris en charge par l’outil PowerShell de référence. Le Control Center affiche alors **Envoyé · sans texte** et demande de vérifier la console du serveur ; ce statut ne devient pas vert automatiquement. Lorsqu’un texte est renvoyé, **Health complet** doit contenir la bannière PinteMod et les trois compteurs `PASS`, `WARNING` et `ERROR`, tandis que **État de la pause** doit contenir la bannière Community Pause v0.3, l’état actif et le compteur de pauses réussies. Toute autre réponse est affichée comme **Réponse non reconnue**, après neutralisation, et ne déverrouille aucune action.
+BOIII peut accuser réception d’une commande GSC avec un datagramme sans texte, comportement également pris en charge par l’outil PowerShell de référence. Le Control Center utilise alors uniquement les fallbacks locaux autoritaires décrits ci-dessus ; sans contrat approprié, il affiche **Sortie console non transportée** ou **Envoyé · sans texte** sans inventer de résultat. Lorsqu’un texte est renvoyé, **Health complet** doit contenir la bannière PinteMod et les trois compteurs `PASS`, `WARNING` et `ERROR`, tandis que **État de la pause** doit contenir la bannière Community Pause v0.3, l’état actif et le compteur de pauses réussies. Toute autre réponse est affichée comme **Réponse non reconnue**, après neutralisation, et ne déverrouille aucune action.
 
-La copie locale et le commit GitHub audité ne fournissent pas de snapshot persistant stable pour les armes, l’arme équipée, le Pack-a-Punch, les munitions, les atouts, les points ou la vie. L’instantané interne utilisé par le mécanisme de réanimation GSC n’est ni complet, ni écrit dans un fichier consommable. Ces valeurs ne sont donc pas inventées. Un futur snapshot GSC read-only ciblé par BOIII_XUID sera nécessaire, hors Bloc A.
+Le bridge PinteMod Control Center Runtime v0.1.4 fournit un snapshot persistant borné à quatre joueurs observables et huit armes par joueur, ainsi que les contrats d’identité, de capabilities et de feedback utilisés par les mutations compatibles. Le Control Center conserve le BOIII_XUID complet uniquement dans ses modèles internes de ciblage et n’affiche que sa forme abrégée. Le pseudo reste informatif. Les données absentes du contrat — notamment l’état Mute autoritaire — restent inconnues et ne sont pas inventées. Les contrats encore manquants concernent le changement générique de carte et les événements génériques multi-cartes.
 
 ## Organisation
 

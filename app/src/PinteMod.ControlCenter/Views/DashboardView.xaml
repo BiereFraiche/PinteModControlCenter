@@ -13,11 +13,11 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
-                    BorderBrush="{StaticResource AccentBrush}">
+                    BorderBrush="{DynamicResource AccentBrush}">
                 <controls:ResponsiveUniformGrid MinItemWidth="340" MaxColumns="2">
                     <StackPanel Margin="0,0,14,8">
                         <TextBlock Text="{Binding ModeLabel}" Style="{StaticResource SectionTitleStyle}"
-                                   Foreground="{StaticResource AccentBrightBrush}" />
+                                   Foreground="{DynamicResource AccentBrightBrush}" />
                         <TextBlock Text="{Binding ModeSummary}" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="10" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding DeclaredVersionLabel}" Foreground="{StaticResource TextMutedBrush}"
@@ -41,7 +41,7 @@
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,0,12,4" />
                             <TextBlock Text="{Binding SessionProvenance}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,0,0,4" />
                         </WrapPanel>
-                        <TextBlock Text="{Binding SessionSourceLabel}" Foreground="{StaticResource AccentBrightBrush}"
+                        <TextBlock Text="{Binding SessionSourceLabel}" Foreground="{DynamicResource AccentBrightBrush}"
                                    FontSize="9" FontWeight="Bold" Margin="0,3,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                 </controls:ResponsiveUniformGrid>
@@ -53,14 +53,14 @@
                         <TextBlock Text="CARTE ACTUELLE" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="{Binding MapName}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" />
                         <TextBlock Text="{Binding MapCode}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" />
-                        <TextBlock Text="{Binding MapSourceLabel}" Foreground="{StaticResource AccentBrightBrush}" FontSize="9" FontWeight="Bold" Margin="0,3,0,0" />
+                        <TextBlock Text="{Binding MapSourceLabel}" Foreground="{DynamicResource AccentBrightBrush}" FontSize="9" FontWeight="Bold" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>
                         <TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0"
-                                   Foreground="{StaticResource AccentBrightBrush}" />
+                                   Foreground="{DynamicResource AccentBrightBrush}" />
                         <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
                     </StackPanel>
                 </Border>
@@ -117,33 +117,39 @@
                                             <TextBlock Text="{Binding Health, Converter={StaticResource StatusTextConverter}}"
                                                        Foreground="{Binding Health, Converter={StaticResource StatusBrushConverter}}"
                                                        FontSize="10" FontWeight="Bold" Margin="0,5,0,0" />
-                                            <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,8,0,6" />
-                                            <TextBlock FontSize="9" Margin="0,2,0,0">
-                                                <Run Text="Déclaré : " Foreground="{StaticResource TextMutedBrush}" />
-                                                <Run Text="{Binding DeclaredStateText, Mode=OneWay}"
-                                                     Foreground="{Binding DeclaredState, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
-                                            </TextBlock>
-                                            <TextBlock FontSize="9" Margin="0,2,0,0">
-                                                <Run Text="Lecture : " Foreground="{StaticResource TextMutedBrush}" />
-                                                <Run Text="{Binding ReadStatusText, Mode=OneWay}"
-                                                     Foreground="{Binding ReadStatus, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
-                                            </TextBlock>
-                                            <TextBlock FontSize="9" Margin="0,2,0,0">
-                                                <Run Text="Fraîcheur : " Foreground="{StaticResource TextMutedBrush}" />
-                                                <Run Text="{Binding FreshnessText, Mode=OneWay}"
-                                                     Foreground="{Binding Freshness, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
-                                                <Run Text=" · âge " Foreground="{StaticResource TextMutedBrush}" />
-                                                <Run Text="{Binding AgeText, Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            </TextBlock>
-                                            <TextBlock FontSize="9" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
-                                                       ToolTip="{Binding SourceLabel}">
-                                                <Run Text="Provenance : " Foreground="{StaticResource TextMutedBrush}" />
-                                                <Run Text="{Binding ProvenanceText, Mode=OneWay}"
-                                                     Foreground="{Binding Provenance, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
-                                            </TextBlock>
-                                            <TextBlock Text="{Binding CacheNotice}" Foreground="{StaticResource WarningBrush}"
-                                                       FontSize="9" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"
-                                                       Visibility="{Binding CacheNotice, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <Expander Header="DÉTAILS" IsExpanded="False"
+                                                      Style="{StaticResource CompactDetailsExpanderStyle}"
+                                                      AutomationProperties.Name="Afficher les détails de lecture du service">
+                                                <StackPanel>
+                                                    <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,2,0,6" />
+                                                    <TextBlock FontSize="9" Margin="0,2,0,0">
+                                                        <Run Text="Déclaré : " Foreground="{StaticResource TextMutedBrush}" />
+                                                        <Run Text="{Binding DeclaredStateText, Mode=OneWay}"
+                                                             Foreground="{Binding DeclaredState, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="9" Margin="0,2,0,0">
+                                                        <Run Text="Lecture : " Foreground="{StaticResource TextMutedBrush}" />
+                                                        <Run Text="{Binding ReadStatusText, Mode=OneWay}"
+                                                             Foreground="{Binding ReadStatus, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="9" Margin="0,2,0,0">
+                                                        <Run Text="Fraîcheur : " Foreground="{StaticResource TextMutedBrush}" />
+                                                        <Run Text="{Binding FreshnessText, Mode=OneWay}"
+                                                             Foreground="{Binding Freshness, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                                        <Run Text=" · âge " Foreground="{StaticResource TextMutedBrush}" />
+                                                        <Run Text="{Binding AgeText, Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="9" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding SourceLabel}">
+                                                        <Run Text="Provenance : " Foreground="{StaticResource TextMutedBrush}" />
+                                                        <Run Text="{Binding ProvenanceText, Mode=OneWay}"
+                                                             Foreground="{Binding Provenance, Converter={StaticResource StatusBrushConverter}, Mode=OneWay}" />
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding CacheNotice}" Foreground="{StaticResource WarningBrush}"
+                                                               FontSize="9" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"
+                                                               Visibility="{Binding CacheNotice, Converter={StaticResource NullToVisibilityConverter}}" />
+                                                </StackPanel>
+                                            </Expander>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -159,7 +165,7 @@
                         <Grid Margin="0,0,0,12">
                             <TextBlock Text="ÉVÉNEMENTS EN DIRECT" Style="{StaticResource SectionTitleStyle}" />
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}" Margin="0,0,6,0" />
+                                <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
                                 <TextBlock Text="{Binding LogsSourceSummary}" Style="{StaticResource EyebrowTextStyle}" />
                             </StackPanel>
                         </Grid>
@@ -170,7 +176,7 @@
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="64" /><ColumnDefinition Width="94" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                             <TextBlock Text="{Binding Time}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
-                                            <Border Grid.Column="1" Background="{StaticResource AccentSoftBrush}" CornerRadius="3" Padding="6,3" HorizontalAlignment="Left">
+                                            <Border Grid.Column="1" Background="{DynamicResource AccentSoftBrush}" CornerRadius="3" Padding="6,3" HorizontalAlignment="Left">
                                                 <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="Bold"
                                                            Foreground="{Binding Severity, Converter={StaticResource StatusBrushConverter}}" />
                                             </Border>

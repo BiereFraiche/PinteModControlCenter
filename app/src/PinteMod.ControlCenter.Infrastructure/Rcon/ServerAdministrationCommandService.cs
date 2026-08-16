@@ -20,17 +20,59 @@ public sealed class ServerAdministrationCommandService(
         RconEndpoint endpoint,
         CancellationToken cancellationToken = default) =>
         _operationGate.ExecuteAsync(
-            token => ExecuteCoreAsync(request, endpoint, token),
+            token => ExecuteCoreAsync(request, endpoint, null, token),
             cancellationToken);
+
+    public Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+        string requestId,
+        string joinPassword,
+        RconEndpoint endpoint,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ServerAdministrationRequest(
+            ServerAdministrationAction.SetJoinPassword,
+            RequestId: requestId);
+        return _operationGate.ExecuteAsync(
+            token => ExecuteCoreAsync(request, endpoint, joinPassword, token),
+            cancellationToken);
+    }
 
     private async Task<ServerAdministrationExecutionResult> ExecuteCoreAsync(
         ServerAdministrationRequest request,
         RconEndpoint endpoint,
+        string? sensitiveJoinPassword,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (!TryBuildCommand(request, out var command))
+        string command;
+        if (request.Action == ServerAdministrationAction.SetJoinPassword)
+        {
+            if (!ControlCenterCommandValidator.IsValidRequestId(request.RequestId) ||
+                !ControlCenterCommandValidator.IsValidJoinPassword(sensitiveJoinPassword) ||
+                request.TargetRound is not null ||
+                request.Option is not null ||
+                request.TargetXuid is not null)
+            {
+                return Result(
+                    request,
+                    ServerAdministrationExecutionStatus.InvalidRequest,
+                    "Mot de passe joueur refusé par la liste blanche fermée.",
+                    false);
+            }
+
+            if (!RconEndpointValidator.IsLoopbackAddress(endpoint.Address))
+            {
+                return Result(
+                    request,
+                    ServerAdministrationExecutionStatus.InvalidConfiguration,
+                    "Définir le mot de passe joueur exige une adresse RCON loopback.",
+                    false);
+            }
+
+            command = $"ezzccsetjoinpassword {request.RequestId} {sensitiveJoinPassword}";
+        }
+        else if (!TryBuildCommand(request, out command))
         {
             return Result(
                 request,
@@ -112,20 +154,47 @@ public sealed class ServerAdministrationCommandService(
 
     private static bool TryBuildCommand(ServerAdministrationRequest request, out string command)
     {
+        var hasNoContractArguments = request.RequestId is null &&
+                                     request.Option is null &&
+                                     request.TargetXuid is null;
         command = request.Action switch
         {
-            ServerAdministrationAction.NextRound when request.TargetRound is null => "ezznextround",
-            ServerAdministrationAction.SetRound when request.TargetRound is >= 2 and <= 255 =>
+            ServerAdministrationAction.NextRound when request.TargetRound is null && hasNoContractArguments => "ezznextround",
+            ServerAdministrationAction.SetRound when request.TargetRound is >= 2 and <= 255 && hasNoContractArguments =>
                 $"ezzsetround {request.TargetRound.Value.ToString(CultureInfo.InvariantCulture)}",
-            ServerAdministrationAction.EnablePower when request.TargetRound is null => "ezzpower",
-            ServerAdministrationAction.EnablePackAPunch when request.TargetRound is null => "ezzpap",
-            ServerAdministrationAction.PlayMapMusic when request.TargetRound is null => "ezzmusicplayall",
-            ServerAdministrationAction.StopMapMusic when request.TargetRound is null => "ezzmusicstopall",
-            ServerAdministrationAction.UnlockStandardPassages when request.TargetRound is null => "ezzunlock",
-            ServerAdministrationAction.KeepLastZombie when request.TargetRound is null => "ezzlastzombie",
-            ServerAdministrationAction.KillAllZombies when request.TargetRound is null => "ezzkillzombies",
-            ServerAdministrationAction.MakePowerUpsPermanent when request.TargetRound is null => "ezzfreezepowerups on",
-            ServerAdministrationAction.RestorePowerUpTimeout when request.TargetRound is null => "ezzfreezepowerups off",
+            ServerAdministrationAction.EnablePower when request.TargetRound is null && hasNoContractArguments => "ezzpower",
+            ServerAdministrationAction.EnablePackAPunch when request.TargetRound is null && hasNoContractArguments => "ezzpap",
+            ServerAdministrationAction.PlayMapMusic when request.TargetRound is null && hasNoContractArguments => "ezzmusicplayall",
+            ServerAdministrationAction.StopMapMusic when request.TargetRound is null && hasNoContractArguments => "ezzmusicstopall",
+            ServerAdministrationAction.UnlockStandardPassages when request.TargetRound is null && hasNoContractArguments => "ezzunlock",
+            ServerAdministrationAction.KeepLastZombie when request.TargetRound is null && hasNoContractArguments => "ezzlastzombie",
+            ServerAdministrationAction.KillAllZombies when request.TargetRound is null && hasNoContractArguments => "ezzkillzombies",
+            ServerAdministrationAction.MakePowerUpsPermanent when request.TargetRound is null && hasNoContractArguments => "ezzfreezepowerups on",
+            ServerAdministrationAction.RestorePowerUpTimeout when request.TargetRound is null && hasNoContractArguments => "ezzfreezepowerups off",
+            ServerAdministrationAction.RestartMap when
+                request.TargetRound is null &&
+                request.Option is null &&
+                request.TargetXuid is null &&
+                ControlCenterCommandValidator.IsValidRequestId(request.RequestId) =>
+                $"ezzccrestartmap {request.RequestId}",
+            ServerAdministrationAction.SpawnBoss when
+                request.TargetRound is null &&
+                ControlCenterCommandValidator.IsValidRequestId(request.RequestId) &&
+                ControlCenterCommandValidator.IsValidBossAlias(request.Option) &&
+                XuidValidator.IsValid(request.TargetXuid) =>
+                $"ezzccboss {request.RequestId} {request.Option} {request.TargetXuid}",
+            ServerAdministrationAction.SetHostname when
+                request.TargetRound is null &&
+                request.TargetXuid is null &&
+                ControlCenterCommandValidator.IsValidRequestId(request.RequestId) &&
+                ControlCenterCommandValidator.IsValidHostname(request.Option) =>
+                $"ezzccsethostname {request.RequestId} {request.Option}",
+            ServerAdministrationAction.ClearJoinPassword when
+                request.TargetRound is null &&
+                request.Option is null &&
+                request.TargetXuid is null &&
+                ControlCenterCommandValidator.IsValidRequestId(request.RequestId) =>
+                $"ezzccclearjoinpassword {request.RequestId}",
             _ => string.Empty
         };
         return command.Length > 0;

@@ -1,6 +1,6 @@
 # Décisions — PinteMod Control Center
 
-Dernière mise à jour : 2026-08-02
+Dernière mise à jour : 2026-08-12
 
 ## ADR-001 — Architecture en quatre projets
 
@@ -649,3 +649,255 @@ Dernière mise à jour : 2026-08-02
 **Diagnostic UDP.** Une commande de diagnostic inconnue est rejetée avant transport avec `CommandSent = false`. Dès que l’appel allowlisté à `IRconClient.SendAsync` va commencer, toute erreur de transport est traitée conservativement avec `CommandSent = true`, sans retry. Cette règle aligne les diagnostics sur les mutations déjà validées.
 
 **Portée.** Aucun contrat RCON, commande, fonction métier, lecteur de source supplémentaire, écriture PinteMod, processus, port, découverte réseau ou GSC n’est ajouté.
+
+## 2026-08-12 — Overlay runtime post-RC2 sans modification PinteMod
+
+**Décision.** Le heartbeat global et le snapshot runtime ne sont pas recréés : ils existent dans PinteModReal via `ezz_admin_control_center_runtime.gsc` v0.1.2. Le Control Center ajoute deux lecteurs dédiés et un overlay final, placé après les providers déjà validés, afin que les logs ne puissent pas écraser une valeur runtime fraîche et autoritaire.
+
+**Autorité.** `current_session.json` reste l’identité de session. Le heartbeat PinteMod prouve uniquement l’état global lorsqu’il est frais et lié à cette session. Le snapshot runtime remplace uniquement les champs qu’il fournit lorsqu’il est lu avec succès, frais et cohérent avec la session et la carte actives. Les logs restent le repli inféré et la source des événements.
+
+**Temps.** `updated_at_utc` vide est conforme au producteur GSC. La fraîcheur repose sur le LastWriteTimeUtc du fichier réellement ouvert et vérifié : Fresh jusqu’à 15 secondes, Stale jusqu’à 45 secondes, Expired au-delà. Un heartbeat expiré devient Inconnu, jamais automatiquement Hors ligne.
+
+**Cache et confinement.** Le cache est invalidé lors d’un changement de session. `.tmp` et `.bak` restent exclus. Les deux fichiers passent par `VerifiedReadOnlyFile`, le contrôle de taille, la détection de modification pendant lecture et trois tentatives. Aucun mécanisme d’écriture PinteMod n’est ajouté.
+
+**Joueurs.** Le snapshot runtime devient la source de présence, client, vie, points et inventaire. Rôle, langue et pays sont enrichis uniquement par BOIII_XUID. L’état Mute n’étant pas autoritaire dans le contrat, il reste Inconnu. Les ViewModels ne reçoivent que le XUID abrégé.
+
+**Alternatives rejetées.** Modifier PinteMod, recréer les mêmes fichiers sous un autre schéma, utiliser l’horodatage UTC vide comme erreur, réutiliser une ancienne session en cache ou activer ChangeMap/RestartMap/événements/boss sans contrat fermé ont été rejetés.
+
+## ADR-088 — Le catalogue d’armes joueur est centralisé et filtré par le runtime
+
+**Décision.** Les 19 alias standard/universels et tous les alias spéciaux annoncés par PinteMod Weapons v0.5.2 résident dans `PlayerWeaponCatalog`, dans Core. Le ViewModel et le service RCON utilisent cette même autorité fermée afin d’éviter deux listes divergentes.
+
+**Contexte carte.** Les armes standard sont toujours visibles. Une arme spéciale n’est affichée que si le snapshot runtime est local, réussi, frais, de la session active et cohérent avec la carte. Une carte inconnue n’obtient aucune spécialité. Le service accepte seulement les alias canoniques fermés ; PinteMod vérifie ensuite leur disponibilité réelle sur la carte.
+
+**Alternative rejetée.** Une saisie libre, un identifiant moteur, un synonyme technique ou une lecture de sortie console `ezzweapons` ne devient jamais une option de commande.
+
+## ADR-089 — Le PAP de l’arme tenue et le retrait d’atout réutilisent la sûreté joueur existante
+
+**Décision.** `ezzpapweapon <BOIII_XUID>` devient l’action typée `PackAPunchCurrentWeapon`. `ezzremoveperk <BOIII_XUID> <alias>` devient `RemovePerk` avec les neuf alias déjà bornés. Les deux passent par la confirmation, la revalidation XUID post-confirmation, le verrou transversal et l’acquittement manuel existants.
+
+**État runtime.** L’interface désactive le PAP si aucune arme équipée n’est observable ou si son état est explicitement `upgraded`. Elle ne prétend pas connaître `can_upgrade_weapon` : PinteMod reste l’autorité finale et peut refuser proprement une arme incompatible.
+
+**Alternative rejetée.** `ezzperktoggle` n’est pas exposé car une même action peut donner ou retirer selon un état devenu obsolète. `ezzclearperks` n’est pas ajouté : il est destructif, redondant et n’apporte pas assez de valeur quotidienne.
+
+## ADR-090 — Une réponse RCON vide peut céder la présentation à une source locale autoritaire
+
+**Décision.** Une réponse RCON normale reste prioritaire. Pour Carte, Courant, PAP de carte, Manche et Joueurs, une réponse vide peut afficher le runtime uniquement s’il est local, frais, de la session active et cohérent avec la carte. Le texte précise qu’il s’agit d’un état local autoritaire, jamais de la sortie console exacte.
+
+**Confidentialité.** Le fallback Joueurs n’expose ni XUID complet, ni chemin, IP ou GUID. Les pseudos passent par le filtre de confidentialité. Community Pause conserve son feedback spécialisé. Health peut montrer un résumé des heartbeats frais, avec la mention explicite qu’il ne remplace pas les 51 contrôles de `ezzhealth full`.
+
+**Absence de contrat.** Audit carte, événements et catalogue power-ups indiquent seulement que la commande a été exécutée mais que la sortie console n’a pas été transportée. Aucun scraping de console, lecture arbitraire de log, port ou transport supplémentaire n’est ajouté.
+
+## ADR-091 — Les actions joueur extensibles sont regroupées dans des grilles responsives autonomes
+
+**Décision.** La carte « Armes & Atouts » utilise trois `ResponsiveUniformGrid` indépendantes pour les armes, les atouts et les power-ups. Chaque groupe possède son propre nombre maximal de colonnes et revient automatiquement à la ligne selon la largeur réellement disponible. Les sélecteurs n’ont plus de largeur fixe.
+
+**Extensibilité.** Un futur bouton est ajouté à la grille de sa famille. Il occupe une nouvelle cellule ou passe à la ligne dans ce seul groupe, sans modifier l’ordre visuel des sélecteurs et actions des autres familles.
+
+**Lisibilité.** Les commandes longues utilisent un libellé centré avec retour à la ligne. Les marges restent identiques entre sélecteurs et boutons afin de conserver une hiérarchie stable dans les fenêtres petites comme en 1920×1080.
+
+**Alternative rejetée.** Un unique `WrapPanel` mélange les familles selon la place restante et rend la disposition dépendante de la longueur des libellés. Ajouter des largeurs fixes supplémentaires aurait seulement déplacé le défaut vers d’autres dimensions de fenêtre.
+
+## ADR-092 — La revue post-RC2 utilise une preuve globale et laisse la RC2 intacte
+
+**Décision.** Le heartbeat et snapshot runtime, les correctifs terrain armes/PAP/diagnostics et le correctif responsive sont regroupés dans une seule revue post-RC2. La base `90d4922cb663e4b8d923ecfb1681483d78db5126` reste la RC2 validée ; aucun tag ni asset RC2 n’est remplacé.
+
+**Preuves.** L’archive de revue contient les sources suivies exactes, le diff RC2 vers la tête de revue, la liste des commits, les résultats Debug/Release, la procédure terrain restante, le paquet Windows autonome déjà audité et un manifeste SHA-256 couvrant chaque élément.
+
+**Périmètre.** La revue doit rechercher uniquement les régressions concrètes et les risques des ajouts post-RC2. ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés ; les futurs contrats PinteMod `capabilities` et `action_feedback` ne sont pas anticipés.
+
+**Alternative rejetée.** Modifier ou republier la RC2 pour y intégrer ces extensions brouillerait la baseline déjà validée. Une série de micro-revues isolées masquerait les interactions entre lecteurs runtime, autorisations joueur, diagnostics et interface.
+
+## ADR-093 — Limite et fraîcheur JSON proviennent du flux et du handle vérifié
+
+**Décision.** `ReadOnlyJsonFileReader` ouvre d’abord la cible avec `VerifiedReadOnlyFile`, puis obtient longueur et `LastWriteTimeUtc` avec `GetFileInformationByHandle`. Ces métadonnées sont relues sur le même handle après consommation. Aucun `FileInfo` ou accès au chemin ne participe à la fraîcheur, à la vérification avant/après ou au résultat public d’une lecture ouverte.
+
+**Borne mémoire.** Le flux est consommé par une boucle qui s’arrête à `maximumFileSizeBytes + 1`. La présence de cet octet supplémentaire suffit à classer la source comme anormalement volumineuse, avant parsing. La mémoire allouée ne peut donc pas croître jusqu’à l’EOF d’un producteur concurrent.
+
+**Remplacement du chemin.** Si le chemin autorisé est remplacé après l’ouverture, les octets parsés et les métadonnées restent ceux du handle initial vérifié. Le fichier nouvellement placé au même chemin sera considéré uniquement lors d’une lecture ultérieure.
+
+**Erreurs.** Après ouverture, les erreurs de contrat ou de JSON utilisent uniquement l’horodatage déjà acquis depuis le handle. Avant ouverture, un fichier ou dossier absent produit l’état `Missing` sans tentative de lire des métadonnées par le chemin.
+
+**Alternative rejetée.** Contrôler la taille avec `FileInfo` puis utiliser `CopyToAsync` jusqu’à EOF laisse une fenêtre de croissance non bornée. Relire ensuite `FileInfo(path)` peut associer les octets de l’ancien handle à la date d’un fichier de remplacement.
+
+## ADR-094 — Le lot post-RC2 validé passe à une unique validation terrain groupée
+
+**Décision.** La contre-revue du lecteur JSON est validée sans blocage le 2026-08-13. La révision applicative `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac` devient la candidate terrain du lot post-RC2.
+
+**Étape suivante.** Une seule session terrain regroupe les fallbacks diagnostics, armes standard et spéciale, Pack-a-Punch de l’arme tenue, attribution/retrait d’atout et power-up joueur. Chaque mutation reste confirmée, sans retry, puis acquittée après vérification de la partie ou de la console.
+
+**Limite.** La modération réelle à deux comptes reste volontairement hors de cette validation. ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés jusqu’à l’existence de contrats PinteMod fermés et observables.
+
+## ADR-095 — La candidate post-RC2 est validée sur le terrain
+
+**Décision.** La validation terrain groupée est déclarée réussie par l’opérateur le 2026-08-13. La révision applicative `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac` ne présente plus de blocage connu dans le périmètre livré.
+
+**Publication.** La clôture technique n’autorise pas implicitement une mutation GitHub. Toute fusion, création de tag, release stable ou remplacement d’asset exige un ordre explicite. La RC2 historique reste intacte.
+
+**Extensions futures.** La modération à deux comptes et les fonctions sans contrat PinteMod stable ne sont pas transformées en dette bloquante de cette livraison. Elles feront l’objet de travaux distincts si les contrats nécessaires deviennent disponibles.
+
+## ADR-096 — Les serveurs sont des contextes isolés, pas des vues partageant un singleton
+
+**Décision.** La fenêtre peut accueillir jusqu’à huit onglets serveurs. Chaque onglet possède son propre `ShellViewModel`, snapshot store, moniteur local, sélection joueur, activité opérateur, verrou de mutation, coordinateur RCON, secret DPAPI et catalogue de cartes. Seuls la fenêtre et le presse-papiers Windows sont des ressources de présentation communes.
+
+**Migration.** Le profil `primary` réutilise exactement les emplacements historiques `operator-settings.json`, `rcon.secret.dpapi` et `map-catalog.json`. Les profils supplémentaires résident sous un dossier local dédié et ne sont jamais créés à partir d’une découverte réseau ou d’une installation détectée. Un nouvel onglet démarre toujours en simulation jusqu’à activation explicite de sa source.
+
+**Cycle de vie.** Tous les moniteurs peuvent observer leurs racines read-only en parallèle, mais chaque profil sérialise ses propres opérations RCON. À la fermeture ou au retrait d’un onglet, les nouvelles opérations sont refusées, le moniteur est annulé, les opérations acceptées sont attendues, puis les lecteurs sont détruits. Retirer un onglet ne supprime pas automatiquement sa configuration ou son secret protégé et ne touche jamais BOIII.
+
+**Interface.** Le nom de l’onglet est un libellé local distinct du nom public du serveur. Les collections utilisées par les ComboBox ne sont remplacées que si leur contenu change, afin que l’actualisation automatique ne réinitialise pas leur défilement.
+
+**Limite de contrat.** L’audit de PinteModReal n’a identifié aucune commande fermée pour changer le nom public BOIII ou le mot de passe de connexion joueur. Ces mutations ne seront pas construites à partir de commandes moteur supposées ou de texte libre. Elles attendent un contrat PinteMod validé, une validation stricte, une confirmation humaine et un feedback observable.
+
+## ADR-097 — `g_password` est une donnée éphémère distincte du secret RCON
+
+**Décision.** Le mot de passe serveur demandé par l’opérateur désigne la dvar de connexion joueur `g_password`. Il ne doit jamais être confondu avec le secret RCON DPAPI. Le futur écran utilisera un `PasswordBox` non bindé ; la valeur ne sera ni persistée, ni réaffichée, ni copiée, ni incluse dans l’activité opérateur. Une action séparée retirera le mot de passe sans demander de valeur vide dans un champ de commande libre.
+
+**Transport.** Un encodage hexadécimal ou Base64 n’apporte aucune confidentialité. En l’absence de preuve d’un transport applicatif protégé côté PinteMod, la mutation sera réservée au loopback. Le mode LAN pourra continuer à observer et administrer les actions non sensibles, mais ne transmettra pas `g_password`.
+
+**Contrat requis.** PinteMod doit fournir une commande dédiée à paramètres strictement bornés, sans journalisation de la valeur, ainsi qu’un feedback ne contenant que `join_password_enabled` et un résultat fermé. Le Control Center n’enverra jamais directement une commande libre `set g_password ...`.
+
+## 2026-08-14 — Contrats Control Center v1 post-RC2
+
+- Les quatre documents PinteModReal sont agrégés dans `BlockALocalSnapshot.ControlCenterContracts` afin que toutes les pages consomment le même snapshot partagé et qu’aucune lecture ne soit déclenchée depuis le thread UI.
+- Un lecteur unique expose quatre résultats séparés avec métadonnées indépendantes. Il réutilise le lecteur JSON et le handle vérifié déjà audités, avec limites 16/4/4/4 Kio.
+- Les schémas JSON validés au commit PinteModReal `e279a59` sont versionnés sous `app/contracts/control-center/v1` et copiés dans la publication.
+- `supported` décrit uniquement la compatibilité PinteMod. Le catalogue de cartes installées reste inconnu et `change_map=false` ne peut jamais autoriser une mutation.
+- Les alias boss publiés doivent aussi appartenir à la liste fermée connue du contrat v1 avant construction de la commande.
+- Les commandes contractuelles réutilisent `IServerAdministrationCommandService`, le gate RCON, le coordinateur opérateur et le verrou humain existants. Aucun deuxième canal RCON n’est créé.
+- Une action est revalidée après confirmation puis corrélée par `request_id`. Restart exige en plus une nouvelle session et un `map_transition` actif ; hostname/CLEAR exigent une révision d’identité strictement supérieure.
+- Une absence de feedback ou une transition lente produit « envoyé, non confirmé » avec verrou anti-répétition, jamais un faux échec.
+- SET `g_password`, `ezzccmap` et `ezzccevent` restent volontairement absents du constructeur de commandes.
+
+## ADR-098 — Les contrats Control Center v1 sont des preuves locales corrélées, pas des promesses de capacité
+
+**Décision.** Les quatre fichiers PinteModReal v1 sont lus uniquement sous la racine serveur explicitement configurée, via le lecteur borné et le handle déjà vérifié. Une donnée n’autorise une action que si sa provenance est locale, sa lecture réussie, sa fraîcheur valide et sa session/carte cohérente. Une valeur conservée en cache reste visible comme périmée mais ne peut jamais autoriser une mutation.
+
+**Corrélation.** Chaque action réelle reçoit un `request_id` unique. Le résultat doit correspondre à l’action et au `request_id`, être postérieur au snapshot de départ et, selon le cas, présenter une séquence plus récente, une nouvelle session de transition ou une révision d’identité strictement croissante. `accepted` et une transition lente ne sont jamais assimilés à un succès.
+
+**Périmètre fermé.** Seules `ezzccrestartmap`, `ezzccboss`, `ezzccsethostname` et `ezzccclearjoinpassword` sont ajoutées. `change_map=false` maintient Change Map en simulation ; `ezzccevent` et `ezzccsetjoinpassword` sont absentes. La valeur de `g_password` n’est jamais lue, transportée ou affichée.
+
+**Alternative rejetée.** Déduire qu’une carte `supported` est installée, accepter un alias non publié, ou confirmer une action à partir de la seule réponse UDP contournerait l’autorité locale structurée et les garanties de revalidation déjà validées.
+
+## ADR-099 — Une incertitude UDP n’interrompt jamais l’observation locale d’une action contractuelle
+
+**Décision.** Pour les quatre actions Control Center v1, `CommandSent = true` suffit à démarrer la phase d’observation locale, quel que soit le statut final du transport (`SentAwaitingManualVerification`, `DeliveryUnknown` ou `TransportError`). Une exception non normalisée après le début possible du transport suit la même politique conservatrice.
+
+**Confirmation.** Le transport ne prouve jamais à lui seul l’application. Seuls le feedback frais/corrélé et, selon l’action, la transition de session ou la révision d’identité peuvent produire « appliqué, confirmé localement ».
+
+**Absence de preuve.** L’expiration de l’observation conserve « envoyé, non confirmé » et le verrou humain. Elle ne déclenche ni retry RCON, ni faux échec, ni déverrouillage automatique.
+
+**Validation.** La contre-revue indépendante du 2026-08-14 valide cette politique sans blocage. Le lot peut passer à une seule validation terrain groupée sur la copie de test, uniquement après compilation GSC réussie. Cette autorisation ne concerne ni le serveur de production ni un serveur occupé.
+
+## ADR-100 — La validation des contrats utilise une copie récente et isolée de Server3
+
+**Décision.** La copie obsolète n’est pas utilisée pour conclure sur les contrats v1. Une copie récente est préparée sous `<COPIE_SERVEUR_TEST>`, avec sauvegarde externe récupérable, réseau limité au LAN et port distinct de la production.
+
+**Déploiement minimal.** Seuls `ezz_admin_events.gsc` et le nouveau `ezz_admin_control_center_contracts.gsc` proviennent de la candidate `e279a59`. La variante `ezz_admin_music.gsc` présente sur Server3 est conservée afin de ne pas écraser une évolution terrain sans rapport avec les contrats.
+
+**Barrière.** La copie ne doit être reliée au Control Center qu’après chargement GSC sans erreur. La préparation n’autorise aucune installation directe sur Server3 de production.
+
+## ADR-101 — Un diagnostic RCON sans rapport textuel peut être complété par une preuve locale explicitement distincte
+
+**Décision.** Une réponse BOIII vide ou ne transportant pas le rapport complet de `ezzhealth full` ne devient pas un faux rapport console. Le Control Center affiche séparément le résultat du transport et le résumé provenant d'une source locale fraîche et cohérente.
+
+**Validation terrain.** Sur la copie isolée écoutant sur `127.0.0.1:27121`, le diagnostic a été envoyé et le fallback local a conclu uniquement `PinteMod : SAIN`. Cette preuve valide le canal RCON et le mécanisme de fallback, sans prétendre transporter les 51 contrôles de la console.
+
+**Limite.** Cette validation n'autorise aucun retry automatique et ne confirme aucune mutation contractuelle. Les quatre actions réelles restent soumises à leur feedback local corrélé et à leur verrou humain.
+
+## ADR-102 — Les contrats Control Center reflètent les types JSON natifs réellement produits par BOIII
+
+**Décision.** Les champs numériques (`schema_version`, séquences, compteurs, révision et temps moteur) sont des entiers JSON bornés. Les indicateurs de capacité et `join_password_enabled` sont des booléens JSON natifs. Les variantes citées (`"1"`, `"true"`, `"false"`) sont refusées par le lecteur contractuel.
+
+**Motif.** Le builtin BOIII `jsonset` sérialise ces valeurs sous leur type JSON natif même lorsque le GSC les construit initialement comme texte. Le terrain a démontré que les anciens schémas à chaînes ne décrivaient donc pas les fichiers effectivement produits.
+
+**Sécurité.** Ce changement n'assouplit ni les objets fermés, ni les bornes, ni les listes blanches, ni la fraîcheur, ni la corrélation session/carte. Il ne change aucune commande RCON et ne transforme aucune source périmée en autorité.
+
+**Synchronisation.** Les schémas embarqués du Control Center sont corrigés immédiatement. Les copies documentaires correspondantes de PinteModReal devront être synchronisées avant sa prochaine publication ; le générateur GSC actuel émet déjà les valeurs natives attendues.
+
+## ADR-103 — Les onglets serveurs ne font pas partie de la zone de déplacement
+
+**Décision.** Le chrome de fenêtre réserve une rangée supérieure de 34 px uniquement au déplacement et aux boutons Réduire/Agrandir/Fermer. Les onglets serveurs occupent une rangée distincte juste en dessous et restent marqués interactifs dans le chrome WPF.
+
+**Motif.** Un onglet ne doit jamais entrer en concurrence avec le glisser de fenêtre. Cette séparation reste stable lorsque de nouveaux serveurs ou boutons sont ajoutés.
+
+## ADR-104 — Le hostname est persistant mais `g_password` reste éphémère et loopback
+
+**Hostname.** PinteMod persiste uniquement le nom public validé dans `pintemod/config/control_center_identity.json`, via son écriture JSON sûre, puis le restaure au prochain chargement. Ce fichier public ne contient aucun mot de passe. Le titre natif de la fenêtre BOIII peut rester figé ; `server_identity.json` et le navigateur de serveurs sont les observations pertinentes.
+
+**Mot de passe joueur.** La valeur passe uniquement par une méthode dédiée, un `PasswordBox` non bindé et la commande fermée `ezzccsetjoinpassword`. Elle est limitée à 4–32 caractères ASCII, n’est jamais incluse dans un modèle public, un feedback, un snapshot, un fichier ou une activité opérateur, et n’est autorisée que si l’endpoint est loopback. Le mode LAN est refusé avant lecture du secret RCON et avant transport.
+
+**Persistance.** `g_password` reste runtime uniquement. Un redémarrage complet recharge la configuration serveur déjà administrée hors Control Center. Persister cette valeur dans PinteMod, la configuration opérateur ou DPAPI a été rejeté afin de ne pas créer un second magasin de secrets.
+
+**Gate terrain.** La fonctionnalité reste candidate jusqu’à un test avec valeur synthétique unique et recherche dans toutes les sorties et fichiers de la copie de test. Toute trace impose la désactivation de la capability. Aucun retry automatique et aucune commande libre ne sont autorisés.
+
+**Candidate.** La première candidate intégrant cette décision embarque la révision `3d624fa3b09490d005b3cf65ad24ef081a8a7da5`. Son paquet autonome passe l’audit de publication ; cela ne remplace pas le gate de confidentialité terrain.
+
+## ADR-105 — `live_steam_server_name` est l’autorité du nom public BOIII
+
+**Constat terrain.** La copie Server3 configure le nom présenté aux joueurs avec `live_steam_server_name`. Modifier uniquement `sv_hostname` met à jour une dvar secondaire et le snapshot interne, mais ne constitue pas la mutation du nom public attendue.
+
+**Décision.** Le contrat v0.1.3 observe, applique, persiste et restaure `live_steam_server_name`. `sv_hostname` reçoit la même valeur uniquement pour compatibilité. Aucun CFG n’est lu ou réécrit par le Control Center ou le GSC.
+
+**Couleurs.** La grammaire accepte les couples BOIII `^0` à `^9`. Un caret isolé, `^x`, les séparateurs de commande et tout caractère hors alphabet fermé sont refusés avant transport. La limite de 64 caractères porte sur la chaîne brute, codes compris.
+
+**Mot de passe.** Le booléen local `join_password_enabled=true` prouve que la dvar est active, mais son effet doit être vérifié sur une nouvelle connexion. Les joueurs déjà connectés ne sont ni expulsés ni redemandés automatiquement.
+
+**Candidate.** La révision `7bdb22fbcc1a69b4768bb59afaf3bb72295f2004` consomme exclusivement le contrat v0.1.3 et refuse donc silencieusement de réactiver les contrôles sur un ancien GSC v0.1.2.
+
+## ADR-106 — `net_password`, et non `g_password`, protège les connexions Ezz BOIII
+
+**Constat terrain.** Un client totalement déconnecté et sans mot de passe configuré a pu rejoindre alors que `join_password_enabled=true` reflétait `g_password`. Le booléen prouvait donc uniquement qu’une dvar sans effet sur ce chemin était non vide.
+
+**Autorité BOIII.** Le code public Ezz BOIII enregistre `net_password`, publie son hash dans `getInfo` et compare ce hash côté client avant la connexion. Le contrat PinteMod v0.1.4 définit, efface et observe exclusivement `net_password`. `g_password` n’est plus présenté comme une protection des connexions directes.
+
+**Validation terrain du 2026-08-16.** Le comportement autoritaire est confirmé sur la copie de test : absence et valeur incorrecte refusées, valeur correcte acceptée. Cette validation lève le dernier verrou fonctionnel avant le gel et l’audit de la candidate stable, sans autoriser la persistance ou l’exposition de la valeur.
+
+## ADR-107 — La candidate post-RC2 devient la version stable `2.2.0`
+
+**Décision.** Après validation terrain de `net_password`, le code fonctionnel est gelé et l’`InformationalVersion` devient `2.2.0`. Les mentions « Prototype » et « Release Candidate 2 » sont retirées des surfaces distribuées afin que le binaire, l’interface, le README et le fichier de démarrage décrivent la même version.
+
+**Portée.** Cette promotion ne crée aucune commande, aucun lecteur, aucun accès réseau supplémentaire et ne modifie aucun contrat PinteMod/GSC. La publication GitHub reste distincte et exige toujours un ordre explicite après la revue du ZIP stable.
+
+**Confidentialité.** La valeur reste éphémère, transmise uniquement par la commande fermée et loopback, absente des snapshots, feedbacks, ViewModels, fichiers et journaux applicatifs. Seul `join_password_enabled` est publié. Le hash BOIII étant actuellement FNV1a-64 non salé, l’interface parle d’« isolation réseau BOIII » et recommande implicitement une valeur longue et aléatoire, sans revendiquer une protection cryptographique forte.
+
+**Présentation.** Les diagnostics secondaires des services et les XUID déjà abrégés des profils Ranks sont repliés par défaut dans des contrôles accessibles. L’état principal reste visible. Les déclencheurs utilisent une typographie secondaire de 8 px et une flèche atténuée afin de ne pas concurrencer les données principales. Le numéro de meilleure manche est affiché sans préfixe `M`. Les champs actifs Nom et Mot de passe réseau utilisent un fond relevé et une bordure bleue ; le bouton Nom reste désactivé tant que la valeur saisie est identique au nom observé.
+
+## ADR-107 — La compatibilité dépend des versions de schéma et de commandes
+
+**Constat.** La structure publique de `control_center_capabilities.json` reste identique entre v0.1.3 et v0.1.4. La v0.1.4 corrige l’autorité interne du mot de passe réseau BOIII sans ajouter de champ ni de commande au contrat consommé par l’application. Exiger seulement v0.1.3 rendait les capacités v0.1.4 indisponibles alors que l’identité v1 restait lisible.
+
+**Décision.** `schema_version=1` et `command_contract_version=1` sont les autorités de compatibilité. `contract_module_version` reste obligatoire, borné et validé au format sémantique `x.y.z`, mais sert uniquement d’information de provenance. Une version future du module est donc acceptée si elle conserve réellement le schéma et le contrat de commandes v1.
+
+**Confinement.** Cette règle ne relâche ni les objets fermés, ni les propriétés autorisées, ni les types, bornes, sessions, cartes, fraîcheurs, capacités booléennes ou listes blanches. Toute évolution structurelle exige une nouvelle version de schéma ou de contrat et une adaptation explicite du Control Center.
+
+**Présentation.** Le bandeau Serveur est dérivé de la présence réelle de l’infrastructure RCON configurée. Il ne doit plus annoncer statiquement une absence de transport lorsque des commandes réelles fermées sont disponibles. Les fonctions restant simulées sont toujours nommées explicitement.
+
+## ADR-108 — L’accent visuel est isolé par profil serveur
+
+**Décision.** Chaque profil choisit une clé dans une palette fermée de six accents. La clé est persistée dans son `operator-settings.json` local et la palette de l’onglet actif est appliquée via les ressources WPF dynamiques `AccentBrush`, `AccentBrightBrush` et `AccentSoftBrush`.
+
+**Sémantique.** Les ressources `Success`, `Warning` et `Danger` ne sont jamais recolorées par ce mécanisme. Un thème utilisateur ne doit pas transformer une erreur en accent décoratif ni rendre ambigu un état de santé.
+
+**Isolation.** L’action `ENREGISTRER L’APPARENCE` recharge la configuration enregistrée puis ne remplace que le nom local de l’onglet et sa clé d’accent. Les champs source, activation et RCON actuellement saisis ne sont pas propagés par cette action. Une couleur inconnue revient au Bleu PinteMod à la lecture et ne peut pas être enregistrée.
+
+**Validation humaine.** Le changement d’accent par onglet et sa persistance ont été validés sans demande de correction supplémentaire.
+
+## ADR-109 — Le hostname coloré conserve la chaîne BOIII autoritaire
+
+**Décision.** L’éditeur conserve `RequestedHostname` sous la forme contractuelle existante contenant les codes `^0` à `^9`. La palette insère uniquement ces couples fermés au curseur. Lorsqu’une sélection est colorée, l’éditeur restaure ensuite la couleur active avant la sélection. L’aperçu est une interprétation visuelle indicative et ne devient jamais la valeur autoritaire.
+
+**Sécurité.** La validation existante du hostname et la limite de 64 caractères bruts restent appliquées avant transport. L’éditeur refuse une insertion qui dépasserait cette limite. Aucun contenu riche, couleur arbitraire, commande libre ou nouveau chemin RCON n’est introduit.
+
+**Validation humaine.** La palette, la coloration partielle et l’aperçu direct ont été validés. L’aperçu reste explicitement indicatif ; la chaîne BOIII encodée demeure l’autorité.
+
+## ADR-110 — Les surfaces publiques décrivent uniquement la version stable
+
+**Décision.** Une fois les validations fonctionnelles et terrain terminées, les README racine, le README applicatif et `LISEZ-MOI.txt` annoncent `v2.2.0` stable et la baseline actuelle de 460 tests. Les mentions de candidate RC2 ou de promotion encore en attente sont réservées à l’historique de développement et ne figurent plus dans les documents distribués comme état courant.
+
+**Neutralisation.** Les fixtures utilisent des plages réservées à la documentation et les preuves historiques remplacent les chemins utilisateur, copies serveur, sauvegardes et partages LAN réels par des marqueurs génériques. Cette neutralisation ne modifie aucune règle de validation réseau ni aucun comportement produit.
+
+## ADR-111 — La v2.2.0 est validée, la publication reste un acte explicite
+
+**Décision.** La contre-revue finale autorise la publication du paquet `25e0e16` sans correction supplémentaire. Le code, les tests, la validation terrain et le packaging sont clôturés pour v2.2.0.
+
+**Publication.** L’autorisation de revue ne déclenche pas automatiquement une mutation GitHub. La branche, le tag et la release ne sont créés ou modifiés qu’après un ordre explicite de l’opérateur. La remarque facultative Restart Map/Boss pourra être traitée séparément sans bloquer cette version.

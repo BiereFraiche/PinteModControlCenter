@@ -484,6 +484,16 @@ public sealed class ServerPauseCommandViewModelTests
 
         public int CallCount { get; private set; }
 
+        public Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+            string requestId,
+            string joinPassword,
+            RconEndpoint endpoint,
+            CancellationToken cancellationToken = default) =>
+            ExecuteAsync(
+                new ServerAdministrationRequest(ServerAdministrationAction.SetJoinPassword, RequestId: requestId),
+                endpoint,
+                cancellationToken);
+
         public Task<ServerAdministrationExecutionResult> ExecuteAsync(
             ServerAdministrationRequest request,
             RconEndpoint endpoint,
@@ -502,6 +512,16 @@ public sealed class ServerPauseCommandViewModelTests
 
     private sealed class ThrowingServerAdministrationService : IServerAdministrationCommandService
     {
+        public Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+            string requestId,
+            string joinPassword,
+            RconEndpoint endpoint,
+            CancellationToken cancellationToken = default) =>
+            ExecuteAsync(
+                new ServerAdministrationRequest(ServerAdministrationAction.SetJoinPassword, RequestId: requestId),
+                endpoint,
+                cancellationToken);
+
         public Task<ServerAdministrationExecutionResult> ExecuteAsync(
             ServerAdministrationRequest request,
             RconEndpoint endpoint,

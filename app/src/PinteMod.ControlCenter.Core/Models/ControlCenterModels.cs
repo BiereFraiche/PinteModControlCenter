@@ -20,6 +20,7 @@ public enum PlayerLifeState
 {
     Alive,
     Downed,
+    Dead,
     Spectator,
     Unknown
 }
@@ -63,6 +64,14 @@ public sealed record ServerState(
     public bool ServerRunningAvailable { get; init; } = true;
 
     public bool RuntimeValuesInferred { get; init; }
+
+    public RuntimePowerState PowerState { get; init; } = RuntimePowerState.Unknown;
+
+    public RuntimePackAPunchState PackAPunchState { get; init; } = RuntimePackAPunchState.Unknown;
+
+    public LocalSourceMetadata RuntimeSource { get; init; } = LocalSourceMetadata.Simulation();
+
+    public ServiceHealth ObservedServerHealth { get; init; } = ServiceHealth.Unknown;
 }
 
 public sealed record ServiceStatus(
@@ -96,6 +105,10 @@ public sealed record PlayerState(
     public bool PresenceAvailable { get; init; } = true;
 
     public DataProvenance Provenance { get; init; } = DataProvenance.Simulation;
+
+    public bool ModerationStateAvailable { get; init; } = true;
+
+    public RuntimePlayerSnapshot? RuntimeDetails { get; init; }
 }
 
 public sealed record LiveEvent(

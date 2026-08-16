@@ -43,4 +43,16 @@ public static class RconEndpointValidator
         return address.AddressFamily == AddressFamily.InterNetworkV6 &&
                (address.IsIPv6LinkLocal || (bytes[0] & 0xFE) == 0xFC);
     }
+
+    public static bool IsLoopbackAddress(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            !IPAddress.TryParse(value.Trim(), out var address))
+        {
+            return false;
+        }
+
+        return IPAddress.IsLoopback(
+            address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address);
+    }
 }

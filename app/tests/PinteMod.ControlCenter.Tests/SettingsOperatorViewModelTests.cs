@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
+using PinteMod.ControlCenter.Services;
 using PinteMod.ControlCenter.ViewModels;
 
 namespace PinteMod.ControlCenter.Tests;
@@ -8,6 +9,19 @@ namespace PinteMod.ControlCenter.Tests;
 [TestClass]
 public sealed class SettingsOperatorViewModelTests
 {
+    [TestMethod]
+    public void AccentPaletteMatchesClosedCoreKeysAndLoadsSavedProfileChoice()
+    {
+        var configuration = OperatorConfiguration.Default with { AccentColorKey = "pink" };
+        var viewModel = new SettingsViewModel(initialConfiguration: configuration);
+
+        CollectionAssert.AreEqual(
+            OperatorAccentTheme.AllowedKeys.ToArray(),
+            AccentThemeService.Options.Select(option => option.Key).ToArray());
+        Assert.AreEqual("pink", viewModel.SelectedAccentTheme.Key);
+        Assert.AreEqual(AccentThemeService.Resolve("pink"), viewModel.SelectedAccentTheme);
+    }
+
     [TestMethod]
     public async Task TestCommand_ReportsReadyForFiveReadableSources()
     {
@@ -61,8 +75,14 @@ public sealed class SettingsOperatorViewModelTests
         var store = new CapturingConfigurationStore();
         var viewModel = new SettingsViewModel(localDataSourceProbe: probe, configurationStore: store)
         {
+            ProfileDisplayName = "Serveur salon",
             OperatorServerRoot = "C:\\Server\\UnrankedServer"
         };
+        var savedDisplayName = string.Empty;
+        var previewedAccent = string.Empty;
+        viewModel.ProfileDisplayNameSaved += value => savedDisplayName = value;
+        viewModel.AccentThemeChanged += value => previewedAccent = value;
+        viewModel.SelectedAccentTheme = viewModel.AccentColorOptions.Single(option => option.Key == "violet");
 
         viewModel.TestDataSourceCommand.Execute(null);
         await probe.Called.Task.WaitAsync(TimeSpan.FromSeconds(2));
@@ -74,7 +94,38 @@ public sealed class SettingsOperatorViewModelTests
 
         Assert.IsTrue(store.Configuration!.ActivateDataSourceOnStartup);
         Assert.AreEqual("C:\\Server\\UnrankedServer", store.Configuration.ServerRoot);
+        Assert.AreEqual("Serveur salon", store.Configuration.ProfileDisplayName);
+        Assert.AreEqual("violet", store.Configuration.AccentColorKey);
+        Assert.AreEqual("violet", previewedAccent);
+        Assert.AreEqual("Serveur salon", savedDisplayName);
         Assert.AreEqual("ENREGISTRÉ", viewModel.ConfigurationSaveStatus);
+    }
+
+    [TestMethod]
+    public async Task AppearanceSaveDoesNotPersistAnUnverifiedSourceOrRconChange()
+    {
+        var store = new CapturingConfigurationStore();
+        var viewModel = new SettingsViewModel(configurationStore: store)
+        {
+            ProfileDisplayName = "Serveur rose",
+            OperatorServerRoot = "C:\\Unverified\\Server",
+            ActivateDataSourceOnStartup = true,
+            RconAddress = "198.51.100.42" // Adresse TEST-NET-2 réservée aux exemples.
+        };
+        viewModel.SelectedAccentTheme = viewModel.AccentColorOptions.Single(option => option.Key == "pink");
+
+        Assert.IsFalse(viewModel.CanSaveConfiguration);
+        Assert.IsTrue(viewModel.CanSaveAppearance);
+        viewModel.SaveAppearanceCommand.Execute(null);
+        await store.Saved.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await WaitForCommandAsync(viewModel.SaveAppearanceCommand);
+
+        Assert.AreEqual("Serveur rose", store.Configuration!.ProfileDisplayName);
+        Assert.AreEqual("pink", store.Configuration.AccentColorKey);
+        Assert.AreEqual(string.Empty, store.Configuration.ServerRoot);
+        Assert.AreEqual("127.0.0.1", store.Configuration.RconAddress);
+        Assert.IsFalse(store.Configuration.ActivateDataSourceOnStartup);
+        Assert.AreEqual("APPARENCE ENREGISTRÉE", viewModel.ConfigurationSaveStatus);
     }
 
     [TestMethod]

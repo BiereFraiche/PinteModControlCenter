@@ -2929,3 +2929,910 @@ Traiter en une livraison unique les quatre blocages de la seconde revue Preview 
 - Aucun blocage technique connu ne reste dans les quatre corrections demandées.
 - Validation humaine requise : transmettre exclusivement la RC2 et son manifeste à ChatGPT pour le verdict final de clôture ; ne plus transmettre ni utiliser la RC1.
 - Aucune capture produite : aucun changement visuel n’a été effectué.
+
+## 2026-08-12 — Intégration post-RC2 du heartbeat et du snapshot runtime PinteMod
+
+### Objectif de la passe
+
+Auditer PinteModReal sans le modifier, confirmer les contrats déjà produits par le bridge runtime v0.1.2, puis les consommer dans une branche Control Center créée exactement depuis la RC2 validée.
+
+### Audit et traçabilité
+
+- Base Control Center : `90d4922cb663e4b8d923ecfb1681483d78db5126`.
+- Branche locale : `codex/post-rc2-runtime-contracts`.
+- PinteModReal audité en lecture seule : `0b293b5371e4405805017bd3afff16cf28276043`.
+- Producteur confirmé : `custom_scripts/ezz_admin_control_center_runtime.gsc`, v0.1.2.
+- Heartbeat confirmé : `health/pintemod.json`, schéma 1, environ 5 secondes, 4096 octets.
+- Runtime confirmé : `runtime/control_center_snapshot.json`, schéma 1, environ 2 secondes, 32768 octets, maximum 4 joueurs et 8 armes par joueur.
+- Aucun fichier PinteModReal, serveur, GSC, tag ou asset RC2 n’a été modifié.
+
+### Réalisé
+
+- Ajout de deux chemins locaux explicitement autorisés et de deux lecteurs stricts versionnés.
+- Acceptation de `updated_at_utc` vide conformément au contrat réel ; fraîcheur calculée depuis le LastWriteTimeUtc du handle vérifié.
+- Cache borné et invalidé au changement de session ; refus des sessions/cartes différentes, fichiers futurs, `.tmp`, `.bak`, schémas et enums inconnus.
+- Overlay appliqué uniquement à une source locale réussie, fraîche et cohérente avec `current_session.json`.
+- État PinteMod réel : running frais sain, stopped frais hors ligne, error frais en erreur, expiré inconnu.
+- Runtime réel : carte, manche, durée, Ranked, joueurs/max, courant et Pack-a-Punch.
+- Joueurs réels : BOIII_XUID interne, pseudo informatif, client, vie, points, santé, Godmode, arme équipée, munitions, inventaire et atouts.
+- Rôle/langue/pays enrichis uniquement par BOIII_XUID ; état Mute non inventé.
+- Fiche joueur enrichie sans exposition du XUID complet.
+- Les logs, Ranks, records, Easter Egg Records, Community Pause et listes blanches RCON existants sont préservés.
+- ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés.
+
+### Fichiers créés ou modifiés
+
+- Core : nouveaux contrats heartbeat/runtime, modèles runtime, extensions non destructives de `ServerState`, `PlayerState` et `BlockALocalSnapshot`.
+- Infrastructure : chemins whitelistés, lecteur JSON à limite par contrat, `RuntimeJsonContract`, `PinteModHeartbeatReader`, `ControlCenterRuntimeSnapshotReader` et `PinteModRuntimeOverlayDataProvider`.
+- Présentation : composition root, Dashboard, Serveur, fiche joueur et états visuels runtime.
+- Tests : fixtures locales, lecteurs heartbeat/runtime, overlay, présentation, autorisation joueur runtime et garantie read-only.
+- Documentation : `app/README.md`, `docs/POST_RC2_PINTEMOD_RUNTIME_AUDIT.md`, `docs/PINTEMOD_REQUIREMENTS_NEXT.md`, `docs/TODO.md`, `docs/DECISIONS.md`, `docs/CODEX_PROGRESS.md`.
+
+### Fonctionnalités disponibles
+
+- Mode simulation toujours utilisé par défaut.
+- Mode hybride toujours explicite, local ou LAN read-only.
+- Le Dashboard n’affiche plus « aucun heartbeat dédié » lorsque le heartbeat PinteMod valide est présent.
+- Les valeurs inférées depuis les logs cèdent la priorité au snapshot runtime frais de la session active.
+- Les données runtime détaillées du joueur sont visibles sans modifier l’architecture générale ni les contrats RCON.
+
+### Compilation et tests
+
+- Tests ciblés runtime/UI/read-only : 125/125 réussis.
+- Debug : 0 avertissement, 0 erreur, 344/344 tests réussis.
+- Release : 0 avertissement, 0 erreur, 344/344 tests réussis.
+- Aucun serveur BOIII, BAT, EXE serveur ou transport RCON n’a été lancé.
+- Aucune écriture n’a été effectuée dans PinteModReal ou une racine PinteModData.
+
+### Problèmes rencontrés
+
+- Un avertissement nullable dans un nouveau test de présentation a été corrigé avant la validation finale.
+- Aucun blocage technique restant dans le périmètre des deux contrats existants.
+
+### Validation humaine
+
+- Après extraction du paquet post-RC2, ouvrir une source Local/LAN read-only contenant les deux fichiers actifs.
+- Vérifier visuellement l’état PinteMod, la manche/durée/Ranked et la fiche runtime d’un joueur.
+- Aucun test RCON ni action serveur n’est nécessaire pour cette validation de lecture.
+
+### Captures
+
+- Aucune capture automatique produite ; une capture Dashboard et une capture fiche joueur pourront être réalisées pendant la validation humaine sur une source runtime réelle.
+
+## 2026-08-12 — Correctifs terrain armes/PAP/diagnostics et audit UX post-RC2
+
+### Objectif de la passe
+
+Corriger en un seul lot le catalogue Give Weapon incomplet, ajouter le Pack-a-Punch de l’arme tenue, rendre les diagnostics utiles malgré les réponses RCON vides et vérifier systématiquement les fonctions PinteMod sûres encore absentes de l’interface.
+
+### Réalisé
+
+- Catalogue central Core de 19 armes standard/universelles et des spécialités officielles de chaque carte annoncées par PinteMod Weapons v0.5.2.
+- Affichage des spécialités uniquement avec un runtime local frais, de session et carte cohérentes ; carte inconnue ou source périmée : aucun alias spécial.
+- Nouvelle action réelle `ezzpapweapon <BOIII_XUID>` sans argument libre, confirmation, revalidation XUID, verrou transversal, zéro retry et acquittement manuel.
+- Nouvelle action réelle de retrait ciblé d’atout `ezzremoveperk <BOIII_XUID> <alias>`, limitée aux neuf alias existants.
+- PAP joueur désactivé lorsqu’aucune arme équipée n’est observable ou que l’état est explicitement amélioré ; PinteMod reste l’autorité de compatibilité.
+- Fallback local structuré après une réponse RCON vide pour Carte, Courant, PAP de carte, Manche et Joueurs ; provenance annoncée, XUID complets neutralisés.
+- Community Pause conserve son lecteur spécialisé. Health affiche au plus un résumé des services locaux et ne prétend jamais reproduire les 51 contrôles.
+- Audit carte, événements et power-ups signalent explicitement la limite de transport lorsqu’aucun texte n’est renvoyé ; aucun résultat n’est inventé.
+- Bouton Santé PinteMod ajouté aux diagnostics Serveur.
+- Audit complet des boutons et commandes documenté dans `docs/UX_FEATURE_AUDIT.md`. Warn, AFK, commandes libres, toggle/clear perks, états musicaux libres, ChangeMap/RestartMap/Event/Boss réels n’ont pas été ajoutés.
+
+### Fichiers créés ou modifiés
+
+- Core : `PlayerWeaponCatalog.cs`, `PlayerAdministrationModels.cs`, `SimulationModels.cs`.
+- Infrastructure : `PlayerAdministrationCommandService.cs`, `SimulationActionService.cs`.
+- Présentation : `LocalDiagnosticFallback.cs`, `PlayerActionsViewModelBase.cs`, `DisplayItemViewModels.cs`, `ServerViewModel.cs`, `SettingsViewModel.cs`, `PlayerDetailsControl.xaml`, `ServerView.xaml`, `App.xaml.cs`.
+- Tests : `PlayerWeaponCatalogTests.cs`, `PlayerWeaponActionsViewModelTests.cs`, `ServerDiagnosticFallbackTests.cs`, `PlayerAdministrationCommandServiceTests.cs`, `SimulationActionServiceTests.cs`.
+- Documentation : `UX_FEATURE_AUDIT.md`, `CODEX_PROGRESS.md`, `TODO.md`, `DECISIONS.md`, `PINTEMOD_REQUIREMENTS_NEXT.md`, `app/README.md`.
+
+### Fonctionnalités disponibles
+
+- Give Weapon complet, fermé et contextuel à la carte.
+- Pack-a-Punch de l’arme tenue et retrait ciblé d’un atout.
+- Diagnostics Serveur lisibles sans consulter la console pour les cinq états couverts par le runtime frais.
+- Santé PinteMod accessible dans Serveur, sans faux résultat `PASS=51`.
+- Toutes les baselines post-RC2, listes blanches, simulations et protections opérateur restent actives.
+
+### Compilation et tests
+
+- Tests ciblés armes/PAP/diagnostics/UX : 70/70 réussis.
+- Debug : 0 avertissement, 0 erreur, 377/377 tests réussis.
+- Release : 0 avertissement, 0 erreur, 377/377 tests réussis.
+- Les tests complets ont été exécutés séquentiellement avec le profil Windows afin de permettre au test DPAPI `CurrentUser` de fonctionner.
+
+### Problèmes rencontrés
+
+- Une première exécution parallèle Debug/Release dans le bac à sable a privé le test DPAPI du profil utilisateur Windows : 376 tests réussis et ce seul test en erreur d’environnement. Aucun code produit n’était en cause. Les deux relances séquentielles avec le profil Windows ont obtenu 377/377.
+- Aucun blocage fonctionnel connu ne reste.
+
+### Validation humaine nécessaire
+
+- Give Weapon : plusieurs armes standard puis une spécialité de la carte active.
+- PAP arme tenue : arme normale, arme déjà PAP et arme non compatible si disponible.
+- Diagnostics : vérifier Carte, Courant, PAP, Manche et Joueurs avec réponse RCON vide ; le Control Center doit indiquer la provenance locale et ne plus imposer la lecture de la console.
+- Vérifier que Santé ne présente jamais le résumé local comme le résultat complet `ezzhealth full`.
+
+### Captures
+
+- Aucune capture automatique : les données pertinentes exigent une source runtime terrain réelle. Captures à produire pendant la validation humaine minimale.
+
+## 2026-08-12 — Mise en page responsive des actions Armes, Atouts et Power-ups
+
+### Objectif de la passe
+
+Corriger le décalage visuel provoqué par l’ajout de boutons dans la fiche joueur et rendre ce panneau durablement adaptable aux prochains ajouts.
+
+### Réalisé
+
+- Remplacement du flux unique `WrapPanel` par trois grilles responsives indépendantes : Arme, Atout et Power-up joueur.
+- Suppression des largeurs fixes des trois sélecteurs ; chaque contrôle occupe désormais la cellule calculée selon la largeur disponible.
+- Retour à la ligne centré pour les deux libellés longs Pack-a-Punch et Power-up.
+- Ajout d’un test de régression vérifiant la séparation des groupes, l’absence de `WrapPanel` et de largeur fixe sur les sélecteurs.
+
+### Fichiers créés ou modifiés
+
+- `app/src/PinteMod.ControlCenter/Controls/PlayerDetailsControl.xaml`.
+- `app/tests/PinteMod.ControlCenter.Tests/ViewModelTests.cs`.
+- `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Fonctionnalités disponibles
+
+- À largeur réduite, chaque groupe passe automatiquement de plusieurs colonnes à une seule sans mélanger ses actions avec le groupe suivant.
+- À grande largeur, les actions reprennent automatiquement trois colonnes pour les armes, quatre pour les atouts et deux pour les power-ups.
+- Ajouter ultérieurement un bouton dans l’un des trois groupes provoquera un retour à la ligne local à ce groupe.
+
+### Compilation et tests
+
+- Test ciblé responsive : 1/1 réussi.
+- Debug : 0 avertissement, 0 erreur, 378/378 tests réussis.
+- Release : 0 avertissement, 0 erreur, 378/378 tests réussis.
+
+### Problèmes rencontrés
+
+- La première assertion du nouveau test confondait la largeur minimale responsive avec une ancienne largeur fixe de sélecteur ; l’assertion a été ciblée sur les propriétés `Width` des ComboBox avant la validation finale.
+- Aucun blocage technique connu ne reste.
+
+### Validation humaine nécessaire
+
+- Vérifier visuellement la fiche joueur dans une fenêtre étroite puis large, en particulier les trois groupes Armes, Atouts et Power-ups.
+
+### Captures
+
+- Capture source du défaut fournie par l’opérateur : `<CAPTURE_OPÉRATEUR_LOCALE>/responsive-defaut.png`.
+- Aucune nouvelle capture automatique produite ; la capture corrigée reste à réaliser pendant la validation humaine.
+
+### Paquet testable
+
+- Commit applicatif : `b57db3917693df2f73d895ba3ff0c1a6fb387829`.
+- Archive autonome Windows x64 : `app/artifacts/post-rc2-responsive-b57db391-preview-win-x64/PinteMod-ControlCenter-post-RC2-responsive-preview-b57db391-win-x64.zip`.
+- Audit du paquet : `PASS`, 466 entrées.
+- SHA-256 : `BBE71D3C32FAA4F55D2839E4761C00E3EEEDDBB6DFB6CED1C833B9A7771A2A61`.
+
+## 2026-08-12 — Paquet global de revue ChatGPT post-RC2
+
+### Objectif de la passe
+
+Regrouper en une seule preuve auditable les trois lots post-RC2 : overlay runtime, correctifs terrain armes/PAP/diagnostics et interface responsive.
+
+### Réalisé
+
+- Ajout d’un prompt ChatGPT spécifique au diff post-RC2, sans remettre en cause la baseline RC2 validée.
+- Production de trois patches applicatifs ordonnés depuis `90d4922` jusqu’à `b57db391`.
+- Production d’une archive de 229 entrées contenant uniquement la solution, les sources, tests, contrats et scripts de packaging nécessaires à la revue.
+- Inclusion du paquet Windows x64 autonome déjà audité, de son manifeste, des rapports de tests et de la procédure terrain groupée.
+- Création d’un manifeste SHA-256 interne couvrant chaque fichier puis d’un manifeste externe pour le ZIP global.
+
+### Fichiers créés ou modifiés
+
+- `docs/PROMPT_REVUE_CHATGPT_POST_RC2.md`.
+- `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+- Artefacts ignorés sous `app/artifacts/post-rc2-global-review-0bcc4a5f/`.
+- ZIP final : `app/artifacts/PinteMod-ControlCenter-post-RC2-global-review-0bcc4a5f.zip`.
+
+### Compilation et tests
+
+- Aucune source applicative modifiée après les validations finales.
+- Debug conservé : 0 avertissement, 0 erreur, 378/378 tests réussis.
+- Release conservé : 0 avertissement, 0 erreur, 378/378 tests réussis.
+- Audit source : PASS, 229 entrées.
+- Audit binaire : PASS, 466 entrées.
+- Scan des chaînes privées connues : PASS.
+
+### Problèmes rencontrés
+
+- `app/README.md` contient historiquement un exemple de chemin absolu du workspace. Il a été exclu de l’archive des sources et des patches de revue ; le code, les projets, les tests et les contrats restent complets pour l’analyse.
+- Aucun blocage connu ne reste dans la préparation de la revue.
+
+### Validation humaine nécessaire
+
+- Envoyer le ZIP global à ChatGPT et lui demander d’utiliser `PROMPT_CHATGPT_POST_RC2.md`.
+- Après un verdict sans blocage, suivre une seule fois `VALIDATION_TERRAIN_GROUPEE.md`.
+
+### Captures
+
+- Aucune nouvelle capture requise pour la revue de code ; la correction responsive a déjà été confirmée par l’opérateur.
+
+### Empreinte de livraison
+
+- ZIP global : `PinteMod-ControlCenter-post-RC2-global-review-0bcc4a5f.zip`.
+- SHA-256 : `38DA3EA2CFBBDAD66F39B6D210E11D297776C886C64447C89AF042EF8AF8C85B`.
+- Contenu racine : 13 entrées, manifeste interne présent et aucun chemin ZIP dangereux.
+
+## 2026-08-13 — Corrections de contre-revue du lecteur JSON partagé
+
+### Objectif de la passe
+
+Clore les deux blocages de la revue globale post-RC2 : lecture réellement bornée lorsqu’un fichier grossit et association des octets aux métadonnées du handle vérifié plutôt qu’au chemin remplaçable.
+
+### Réalisé
+
+- Ajout d’une lecture plafonnée à `maximumFileSizeBytes + 1` octets ; le dépassement est refusé avant callback, parsing ou nouvelle allocation.
+- Taille initiale, taille finale et `LastWriteTimeUtc` lus par `GetFileInformationByHandle` sur le même handle déjà validé par `VerifiedReadOnlyFile`.
+- Suppression de tout `FileInfo(path)` et `File.GetLastWriteTimeUtc(path)` du lecteur JSON partagé.
+- Fichier absent traité par les exceptions contrôlées `FileNotFoundException` et `DirectoryNotFoundException`, sans contrôle préalable vulnérable au remplacement.
+- Les erreurs de parsing et de validation utilisent uniquement la dernière date obtenue du handle vérifié.
+- Ajout de trois régressions : copie plafonnée exacte, croissance après le contrôle initial et remplacement du chemin avec conservation des octets/date du handle original.
+
+### Fichiers créés ou modifiés
+
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/ReadOnlyJsonFileReader.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/VerifiedReadOnlyFile.cs`.
+- `app/tests/PinteMod.ControlCenter.Tests/VerifiedReadOnlyFileTests.cs`.
+- `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Compilation et tests
+
+- Tests ciblés handle/heartbeat/runtime : 51/51 réussis.
+- Debug : 0 avertissement, 0 erreur, 381/381 tests réussis.
+- Release : 0 avertissement, 0 erreur, 381/381 tests réussis.
+
+### Garanties préservées
+
+- Aucun changement RCON, commande, ViewModel, XAML, GSC, réseau ou écriture PinteMod.
+- Limites heartbeat 4 Kio et runtime 32 Kio conservées, désormais appliquées pendant la consommation du flux.
+- L’ouverture read-only vérifiée par handle et le support UNC explicite sont conservés.
+- Aucun serveur BOIII, BAT, EXE serveur ou transport RCON lancé.
+
+### Validation humaine nécessaire
+
+- Aucune manipulation serveur : produire un paquet de contre-revue et faire vérifier uniquement ces deux corrections par ChatGPT.
+
+### Captures
+
+- Aucune capture nécessaire : le correctif concerne exclusivement la sûreté du lecteur local.
+
+### Paquet de contre-revue
+
+- Correctif applicatif : `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac`.
+- Binaire Windows x64 : audit PASS, 466 entrées, SHA-256 `FAB712771FABB95A548A862BE97C35B81593EA4D21174B52101C6786D52A5107`.
+- Sources de contre-revue : audit PASS, 229 entrées.
+- ZIP à transmettre : `app/artifacts/PinteMod-ControlCenter-post-RC2-handle-counter-review-0e4e0928.zip`.
+- SHA-256 du ZIP : `5451C4217823527A7E5810A466FD8F4EBB678A3972C505F3EFAA17B990F3D410`.
+- Contenu racine : 10 entrées, manifeste interne présent, aucun chemin dangereux ni chaîne privée connue détectée.
+
+### Verdict de contre-revue
+
+- Verdict humain transmis le 2026-08-13 : **VALIDÉ**.
+- Les deux blocages du lecteur JSON partagé sont clôturés.
+- Le lot post-RC2 est autorisé à passer à la validation terrain groupée.
+- Aucun correctif de code ou nouveau packaging n’est requis avant cette validation.
+
+## 2026-08-13 — Validation terrain groupée post-RC2
+
+### Verdict humain
+
+- Validation terrain transmise par l’opérateur : **VALIDÉE**.
+- Les diagnostics locaux, actions joueur et retours opérateur du lot post-RC2 sont acceptés.
+- La mise en page responsive avait déjà été validée humainement.
+- Aucun bug ou correctif supplémentaire n’a été signalé.
+
+### État final du lot
+
+- Révision applicative candidate : `0e4e09284ab8523dc1bb86ce4f162c1aae6ee0ac`.
+- Debug : 0 avertissement, 0 erreur, 381/381 tests réussis.
+- Release : 0 avertissement, 0 erreur, 381/381 tests réussis.
+- Binaire Windows x64 : audit PASS, 466 entrées.
+- SHA-256 du binaire : `FAB712771FABB95A548A862BE97C35B81593EA4D21174B52101C6786D52A5107`.
+- Revue ChatGPT et validation terrain : validées sans condition restante.
+- Aucun blocage connu ne reste dans le périmètre post-RC2.
+
+## 2026-08-13 — Stabilisation des sélecteurs et fondation multi-serveurs
+
+### Objectif de la passe
+
+Préparer la publication stable avec des menus déroulants qui ne remontent plus pendant l’actualisation automatique et plusieurs contextes serveur réellement isolés dans une même fenêtre.
+
+### Réalisé
+
+- Les catalogues Armes et Cartes ne sont plus vidés/recréés lorsque leur contenu est inchangé ; un menu ouvert conserve donc sa position et ses objets de sélection pendant les rafraîchissements.
+- Ajout d’un catalogue local de profils serveurs, limité à huit profils et migré automatiquement depuis la configuration unique existante.
+- Chaque profil possède sa configuration, son catalogue de cartes, son secret RCON DPAPI, son cache, son moniteur local, son coordinateur RCON et son verrou de mutation propres.
+- Ajout d’une barre d’onglets serveurs, d’un bouton d’ajout et d’un retrait confirmé qui n’arrête ni ne modifie BOIII et conserve les fichiers locaux récupérables.
+- Ajout du nom local de l’onglet dans Paramètres ; ce libellé ne prétend pas modifier le nom public BOIII.
+- Simulation conservée par défaut pour tout nouveau profil ; aucune découverte automatique de serveur et aucun envoi RCON automatique.
+
+### Fichiers créés ou modifiés
+
+- `app/src/PinteMod.ControlCenter.Core/Contracts/IOperatorWorkspaceConfigurationStore.cs`.
+- `app/src/PinteMod.ControlCenter.Core/Models/OperatorDataSourceModels.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/JsonOperatorConfigurationStore.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/JsonOperatorWorkspaceConfigurationStore.cs`.
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/OperatorProfileStoragePaths.cs`.
+- `app/src/PinteMod.ControlCenter/Composition/ServerRuntimeContext.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/ControlCenterWorkspaceViewModel.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/PlayerActionsViewModelBase.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs`.
+- `app/src/PinteMod.ControlCenter/ViewModels/SettingsViewModel.cs`.
+- `app/src/PinteMod.ControlCenter/App.xaml.cs`, `MainWindow.xaml`, `Views/SettingsView.xaml`.
+- Tests de configuration, workspace, armes, cartes et cycle de vie sous `app/tests/PinteMod.ControlCenter.Tests/`.
+- `docs/PINTEMOD_REQUIREMENTS_NEXT.md`, `docs/CODEX_PROGRESS.md`, `docs/TODO.md`, `docs/DECISIONS.md`.
+
+### Compilation et tests intermédiaires
+
+- Build Debug : 0 avertissement, 0 erreur.
+- Tests menus ciblés : 26/26 réussis.
+- Tests configuration/workspace/ViewModels ciblés : 106/106 réussis.
+- Debug : 0 avertissement, 0 erreur, 394/394 tests réussis.
+- Release : 0 avertissement, 0 erreur, 394/394 tests réussis.
+- Le test DPAPI a été exécuté sous le profil Windows réel ; l’échec initial de l’environnement isolé ne se reproduit pas dans ce contexte conforme au produit.
+- Preview autonome Windows x64 : 466 entrées, audit packaging `PASS`.
+- ZIP final du lot : `app/artifacts/PinteMod-ControlCenter-post-RC2-multiserver-preview-2-win-x64.zip`.
+- SHA-256 : `B66FDB258C2ACB865D6385FDC8B04ADFFA7976D3CAD40D08258568E461DDE3DC`.
+- Exécutable à vérifier : `app/artifacts/post-rc2-multiserver-preview-2-win-x64/PinteMod.ControlCenter.exe`.
+- Aucun serveur, processus BOIII ou commande RCON n’a été lancé pendant cette passe.
+
+### Point nécessitant une décision humaine
+
+- Confirmation reçue le 2026-08-13 : le mot de passe demandé est bien `g_password`, utilisé par les joueurs pour rejoindre, et non le secret RCON.
+- Le dépôt PinteModReal audité ne fournit aucun contrat fermé pour modifier le nom public BOIII ou `g_password`. Aucun `set` libre ou commande supposée n’est ajouté. La prochaine action appartient à PinteMod : définir des commandes fermées, la confidentialité du transport et un feedback structuré avant activation réelle dans le Control Center.
+- Prompt préparé : `docs/PROMPT_PINTE_MOD_SERVER_IDENTITY_CONTRACT.md`.
+
+### Captures
+
+- Aucune capture automatique produite ; la barre multi-serveurs, le renommage, l’ajout/retrait et la stabilité des trois listes doivent être vérifiés dans la preview locale ci-dessus.
+
+### Hors périmètre maintenu
+
+- Modération réelle à deux comptes volontairement non validée.
+- ChangeMap, RestartMap, TriggerEvent et SpawnBoss restent simulés faute de contrats PinteMod fermés et observables.
+- Aucune publication, fusion, création de tag ou modification de release GitHub effectuée pendant cette clôture.
+
+## 2026-08-14 — Intégration ciblée des contrats PinteModReal e279a59 (automatisée terminée)
+
+### Objectif de la passe
+
+Intégrer sur la branche post-RC2 les quatre contrats Control Center v1 validés côté PinteModReal, sans modifier la RC2, sans commande libre et sans activer Change Map, événement générique ou SET mot de passe joueur.
+
+### Réalisé
+
+- ajout des modèles Core `capabilities`, `action_feedback`, `map_transition` et `server_identity` ;
+- ajout des quatre chemins locaux explicitement autorisés et lecture via `VerifiedReadOnlyFile`/`ReadOnlyJsonFileReader` ;
+- tailles maximales : capabilities 16 Kio, autres contrats 4 Kio ;
+- lecture asynchrone hors UI, cache mémoire non autoritaire, invalidation par session et contrôle carte/session ;
+- schémas JSON v1 embarqués dans l’application ;
+- ajout des quatre commandes fermées : Restart Map, Spawn Boss, Set Hostname et Clear Join Password ;
+- revalidation après confirmation de la session, carte, capability, alias boss et cible BOIII_XUID ;
+- corrélation du résultat par `request_id`, nouvelle session de transition et révision d’identité ;
+- une transition lente reste « non confirmée » et ne devient jamais automatiquement un échec ;
+- Change Map reste Simulation, SET password reste désactivé « À venir », événement générique reste Simulation ;
+- aucun XUID complet ajouté à une propriété publique de ViewModel.
+
+### Validation automatisée finale
+
+- compilation WPF Debug : 0 avertissement, 0 erreur ;
+- tests ciblés Debug : 27/27 réussis ;
+- suite complète Debug : 0 avertissement, 0 erreur, 413/413 tests réussis ;
+- suite complète Release : 0 avertissement, 0 erreur, 413/413 tests réussis ;
+- 10/10 fichiers XAML valides et 4/4 schémas JSON valides ;
+- aucune occurrence de `ezzccmap`, `ezzccevent` ou `ezzccsetjoinpassword` dans les sources de production ;
+- aucun binding vers un XUID complet et aucune commande libre ajoutée ;
+- garanties read-only couvertes par tests avant/après sur les quatre sources contractuelles ;
+- validation terrain : non exécutée ;
+- aucun serveur, BAT ou EXE BOIII lancé.
+
+### Problèmes rencontrés
+
+- plusieurs processus `dotnet` de compilation sont restés bloqués sans sortie ; seuls ces processus de build ont été arrêtés, sans toucher au Control Center ni à BOIII.
+
+### Validation humaine future
+
+- compilation GSC et installation de la branche PinteModReal candidate sur la copie de test ;
+- validation groupée Restart/Boss/Hostname/Clear Password après réussite automatisée finale.
+
+### Fichiers de preuve
+
+- rapport : `docs/CONTROL_CENTER_CONTRACTS_INTEGRATION_REPORT.md` ;
+- prompt de revue : `docs/PROMPT_CHATGPT_CONTROL_CENTER_CONTRACTS_REVIEW.md` ;
+- `UI_FEEDBACK.md` n’a pas été modifié.
+
+## 2026-08-14 — Contre-revue ciblée : transport RCON incertain
+
+### Objectif
+
+Corriger l’unique blocage de revue : poursuivre l’observation des contrats locaux après toute action contractuelle potentiellement envoyée, même lorsque la réponse UDP se termine par `DeliveryUnknown` ou `TransportError`.
+
+### Réalisé
+
+- `ExecuteServerAdministrationCoreAsync` lance désormais l’observation locale dès que `CommandSent = true`, sans dépendre du statut de transport ;
+- une exception non normalisée pendant une action contractuelle suit également le chemin conservateur d’observation, sans nouvel envoi ;
+- une preuve fraîche et corrélée peut confirmer Restart Map, Spawn Boss, Set Hostname ou Clear Join Password malgré une réponse UDP perdue ;
+- en l’absence de preuve, le résultat reste exactement `ENVOYÉ · NON CONFIRMÉ`, avertissement et verrou anti-répétition ;
+- aucun retry RCON et aucune commande supplémentaire ;
+- le tooltip utilise désormais « mot de passe joueur » sans exposer le nom technique de la dvar.
+
+### Tests et compilation
+
+- tests ViewModel ciblés : 13/13 réussis ;
+- Debug : 0 avertissement, 0 erreur, 418/418 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 418/418 tests réussis ;
+- cinq régressions ajoutées : Restart avec preuve, Restart sans preuve, Boss, Hostname et Clear Password après transport incertain ;
+- aucun serveur, BAT, EXE BOIII ou RCON réel lancé ;
+- validation terrain toujours suspendue jusqu’au verdict de contre-revue.
+
+### Verdict indépendant
+
+- verdict ChatGPT reçu le 2026-08-14 : **VALIDÉ** ;
+- aucun blocage obligatoire restant ;
+- observation après `DeliveryUnknown`/`TransportError`, absence de retry et verrou sans preuve confirmés ;
+- autorisation accordée pour l’unique validation terrain groupée, exclusivement sur la copie de test et après compilation GSC réussie.
+
+### Candidate terrain préparée
+
+- publication Windows x64 autonome, non exécutée ;
+- révision embarquée : `e27e0b55bd0757f893310d78d1ff89df3bce94a7` ;
+- version produit : `2.2.0-post-rc2-contracts.e27e0b5` ;
+- exécutable : `app/artifacts/post-rc2-contracts-terrain-e27e0b5-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contracts-terrain-e27e0b5-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées, 0 PDB, 4 schémas contractuels ;
+- SHA-256 : `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.
+
+## 2026-08-14 — Préparation isolée de la copie Server3 de test
+
+### État constaté
+
+- l’ancienne copie `UnrankedServer` était obsolète ; elle a été remplacée humainement par une copie récente sous `<COPIE_SERVEUR_TEST>` ;
+- comparaison avec PinteModReal `e279a59` : 32 GSC identiques, `ezz_admin_events.gsc` à mettre à jour, module contrats absent et `ezz_admin_music.gsc` spécifique à Server3 ;
+- aucune modification du Server3 de production.
+
+### Préparation effectuée
+
+- sauvegarde récupérable : `<SAUVEGARDE_SERVEUR_TEST>` ;
+- remplacement ciblé de `ezz_admin_events.gsc` par la candidate validée ;
+- ajout de `ezz_admin_control_center_contracts.gsc` ;
+- conservation de la version Server3 de `ezz_admin_music.gsc` ;
+- `sv_lanonly=1` dans `server.cfg` et `server_zm.cfg` ;
+- port de test isolé `27121` dans `Server.bat`, confirmé libre au moment de la préparation ;
+- 5/5 imports du module contrats présents, 35 GSC au total ;
+- aucun secret lu, aucun port entrant ajouté et aucun BAT, EXE, serveur ou RCON lancé.
+
+### Validation humaine suivante
+
+- lancer manuellement la copie avec son `Server.bat` ;
+- confirmer la compilation GSC et la ligne `Control Center Contracts v0.1.1 loaded` ;
+- arrêter immédiatement en cas d’`unresolved external` ou d’erreur GSC ;
+- seulement après cette preuve, connecter la candidate Control Center à `127.0.0.1:27121` et effectuer la validation groupée.
+
+### Résultat du premier démarrage
+
+- confirmation humaine reçue : la copie de test a chargé sans erreur signalée ;
+- le module `Control Center Contracts v0.1.1` est considéré comme compilé/chargé sur la copie isolée ;
+- aucune mutation Control Center n’a encore été exécutée ;
+- prochaine barrière : connexion locale `127.0.0.1:27121`, lecture des quatre contrats et capture avant toute action.
+
+### Validation read-only du Control Center
+
+- capture humaine : `<CAPTURE_OPÉRATEUR_LOCALE>/lecture-hybride.png` ;
+- onglet `Serveur 2` en mode hybride local ;
+- session locale fraîche, carte `zm_castle`, manche/runtime joueur observés ;
+- heartbeat PinteMod frais et connecté ;
+- Supervisor arrêté et autres services périmés/inconnus, comportement attendu avec le lancement isolé par `Server.bat` ;
+- bannière conforme : seules Change Map, événements génériques et définition du mot de passe restent simulés ;
+- aucune commande RCON ou mutation exécutée à ce stade.
+
+### Fichiers modifiés
+
+- `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
+- `app/src/PinteMod.ControlCenter/Views/ServerView.xaml` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractViewModelTests.cs` ;
+- documents de suivi et prompt de contre-revue.
+
+## 2026-08-14 — Validation terrain du transport RCON local
+
+### Objectif
+
+- valider le canal RCON de la copie Server3 isolée avant les quatre mutations contractuelles groupées.
+
+### Résultat
+
+- profil actif : `Serveur 2`, racine locale `<COPIE_SERVEUR_TEST>` ;
+- serveur BOIII observé en écoute UDP locale sur `27121` ;
+- configuration opérateur corrigée sur `127.0.0.1:27121` ;
+- secret DPAPI présent, sans lecture ni affichage de sa valeur ;
+- `ezzhealth full` envoyé manuellement avec succès ;
+- BOIII n'a pas transporté les 51 contrôles dans sa réponse UDP, comportement déjà prévu par le fallback ;
+- preuve locale fraîche utilisée sans inventer la sortie console : `PinteMod : SAIN` ;
+- aucun retry automatique, aucune mutation serveur et aucune écriture PinteMod effectués pendant ce diagnostic.
+
+### Validation suivante
+
+- exécuter en une seule passe terrain les quatre actions contractuelles autorisées : Restart Map, Spawn Boss, Set Hostname et Clear Join Password ;
+- conserver Change Map, événements génériques et définition du mot de passe joueur en simulation.
+
+## 2026-08-14 — Correctif terrain des types JSON contractuels BOIII
+
+### Problème observé
+
+- `server_identity.json` et `control_center_capabilities.json` étaient présents, frais et liés à la session active, mais l'interface les classait invalides ;
+- BOIII sérialise les chaînes numériques et booléennes passées à `jsonset` sous forme de nombres et booléens JSON natifs ;
+- les quatre schémas embarqués exigeaient à tort ces scalaires entre guillemets.
+
+### Correction
+
+- alignement strict du lecteur sur les types réellement émis : entiers JSON bornés et booléens JSON natifs ;
+- alignement des quatre schémas Draft 2020-12 ;
+- conservation des objets fermés, listes blanches, bornes, corrélations de session et refus des scalaires cités ;
+- aucune modification du transport RCON, des commandes, des GSC de la copie de test ou de PinteMod en cours d'exécution.
+
+### Validation
+
+- tests ciblés lecteur/contrats : 8/8 réussis ;
+- Debug : 0 avertissement, 0 erreur, 419/419 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 419/419 tests réussis ;
+- test DPAPI rejoué avec succès dans le profil Windows normal ;
+- validation terrain des quatre actions suspendue jusqu'au lancement de la nouvelle candidate.
+
+### Fichiers modifiés
+
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/ControlCenterContractReader.cs` ;
+- `app/contracts/control-center/v1/*.schema.json` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractReaderTests.cs` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractSchemaTests.cs` ;
+- documents de suivi.
+
+### Nouvelle candidate terrain
+
+- commit : `3bf033ccc3371a054b757e4a5e86c726f255e9e6` ;
+- version embarquée : `2.2.0-post-rc2-contracts.3bf033c` ;
+- exécutable : `app/artifacts/post-rc2-contracts-terrain-3bf033c-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contracts-terrain-3bf033c-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `35EBBE5723D5CE20387A551D467078EC13E89E697F9DBDA7A9CFCE0FB607FFDB` ;
+- révision et version vérifiées dans l'assembly publié.
+
+## 2026-08-14 — Identité persistante, mot de passe loopback et barre de déplacement
+
+### Objectif
+
+- corriger le nom public perdu au redémarrage, rendre possible la définition sûre de `g_password` sur la machine serveur et séparer les onglets de la zone servant à déplacer la fenêtre.
+
+### Réalisé
+
+- ajout d’une barre de déplacement dédiée de 34 px au-dessus des onglets serveurs ; les onglets et boutons restent entièrement interactifs dans une seconde rangée ;
+- contrat PinteMod v0.1.2 : le hostname public est persisté dans `pintemod/config/control_center_identity.json`, qui ne contient aucun secret, puis restauré au chargement ;
+- ajout de `ezzccsetjoinpassword` avec alphabet fermé de 4 à 32 caractères, feedback corrélé et observation uniquement du booléen `join_password_enabled` ;
+- le Control Center n’autorise cette mutation qu’avec une adresse RCON loopback ; le mode LAN ne peut ni afficher ni transmettre la valeur ;
+- `PasswordBox` non bindé, effacé avant l’attente du résultat ; aucune valeur dans les modèles, l’activité opérateur, le feedback ou la configuration ;
+- le mot de passe reste éphémère et n’est jamais persisté par PinteMod ou le Control Center ;
+- copie `<COPIE_SERVEUR_TEST>` mise à jour sans lancement de serveur, avec sauvegarde `.pre-v0.1.2.bak` ; production inchangée.
+
+### Fichiers et dépôts
+
+- Control Center : Core, Infrastructure, WPF, schémas, tests et documents de suivi ;
+- PinteModReal branche `codex/pintemod-contracts-3-7`, commit local `7da248d` ;
+- `UI_FEEDBACK.md` inchangé.
+
+### Validation automatique
+
+- tests PinteModReal : 39/39 PASS ;
+- Debug Control Center : 0 avertissement, 0 erreur, 438/438 tests ;
+- Release Control Center : 0 avertissement, 0 erreur, 438/438 tests ;
+- aucun serveur, BAT ou EXE BOIII lancé ; aucun retry ou commande RCON libre ajouté.
+
+### Validation humaine requise
+
+- démarrer manuellement la copie de test et confirmer `Control Center Contracts v0.1.2 loaded` ;
+- vérifier le déplacement de fenêtre depuis la nouvelle barre ;
+- tester le hostname, redémarrer le processus de test et confirmer sa restauration dans l’identité locale ;
+- utiliser un mot de passe synthétique unique sur loopback, vérifier la connexion puis rechercher cette chaîne dans les sorties/logs avant toute autorisation de publication.
+
+### Candidate terrain produite
+
+- commit applicatif embarqué : `3d624fa3b09490d005b3cf65ad24ef081a8a7da5` ;
+- version produit : `2.2.0-rc.2+3d624fa3b09490d005b3cf65ad24ef081a8a7da5` ;
+- exécutable : `app/artifacts/post-rc2-identity-v012-3d624fa-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-identity-v0.1.2-3d624fa-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées, aucun PDB ;
+- SHA-256 : `C8D9B56E0307FAB614F75DD4D07D11FDA4114FBE078D8DB3D036AF494D42FB8A`.
+
+## 2026-08-14 — Correctif terrain du nom public BOIII et codes couleur
+
+### Diagnostic read-only
+
+- `control_center_identity.json` contient bien le nom public `Test` ;
+- `server_identity.json` confirme `public_hostname=Test`, `join_password_enabled=true`, révision 2 ;
+- le feedback corrélé confirme `set_join_password / applied / success` ;
+- le CFG de test déclare le nom public avec `live_steam_server_name`, et non `sv_hostname` ; les deux boutons avaient donc fonctionné côté contrat, mais le premier GSC modifiait la mauvaise autorité d’affichage BOIII.
+
+### Correction
+
+- contrat PinteMod v0.1.3 : `live_steam_server_name` devient l’autorité du nom public, avec mise à jour parallèle de `sv_hostname` pour compatibilité ;
+- persistance/restauration du même nom public non sensible ;
+- grammaire fermée étendue uniquement aux codes couleur BOIII `^0` à `^9` ; toute séquence `^` invalide reste refusée ;
+- aide compacte des dix couleurs ajoutée sous le champ nom ;
+- état mot de passe clarifié : actif pour les nouvelles connexions, jamais pour une session joueur déjà connectée.
+
+### Validation
+
+- PinteModReal : 39/39 PASS, commit local `b4d5b11` ;
+- Control Center Debug : 0 avertissement, 0 erreur, 445/445 tests ;
+- Control Center Release : 0 avertissement, 0 erreur, 445/445 tests ;
+- GSC v0.1.3 préparé dans la copie `servtest\Server3` avec sauvegarde, sans arrêter ni relancer le processus BOIII en cours ; il prendra effet au prochain redémarrage manuel.
+
+### Candidate v0.1.3
+
+- commit applicatif : `7bdb22fbcc1a69b4768bb59afaf3bb72295f2004` ;
+- exécutable : `app/artifacts/post-rc2-identity-v013-7bdb22f-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-identity-v0.1.3-7bdb22f-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `E7513B783C900B451F58E8E01F4B34EF0355DADB0BC2B2FB2C80AF881A073F46`.
+
+## 2026-08-14 — Correctif fonctionnel du mot de passe BOIII et détails repliables
+
+### Objectif
+
+- remplacer la fausse autorité `g_password` par le mécanisme réellement vérifié par Ezz BOIII et alléger les cartes Dashboard/Records sans supprimer d’information.
+
+### Réalisé
+
+- test humain négatif confirmé : un client vierge rejoint malgré `g_password` actif ;
+- audit du code public Ezz BOIII : la connexion directe compare `net_password` via le hash publié dans `getInfo` ;
+- contrat PinteMod candidat v0.1.4 corrigé pour définir, effacer et observer uniquement `net_password` ;
+- tests de contrat renforcés pour interdire tout retour à `g_password` dans le module ;
+- libellés UI corrigés en « mot de passe réseau BOIII » ;
+- détails Déclaré/Lecture/Fraîcheur/Provenance repliés par défaut sous une flèche accessible ;
+- XUID abrégé des profils Ranks replié de la même manière ;
+- préfixe `M` supprimé devant la meilleure manche ;
+- `UI_FEEDBACK.md` inchangé.
+
+### Fichiers créés ou modifiés à ce stade
+
+- WPF : thème, Dashboard, Records, Serveur et `ServerViewModel` ;
+- tests Control Center : `ViewModelTests.cs` ;
+- PinteModReal candidat : GSC contrats, test PowerShell et documentation du contrat ;
+- suivi : `CODEX_PROGRESS.md`, `TODO.md`, `DECISIONS.md`.
+
+### Validation intermédiaire
+
+- tests contrats PinteModReal : 39/39 PASS ;
+- tests WPF ciblés : 3/3 PASS ;
+- Debug Control Center : 0 avertissement, 0 erreur, 447/447 tests ;
+- Release Control Center : 0 avertissement, 0 erreur, 447/447 tests ;
+- aucun serveur, BAT ou exécutable BOIII lancé ; aucune valeur sensible utilisée par le correctif, journalisée ou ajoutée au dépôt.
+
+### Validation humaine restante
+
+- après déploiement sur la copie de test et redémarrage manuel : vérifier `net_password` vide/refus, correct/accepté et incorrect/refusé ;
+- rechercher une valeur synthétique unique dans les sorties et fichiers de test ;
+- contrôler visuellement les cartes repliées sur Dashboard et Records.
+
+### Livraison candidate
+
+- commit PinteModReal : `fdb9a55` sur `codex/pintemod-contracts-3-7` ;
+- commit Control Center : `e9be7ca` sur `codex/post-rc2-runtime-contracts` ;
+- GSC v0.1.4 préparé dans `<COPIE_SERVEUR_TEST>\boiii\custom_scripts`, hash identique à la source validée ;
+- exécutable : `app/artifacts/post-rc2-net-password-v014-e9be7ca-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-e9be7ca-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `F77687A7E35B1DCAB0C58BA6C453D37B7A5DEA34E8A19CB9484EE87CC8A150AC`.
+
+### Ajustement visuel ciblé après retour humain
+
+- capacités locales v0.1.4 vérifiées fraîches et cohérentes : Nom et Mot de passe sont autorisés côté serveur ;
+- le bouton Nom reste volontairement inactif lorsque le champ contient déjà le nom observé ; une aide explicite l’indique désormais ;
+- champs Nom et Mot de passe rendus visuellement actifs par un fond relevé et une bordure bleue ;
+- `DÉTAILS` et `IDENTIFIANT` réduits à 8 px, opacité 72 %, flèche 9 px et accent seulement au survol/focus ;
+- tests ciblés : 3/3 PASS ;
+- Debug : 0 avertissement, 0 erreur, 447/447 tests ;
+- Release : 0 avertissement, 0 erreur, 447/447 tests ;
+- aucune modification supplémentaire de PinteMod ou de la copie serveur.
+- commit applicatif de l’ajustement : `45599e5` ;
+- exécutable actualisé : `app/artifacts/post-rc2-net-password-v014-ui-45599e5-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP actualisé : `app/artifacts/PinteMod-ControlCenter-post-RC2-net-password-v0.1.4-ui-45599e5-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ; SHA-256 `0F8E1547914B357318BBA47996505F3D47A51A8B8158A38EF67626E9AA0F5CFA`.
+
+## 2026-08-14 — Compatibilité du lecteur avec le contrat Control Center v0.1.4
+
+### Objectif
+
+- corriger les boutons Nom et Mot de passe restant désactivés malgré un contrat PinteMod v0.1.4 frais et cohérent.
+
+### Diagnostic et correction
+
+- la copie Server3 publiait correctement `contract_module_version=0.1.4`, `set_hostname=true`, `set_join_password=true` et `join_password_transport=loopback_rcon_ephemeral` ;
+- le lecteur applicatif exigeait encore exactement la version v0.1.3 et rejetait donc uniquement les capacités, tandis que l’identité v1 restait lisible ;
+- le lecteur et le schéma embarqué acceptent désormais explicitement v0.1.3 et v0.1.4, conservent la version réellement observée et refusent toujours toute version inconnue ;
+- le bandeau Serveur n’annonce plus statiquement « aucun transport RCON » : il reflète la configuration réelle et rappelle les fonctions qui restent simulées ;
+- aucun secret, serveur, fichier PinteMod ou GSC n’a été lu ou modifié pendant ce correctif ; `UI_FEEDBACK.md` reste inchangé.
+
+### Fichiers modifiés
+
+- `app/src/PinteMod.ControlCenter.Infrastructure/Local/ControlCenterContractReader.cs` ;
+- `app/contracts/control-center/v1/control_center_capabilities.schema.json` ;
+- `app/src/PinteMod.ControlCenter/ViewModels/ServerViewModel.cs` ;
+- `app/src/PinteMod.ControlCenter/Views/ServerView.xaml` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ControlCenterContractReaderTests.cs` ;
+- `app/tests/PinteMod.ControlCenter.Tests/ViewModelTests.cs`.
+
+### Validation
+
+- tests ciblés : 105/105 réussis ;
+- Debug : 0 avertissement, 0 erreur, 449/449 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 449/449 tests réussis ;
+- commit applicatif local : `52ff04e` ;
+- exécutable : `app/artifacts/post-rc2-contract-v014-52ff04e-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contract-v0.1.4-52ff04e-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `3698BE0A9B4E0458B82621249B69F403479C93886519869CD4BCDEAD40063B1B`.
+
+### Validation humaine restante
+
+- fermer l’ancienne candidate, lancer l’exécutable `52ff04e`, charger le profil Server3 puis vérifier que le nom différent active « APPLIQUER LE NOM » ;
+- le bouton mot de passe ne doit être disponible que sur la machine serveur avec un endpoint RCON loopback (`127.0.0.1`).
+
+### Amélioration de compatibilité avant validation finale
+
+- `contract_module_version` n’est plus utilisé comme verrou de compatibilité fonctionnelle : il reste obligatoire, borné, au format sémantique `x.y.z` et affiché comme provenance ;
+- la compatibilité réelle reste strictement contrôlée par `schema_version=1`, `command_contract_version=1`, les objets JSON fermés et chaque capacité booléenne explicite ;
+- une future version de module conservant exactement ces contrats reste donc utilisable sans nouvelle version du Control Center ;
+- toute forme, commande, propriété ou type incompatible reste refusé ;
+- tests ciblés : 12/12 réussis ;
+- Debug : 0 avertissement, 0 erreur, 450/450 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 450/450 tests réussis ;
+- commit applicatif local : `b135e7a` ;
+- exécutable final de cette passe : `app/artifacts/post-rc2-contract-compatible-b135e7a-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-contract-compatible-b135e7a-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `728691D794A0BF8D2917458491A9240A109EC5754235AF498E2856B532606B60`.
+
+## 2026-08-14 — Personnalisation par serveur et éditeur de nom BOIII coloré
+
+### Objectif
+
+- permettre une identité visuelle distincte pour chaque onglet serveur et rendre les codes couleur BOIII accessibles sans saisie manuelle obligatoire.
+
+### Réalisé
+
+- six palettes d’accent fermées : Bleu PinteMod, Cyan électrique, Indigo, Violet, Rose néon et Turquoise ;
+- couleur enregistrée dans la configuration locale isolée de chaque profil serveur et appliquée automatiquement lors du changement d’onglet ;
+- indicateur coloré discret ajouté dans chaque onglet ;
+- ressources d’accent WPF converties en ressources dynamiques ; les couleurs sémantiques sain/avertissement/danger restent fixes ;
+- bouton séparé `ENREGISTRER L’APPARENCE` : il persiste uniquement le nom de l’onglet et sa couleur, sans enregistrer une source ou une cible RCON non vérifiée ;
+- éditeur de hostname BOIII dédié avec palette `^0` à `^9`, insertion à la position du curseur, application à une sélection et restauration de la couleur précédente ;
+- aperçu coloré en direct dans le même bloc d’édition ;
+- limite contractuelle de 64 caractères bruts conservée, codes couleur compris ;
+- aucune nouvelle commande, aucun texte RCON libre et aucune modification PinteMod/GSC ;
+- `UI_FEEDBACK.md` inchangé.
+
+### Fichiers principaux créés ou modifiés
+
+- Core : `BoiiiColorText.cs`, `OperatorDataSourceModels.cs` ;
+- Infrastructure : `JsonOperatorConfigurationStore.cs` ;
+- WPF : `AccentThemeService.cs`, `BoiiiHostnameEditor.xaml/.cs`, `App.xaml.cs`, workspace/settings ViewModels, MainWindow, thème et vues ;
+- tests : parser couleur, configuration opérateur, Settings, workspace, XAML et rendu WPF.
+
+### Validation
+
+- tests ciblés : 113/113 réussis ;
+- Debug : 0 avertissement, 0 erreur, 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur, 460/460 tests réussis ;
+- commit applicatif local : `6358d94` ;
+- exécutable : `app/artifacts/post-rc2-personalization-6358d94-win-x64/PinteMod.ControlCenter.exe` ;
+- ZIP : `app/artifacts/PinteMod-ControlCenter-post-RC2-personalization-6358d94-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées ;
+- SHA-256 : `7A459BE69CF0CBB6F3C36CCF337248DD8A3B840FCA46DEA7F92BE7CA7812A970` ;
+- aucune capture produite automatiquement.
+
+### Validation humaine restante
+
+- attribuer deux couleurs différentes à deux onglets, enregistrer l’apparence, basculer entre eux puis redémarrer le Control Center ;
+- saisir un nom avec plusieurs couleurs, tester la coloration d’une sélection et comparer l’aperçu indicatif au rendu BOIII ;
+- contrôler la carte Serveur dans une fenêtre réduite avant publication stable.
+
+### Verdict humain
+
+- personnalisation par onglet, persistance des couleurs et éditeur de hostname multicolore validés le 2026-08-14 ;
+- aucun correctif graphique supplémentaire demandé ;
+- prochain et dernier verrou fonctionnel : validation terrain et confidentialité de `net_password`, puis gel du code et audit de publication stable.
+
+## 2026-08-16 — Validation terrain finale de `net_password`
+
+### Objectif
+
+- vérifier sur la copie serveur de test que le mécanisme réellement utilisé par Ezz BOIII protège les connexions directes avant le gel de la candidate stable.
+
+### Réalisé
+
+- `net_password` absent côté client : connexion refusée ;
+- `net_password` incorrect : connexion refusée ;
+- `net_password` correct : connexion acceptée ;
+- test effectué avec une valeur synthétique non communiquée et non ajoutée aux sources, contrats, journaux ou documents ;
+- aucun serveur, fichier PinteMod, GSC ou secret n’a été modifié par Codex pendant cette validation humaine ;
+- `UI_FEEDBACK.md` reste inchangé.
+
+### État
+
+- dernier verrou fonctionnel terrain levé ;
+- code fonctionnel gelé ;
+- métadonnée applicative passée de `2.2.0-rc.2` à `2.2.0` et mentions visuelles « Prototype » retirées ;
+- Debug : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- publication Windows x64 autonome terminée ;
+- version embarquée : `2.2.0+8653210f3f90bf5a5f5140a35857aa9b7522c9aa` ;
+- audit packaging : PASS, 471 entrées ZIP et aucun PDB ;
+- SHA-256 : `C69E28110DE53DF4CCF93D9E46E87D2197D3BE6B815A6C43B35786F3F2CEE74D` ;
+- paquet unique de revue ChatGPT : `app/artifacts/PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip` ;
+- SHA-256 du paquet de revue : `9585BD18C066A6C081C2EA2502E1EA0A4E6987728E6B12F09363B75D636883A6` ;
+- aucune publication GitHub effectuée.
+
+### Fichiers créés ou modifiés à ce stade
+
+- `app/src/PinteMod.ControlCenter/PinteMod.ControlCenter.csproj` ;
+- `app/src/PinteMod.ControlCenter/MainWindow.xaml` ;
+- `app/src/PinteMod.ControlCenter/Views/SettingsView.xaml` ;
+- `app/README.md` ;
+- `app/packaging/LISEZ-MOI.txt` ;
+- `docs/CODEX_PROGRESS.md` ;
+- `docs/TODO.md` ;
+- `docs/DECISIONS.md`.
+- `docs/FINAL_STABLE_VALIDATION.md` ;
+- `docs/PROMPT_REVUE_CHATGPT_V2.2.0_STABLE.md`.
+
+### Validation humaine restante
+
+- transmettre le paquet de revue stable à ChatGPT avant toute publication GitHub ;
+- aucune nouvelle manipulation serveur n’est requise à ce stade.
+
+## 2026-08-16 — Corrections finales de métadonnées et neutralisation
+
+### Objectif
+
+- lever les deux blocages documentaires de la revue stable sans modifier le comportement applicatif.
+
+### Réalisé
+
+- `README.md`, `README_FR.md`, `app/README.md` et `LISEZ-MOI.txt` annoncent désormais sans ambiguïté la version stable `2.2.0` et 460/460 tests ;
+- suppression des mentions de candidate/RC2 en attente dans les surfaces distribuées ;
+- lien de téléchargement préparé pour le tag stable `v2.2.0` ;
+- remplacement de l’adresse terrain du fixture par l’adresse de documentation réservée `198.51.100.42` ;
+- neutralisation des chemins de captures, copie serveur et sauvegarde dans les documents de suivi ;
+- exemple UNC remplacé par `\\serveur-exemple\PinteModData` ;
+- aucun code métier, contrat, commande RCON, lecteur local ou GSC modifié ;
+- `UI_FEEDBACK.md` reste inchangé.
+
+### Validation
+
+- tests ciblés : 12/12 réussis ;
+- Debug : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- Release : 0 avertissement, 0 erreur et 460/460 tests réussis ;
+- scans ciblés : aucune ancienne mention RC2/292 tests dans les documents distribués, aucune adresse ou chemin terrain signalé restant dans le périmètre corrigé ;
+- commit applicatif stable : `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ProductVersion : `2.2.0+25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ZIP stable : `app/artifacts/PinteMod-ControlCenter-v2.2.0-win-x64.zip` ;
+- audit packaging : PASS, 471 entrées et aucun PDB ;
+- SHA-256 : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0` ;
+- paquet d’ultime contre-revue : `app/artifacts/PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip` ;
+- SHA-256 du paquet de contre-revue : `6E768490EB449D322D98439EFC6E58B9B42E3F48711A5C201CEF2DBF1AE1D30C` ;
+- aucune publication GitHub effectuée.
+
+## 2026-08-16 — Verdict final stable
+
+- verdict ChatGPT : `VALIDÉ` ;
+- blocages obligatoires : aucun ;
+- commit applicatif autorisé : `25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ProductVersion confirmé : `2.2.0+25e0e16b6883d77ea1e0ad91caa866aa78d25173` ;
+- ZIP stable confirmé : `PinteMod-ControlCenter-v2.2.0-win-x64.zip` ;
+- SHA-256 confirmé : `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0` ;
+- publication GitHub `v2.2.0` autorisée par la revue, mais non exécutée faute d’ordre opérateur explicite ;
+- aucune nouvelle correction ni validation terrain demandée ;
+- remarque facultative seulement : harmonisation future de quelques descriptions README concernant Restart Map/Boss.

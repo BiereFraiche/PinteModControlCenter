@@ -59,6 +59,146 @@ public sealed class ServerAdministrationCommandServiceTests
     }
 
     [TestMethod]
+    public async Task NonSecretContractActions_UseOnlyFourClosedCommandsAndNeverExposeEvent()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+        var requests = new[]
+        {
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.RestartMap,
+                RequestId: "request_0001"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: "request_0002",
+                Option: "margwa",
+                TargetXuid: "0000000000000001"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SetHostname,
+                RequestId: "request_0003",
+                Option: "^7[^4FR^7] ^1PinteMod"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.ClearJoinPassword,
+                RequestId: "request_0004")
+        };
+
+        foreach (var request in requests)
+        {
+            var result = await service.ExecuteAsync(request, Endpoint);
+            Assert.AreEqual(ServerAdministrationExecutionStatus.SentAwaitingManualVerification, result.Status);
+            Assert.IsTrue(result.CommandSent);
+        }
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "ezzccrestartmap request_0001",
+                "ezzccboss request_0002 margwa 0000000000000001",
+                "ezzccsethostname request_0003 ^7[^4FR^7] ^1PinteMod",
+                "ezzccclearjoinpassword request_0004"
+            },
+            client.Commands);
+        Assert.IsFalse(client.Commands.Any(command =>
+            command.Contains("ezzccmap", StringComparison.Ordinal) ||
+            command.Contains("ezzccevent", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_LoopbackUsesDedicatedCommandWithoutReturningSecret()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+
+        var result = await service.SetJoinPasswordAsync(
+            "request_0005",
+            "Safe#2026",
+            Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.SentAwaitingManualVerification, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        CollectionAssert.AreEqual(new[] { "ezzccsetjoinpassword request_0005 Safe#2026" }, client.Commands);
+        Assert.AreEqual(ServerAdministrationAction.SetJoinPassword, result.Request.Action);
+        Assert.IsNull(result.Request.Option);
+        Assert.IsFalse(result.DisplayMessage.Contains("Safe#2026", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_LanAddressIsRejectedBeforeSecretAndTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.SetJoinPasswordAsync(
+            "request_0005",
+            "Safe#2026",
+            new RconEndpoint("192.168.50.25", 27018, TimeSpan.FromSeconds(3)));
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidConfiguration, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_InvalidValueIsRejectedBeforeSecretAndTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.SetJoinPasswordAsync("request_0005", "bad value;quit", Endpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidRequest, result.Status);
+        Assert.IsFalse(result.CommandSent);
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task ContractInjectionAndUnpublishedBossAlias_AreRejectedBeforeSecretAndTransport()
+    {
+        var invalid = new[]
+        {
+            new ServerAdministrationRequest(ServerAdministrationAction.RestartMap, RequestId: "bad id;map"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: "request_0002",
+                Option: "custom;boss",
+                TargetXuid: "0000000000000001"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SpawnBoss,
+                RequestId: "request_0002",
+                Option: "margwa",
+                TargetXuid: "name-only"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.SetHostname,
+                RequestId: "request_0003",
+                Option: "bad;hostname"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.ClearJoinPassword,
+                RequestId: "request_0004",
+                Option: "secret"),
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.EnablePower,
+                Option: "unexpected")
+        };
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+
+        foreach (var request in invalid)
+        {
+            var result = await service.ExecuteAsync(request, Endpoint);
+            Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidRequest, result.Status);
+            Assert.IsFalse(result.CommandSent);
+        }
+
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
     [DataRow(ServerAdministrationAction.SetRound, null)]
     [DataRow(ServerAdministrationAction.SetRound, 1)]
     [DataRow(ServerAdministrationAction.SetRound, 256)]

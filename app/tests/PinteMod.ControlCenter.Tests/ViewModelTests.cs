@@ -366,22 +366,28 @@ public sealed class ViewModelTests
     public void AppLifecycle_StoresAndAwaitsMonitorBeforeDisposingReaders()
     {
         var presentationRoot = FindPresentationSourceRoot();
-        var source = File.ReadAllText(Path.Combine(presentationRoot, "App.xaml.cs"));
+        var appSource = File.ReadAllText(Path.Combine(presentationRoot, "App.xaml.cs"));
+        var contextSource = File.ReadAllText(Path.Combine(
+            presentationRoot,
+            "Composition",
+            "ServerRuntimeContext.cs"));
 
-        StringAssert.Contains(source, "_monitorTask = RunMonitorAsync");
-        StringAssert.Contains(source, "await _monitorTask;");
-        StringAssert.Contains(source, "_rconOperations.StopAcceptingNewOperations();");
-        StringAssert.Contains(source, "await _rconOperations.WaitForIdleAsync();");
-        StringAssert.Contains(source, "rconOperationGate");
-        Assert.AreEqual(4, CountOccurrences(source, "rconOperationGate);"));
-        StringAssert.Contains(source, "new ServerAdministrationCommandService(");
-        StringAssert.Contains(source, "new PlayerAdministrationCommandService(");
-        Assert.IsTrue(CountOccurrences(source, "_rconOperations") >= 7);
-        StringAssert.Contains(source, "DisposeResources();");
-        Assert.IsFalse(source.Contains("_ = RunMonitorAsync", StringComparison.Ordinal));
-        var closingHandler = source[source.IndexOf("private async void OnMainWindowClosing", StringComparison.Ordinal)..];
+        StringAssert.Contains(contextSource, "_monitorTask = RunMonitorAsync");
+        StringAssert.Contains(contextSource, "await _monitorTask;");
+        StringAssert.Contains(contextSource, "RconOperations.StopAcceptingNewOperations();");
+        StringAssert.Contains(contextSource, "await RconOperations.WaitForIdleAsync();");
+        StringAssert.Contains(contextSource, "rconOperationGate");
+        Assert.AreEqual(4, CountOccurrences(contextSource, "rconOperationGate);"));
+        StringAssert.Contains(contextSource, "new ServerAdministrationCommandService(");
+        StringAssert.Contains(contextSource, "new PlayerAdministrationCommandService(");
+        StringAssert.Contains(appSource, "StopAllContexts();");
+        StringAssert.Contains(appSource, "context.StopAcceptingNewOperations();");
+        StringAssert.Contains(appSource, "context.WaitForShutdownAsync()");
+        StringAssert.Contains(appSource, "DisposeResources();");
+        Assert.IsFalse(contextSource.Contains("_ = RunMonitorAsync", StringComparison.Ordinal));
+        var closingHandler = appSource[appSource.IndexOf("private async void OnMainWindowClosing", StringComparison.Ordinal)..];
         Assert.IsTrue(
-            closingHandler.IndexOf("await _rconOperations.WaitForIdleAsync();", StringComparison.Ordinal) <
+            closingHandler.IndexOf("context.WaitForShutdownAsync()", StringComparison.Ordinal) <
             closingHandler.IndexOf("DisposeResources();", StringComparison.Ordinal));
     }
 
@@ -395,6 +401,113 @@ public sealed class ViewModelTests
 
         Assert.IsFalse(xaml.Any(contents => contents.Contains("FullXuid", StringComparison.Ordinal)));
         Assert.IsFalse(xaml.Any(contents => contents.Contains("SelectedPlayer.Xuid", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void MainWindow_UsesIsolatedServerTabsAndActiveShellBindings()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "MainWindow.xaml"));
+
+        StringAssert.Contains(xaml, "ItemsSource=\"{Binding Servers}\"");
+        StringAssert.Contains(xaml, "Command=\"{Binding AddServerCommand}\"");
+        StringAssert.Contains(xaml, "Command=\"{Binding RemoveServerCommand}\"");
+        StringAssert.Contains(xaml, "ActiveServer.Shell.NavigationItems");
+        StringAssert.Contains(xaml, "ActiveServer.Shell.CurrentPage");
+        StringAssert.Contains(xaml, "ActiveServer.Shell.RefreshCommand");
+        StringAssert.Contains(xaml, "CaptionHeight=\"34\"");
+        StringAssert.Contains(xaml, "x:Name=\"WindowDragBar\" Grid.Row=\"0\"");
+        StringAssert.Contains(xaml, "<Border Grid.Row=\"1\" Background=\"{StaticResource SidebarBrush}\"");
+        StringAssert.Contains(xaml, "Fill=\"{Binding AccentPreviewBrush}\"");
+    }
+
+    [TestMethod]
+    public void ServerView_UsesUnboundPasswordBoxForLoopbackOnlyPasswordAction()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "ServerView.xaml"));
+
+        StringAssert.Contains(xaml, "x:Name=\"JoinPasswordBox\"");
+        StringAssert.Contains(xaml, "Click=\"SetJoinPassword_Click\"");
+        StringAssert.Contains(xaml, "IsEnabled=\"{Binding CanSetJoinPassword}\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ServerActionModeTitle}\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ServerActionModeDescription}\"");
+        StringAssert.Contains(xaml, "MOT DE PASSE RÉSEAU BOIII");
+        StringAssert.Contains(xaml, "<controls:BoiiiHostnameEditor");
+        StringAssert.Contains(xaml, "EncodedText=\"{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"");
+        Assert.IsFalse(xaml.Contains("Password=\"{Binding", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void AccentResourcesAreDynamicAndSettingsExposePerServerPalette()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xamlFiles = Directory.EnumerateFiles(presentationRoot, "*.xaml", SearchOption.AllDirectories)
+            .Select(File.ReadAllText)
+            .ToArray();
+        var settings = File.ReadAllText(Path.Combine(presentationRoot, "Views", "SettingsView.xaml"));
+
+        Assert.IsFalse(xamlFiles.Any(source =>
+            source.Contains("{StaticResource AccentBrush}", StringComparison.Ordinal) ||
+            source.Contains("{StaticResource AccentBrightBrush}", StringComparison.Ordinal) ||
+            source.Contains("{StaticResource AccentSoftBrush}", StringComparison.Ordinal)));
+        Assert.IsTrue(xamlFiles.Any(source => source.Contains("{DynamicResource AccentBrush}", StringComparison.Ordinal)));
+        StringAssert.Contains(settings, "ItemsSource=\"{Binding AccentColorOptions}\"");
+        StringAssert.Contains(settings, "SelectedItem=\"{Binding SelectedAccentTheme, Mode=TwoWay}\"");
+        StringAssert.Contains(settings, "Command=\"{Binding SaveAppearanceCommand}\"");
+        StringAssert.Contains(settings, "Les couleurs d’état restent inchangées.");
+    }
+
+    [TestMethod]
+    public void DashboardServiceDiagnostics_AreCollapsedByDefaultAndRemainAvailable()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "DashboardView.xaml"));
+
+        StringAssert.Contains(xaml, "Header=\"DÉTAILS\" IsExpanded=\"False\"");
+        StringAssert.Contains(xaml, "Style=\"{StaticResource CompactDetailsExpanderStyle}\"");
+        StringAssert.Contains(xaml, "{Binding DeclaredStateText, Mode=OneWay}");
+        StringAssert.Contains(xaml, "{Binding ReadStatusText, Mode=OneWay}");
+        StringAssert.Contains(xaml, "{Binding FreshnessText, Mode=OneWay}");
+        StringAssert.Contains(xaml, "{Binding ProvenanceText, Mode=OneWay}");
+    }
+
+    [TestMethod]
+    public void RankProfileIdentifier_IsCollapsedAndBestRoundHasNoPrefix()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "RecordsView.xaml"));
+        var theme = File.ReadAllText(Path.Combine(presentationRoot, "Themes", "PinteModTheme.xaml"));
+        var expanderStart = theme.IndexOf("x:Key=\"CompactDetailsExpanderStyle\"", StringComparison.Ordinal);
+        var expanderEnd = theme.IndexOf("<Style TargetType=\"ComboBox\">", expanderStart, StringComparison.Ordinal);
+        var expanderStyle = theme[expanderStart..expanderEnd];
+
+        StringAssert.Contains(xaml, "Header=\"IDENTIFIANT\" IsExpanded=\"False\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ShortXuid}\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding BestOverallRound}\"");
+        Assert.IsFalse(xaml.Contains("StringFormat=M{0}", StringComparison.Ordinal));
+        StringAssert.Contains(expanderStyle, "<Setter Property=\"FontSize\" Value=\"8\" />");
+        StringAssert.Contains(expanderStyle, "Opacity=\"0.72\"");
+    }
+
+    [TestMethod]
+    public void PlayerWeaponPerkAndPowerUpActions_UseIndependentResponsiveGrids()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var source = File.ReadAllText(Path.Combine(presentationRoot, "Controls", "PlayerDetailsControl.xaml"));
+        var sectionStart = source.IndexOf("Text=\"ARMES &amp; ATOUTS\"", StringComparison.Ordinal);
+        var sectionEnd = source.IndexOf("Text=\"MODÉRATION &amp; IDENTITÉ\"", sectionStart, StringComparison.Ordinal);
+        var section = source[sectionStart..sectionEnd];
+
+        StringAssert.Contains(section, "x:Name=\"WeaponActionGrid\"");
+        StringAssert.Contains(section, "x:Name=\"PerkActionGrid\"");
+        StringAssert.Contains(section, "x:Name=\"PowerUpActionGrid\"");
+        Assert.AreEqual(3, CountOccurrences(section, "<controls:ResponsiveUniformGrid"));
+        Assert.IsFalse(section.Contains("<WrapPanel", StringComparison.Ordinal));
+        Assert.IsFalse(section.Contains("SelectedWeapon}\" Width=", StringComparison.Ordinal));
+        Assert.IsFalse(section.Contains("SelectedPerk}\" Width=", StringComparison.Ordinal));
+        Assert.IsFalse(section.Contains("SelectedPowerUp}\" Width=", StringComparison.Ordinal));
+        Assert.AreEqual(2, CountOccurrences(section, "TextWrapping=\"Wrap\" TextAlignment=\"Center\""));
     }
 
     [TestMethod]

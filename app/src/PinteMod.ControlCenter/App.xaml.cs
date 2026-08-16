@@ -1,15 +1,11 @@
 using System.ComponentModel;
-using System.IO;
 using System.Windows;
+using PinteMod.ControlCenter.Composition;
 using PinteMod.ControlCenter.Configuration;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
 using PinteMod.ControlCenter.Infrastructure.Local;
-using PinteMod.ControlCenter.Infrastructure.Rcon;
-using PinteMod.ControlCenter.Infrastructure.Simulation;
-using PinteMod.ControlCenter.Security;
 using PinteMod.ControlCenter.Services;
-using PinteMod.ControlCenter.State;
 using PinteMod.ControlCenter.ViewModels;
 
 namespace PinteMod.ControlCenter;
@@ -17,9 +13,11 @@ namespace PinteMod.ControlCenter;
 public partial class App : Application
 {
     private readonly CancellationTokenSource _applicationLifetime = new();
-    private readonly List<IDisposable> _disposables = [];
-    private readonly OperatorRconOperationCoordinator _rconOperations = new();
-    private Task? _monitorTask;
+    private readonly Dictionary<string, ServerRuntimeContext> _serverContexts = new(StringComparer.Ordinal);
+    private readonly SemaphoreSlim _profileOperations = new(1, 1);
+    private IOperatorWorkspaceConfigurationStore? _workspaceStore;
+    private OperatorWorkspaceConfiguration _workspaceConfiguration = OperatorWorkspaceConfiguration.Default;
+    private ControlCenterWorkspaceViewModel? _workspace;
     private bool _shutdownStarted;
     private bool _shutdownCompleted;
     private bool _resourcesDisposed;
@@ -27,212 +25,64 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
         try
         {
-            var configurationStore = new JsonOperatorConfigurationStore();
-            var savedConfiguration = await configurationStore.LoadAsync(_applicationLifetime.Token);
+            _workspaceStore = new JsonOperatorWorkspaceConfigurationStore();
+            _workspaceConfiguration = await _workspaceStore.LoadAsync(_applicationLifetime.Token);
             var parsedStartup = ApplicationStartupOptions.Parse(e.Args);
             var hasExplicitDataSelection = e.Args.Any(argument =>
                 argument.StartsWith("--data-mode=", StringComparison.OrdinalIgnoreCase) ||
                 argument.StartsWith("--server-root=", StringComparison.OrdinalIgnoreCase));
-            var usingSavedDataSource = !hasExplicitDataSelection &&
-                                       savedConfiguration.ActivateDataSourceOnStartup &&
-                                       !string.IsNullOrWhiteSpace(savedConfiguration.ServerRoot);
-            var startup = ApplicationStartupOptions.Resolve(e.Args, savedConfiguration);
-            string? configurationNotice = null;
-            var simulatedProvider = new SimulatedControlCenterDataProvider(startup.Scenario);
-            IControlCenterDataProvider dataProvider = simulatedProvider;
-            LocalPinteModOptions? localOptions = null;
-            IControlCenterSnapshotMonitor? snapshotMonitor = null;
+            var tabs = new List<ServerTabViewModel>();
 
-            try
+            foreach (var profileId in _workspaceConfiguration.ProfileIds)
             {
-                if (startup.DataMode == ControlCenterDataMode.HybridLocal)
-                {
-                    localOptions = new LocalPinteModOptions(
-                        startup.ServerRoot!,
-                        usingSavedDataSource && savedConfiguration.DataLocation == OperatorDataLocation.Lan
-                            ? LocalPinteModRootLayout.PinteModDataRoot
-                            : LocalPinteModRootLayout.ServerRoot);
-                    var clock = new SystemClock();
-                    var sessionReader = new SessionManifestReader(localOptions, clock);
-                    var heartbeatReader = new ServiceHeartbeatReader(localOptions, clock);
-                    var rankProfileReader = new RankProfileReader(localOptions, clock);
-                    var roundRecordReader = new RoundRecordReader(localOptions, clock);
-                    var easterEggRecordReader = new EasterEggRecordReader(localOptions, clock);
-                    var installationReader = new InstallationVerificationReader(localOptions, clock);
-                    var banStatusReader = new BanServiceStatusReader(localOptions, clock);
-                    var metadataReader = new LocalPlayerMetadataReader(localOptions, clock);
-                    var logReader = new StructuredLogReader(localOptions);
-                    var communityPauseStatusReader = new CommunityPauseStatusReader(localOptions, clock);
-                    var communityPauseLogReader = new CommunityPauseLogReader(localOptions, clock);
-                    _disposables.Add(sessionReader);
-                    _disposables.Add(heartbeatReader);
-                    _disposables.Add(rankProfileReader);
-                    _disposables.Add(roundRecordReader);
-                    _disposables.Add(easterEggRecordReader);
-                    _disposables.Add(installationReader);
-                    _disposables.Add(banStatusReader);
-                    _disposables.Add(metadataReader);
-                    _disposables.Add(logReader);
-                    _disposables.Add(communityPauseStatusReader);
-                    _disposables.Add(communityPauseLogReader);
-                    var phase21Provider = new HybridControlCenterDataProvider(
-                        simulatedProvider,
-                        sessionReader,
-                        heartbeatReader,
-                        localOptions);
-                    var phase22Provider = new RankRecordsOverlayDataProvider(
-                        phase21Provider,
-                        rankProfileReader,
-                        roundRecordReader);
-                    var phase23Provider = new EasterEggRecordsOverlayDataProvider(
-                        phase22Provider,
-                        easterEggRecordReader);
-                    dataProvider = new BlockAControlCenterDataProvider(
-                        phase23Provider,
-                        sessionReader,
-                        installationReader,
-                        banStatusReader,
-                        metadataReader,
-                        logReader,
-                        communityPauseStatusReader,
-                        communityPauseLogReader);
-                }
-            }
-            catch (Exception exception) when (usingSavedDataSource &&
-                                              exception is ArgumentException or DirectoryNotFoundException or
-                                                  UnauthorizedAccessException or IOException or InvalidOperationException)
-            {
-                startup = parsedStartup;
-                localOptions = null;
-                dataProvider = simulatedProvider;
-                configurationNotice = "La source enregistrée est inaccessible · démarrage sécurisé en simulation.";
+                var configurationStore = CreateConfigurationStore(profileId);
+                var savedConfiguration = await configurationStore.LoadAsync(_applicationLifetime.Token);
+                var receivesCommandLine = hasExplicitDataSelection &&
+                                          string.Equals(
+                                              profileId,
+                                              _workspaceConfiguration.ActiveProfileId,
+                                              StringComparison.Ordinal);
+                var usingSavedDataSource = !receivesCommandLine &&
+                                           savedConfiguration.ActivateDataSourceOnStartup &&
+                                           !string.IsNullOrWhiteSpace(savedConfiguration.ServerRoot);
+                var startup = receivesCommandLine
+                    ? parsedStartup
+                    : ApplicationStartupOptions.Resolve([], savedConfiguration);
+                var context = CreateServerContext(
+                    profileId,
+                    savedConfiguration,
+                    configurationStore,
+                    startup,
+                    usingSavedDataSource);
+                var tab = CreateTab(context, savedConfiguration.ProfileDisplayName);
+                _serverContexts.Add(profileId, context);
+                tabs.Add(tab);
             }
 
-            var snapshotStore = new CachedControlCenterSnapshotStore(dataProvider);
-            _disposables.Add(snapshotStore);
-            if (startup.DataMode == ControlCenterDataMode.HybridLocal)
-            {
-                snapshotMonitor = new HybridLocalSnapshotMonitor(snapshotStore);
-            }
-            var simulationService = new SimulationActionService();
-            var selectionState = new PlayerSelectionState();
-            var rconSecretStore = new DpapiRconSecretStore();
-            var operatorActivityStore = new InMemoryOperatorActivityStore();
-            var mapCatalogService = new JsonMapCatalogService();
-            var mapCatalogState = new MapCatalogState();
-            var clipboardService = new WindowsTextClipboardService();
-            IPlayerModerationHistoryReader? playerHistoryReader = localOptions is null
-                ? null
-                : new LocalPlayerModerationHistoryReader(localOptions, new SystemClock());
-            var rconOperationGate = new RconOperationGate();
-            var rconClient = new BoiiiUdpRconClient();
-            var rconDiagnosticService = new RconDiagnosticService(
-                rconClient,
-                rconSecretStore,
-                new SystemClock(),
-                rconOperationGate);
-            var communityPauseCommandService = new CommunityPauseCommandService(
-                rconClient,
-                rconSecretStore,
-                new SystemClock(),
-                rconOperationGate);
-            var serverAdministrationCommandService = new ServerAdministrationCommandService(
-                rconClient,
-                rconSecretStore,
-                new SystemClock(),
-                rconOperationGate);
-            var playerAdministrationCommandService = new PlayerAdministrationCommandService(
-                rconClient,
-                rconSecretStore,
-                new SystemClock(),
-                rconOperationGate);
-            var confirmationService = new MessageBoxOperatorConfirmationService();
-            var mutationSafety = new OperatorMutationSafetyState();
-            var records = new RecordsViewModel(snapshotStore);
-            var logs = new LogsViewModel(snapshotStore, operatorActivityStore, clipboardService);
-            var settings = new SettingsViewModel(
-                startup.DataMode,
-                dataProvider.GetType().Name,
-                localOptions?.ServerRoot,
-                snapshotMonitor?.Interval,
-                new LocalDataSourceProbe(),
-                configurationStore,
-                savedConfiguration,
-                rconDiagnosticService,
-                rconSecretStore,
-                operatorActivityStore,
-                _rconOperations,
-                mapCatalogService,
-                mapCatalogState,
-                clipboardService);
-            var dashboard = new DashboardViewModel(
-                snapshotStore,
-                simulationService,
-                selectionState,
-                playerAdministrationCommandService,
-                confirmationService,
-                settings.CreateRconEndpoint,
-                operatorActivityStore,
-                _rconOperations,
-                mutationSafety,
-                playerHistoryReader);
-            var players = new PlayersViewModel(
-                snapshotStore,
-                simulationService,
-                selectionState,
-                playerAdministrationCommandService,
-                confirmationService,
-                settings.CreateRconEndpoint,
-                operatorActivityStore,
-                _rconOperations,
-                mutationSafety,
-                playerHistoryReader);
-            var server = new ServerViewModel(
-                snapshotStore,
-                simulationService,
-                communityPauseCommandService,
-                confirmationService,
-                settings.CreateRconEndpoint,
-                operatorActivityStore,
-                rconDiagnosticService,
-                _rconOperations,
-                serverAdministrationCommandService,
-                mutationSafety,
-                mapCatalogService,
-                mapCatalogState,
-                clipboardService);
-            var shell = new ShellViewModel(
-                snapshotStore,
-                dashboard,
-                players,
-                server,
-                records,
-                logs,
-                settings);
-
-            var window = new MainWindow { DataContext = shell };
+            _workspace = new ControlCenterWorkspaceViewModel(
+                tabs,
+                _workspaceConfiguration.ActiveProfileId,
+                AddServerAsync,
+                RemoveServerAsync,
+                SetActiveServerAsync);
+            AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
+            var window = new MainWindow { DataContext = _workspace };
             MainWindow = window;
             window.Closing += OnMainWindowClosing;
             window.Show();
 
-            try
+            foreach (var context in _serverContexts.Values)
             {
-                await shell.InitializeAsync(_applicationLifetime.Token);
-                if (configurationNotice is not null)
+                try
                 {
-                    shell.ReportConfigurationNotice(configurationNotice);
+                    await context.StartAsync(window.Dispatcher);
                 }
-                if (snapshotMonitor is not null)
+                catch (Exception exception)
                 {
-                    _monitorTask = RunMonitorAsync(snapshotMonitor, shell, window.Dispatcher, _applicationLifetime.Token);
+                    context.Shell.ReportError(exception);
                 }
-            }
-            catch (Exception exception)
-            {
-                shell.ReportError(exception);
             }
         }
         catch (Exception)
@@ -250,22 +100,13 @@ public partial class App : Application
     {
         if (!_shutdownCompleted)
         {
-            _rconOperations.StopAcceptingNewOperations();
-            _applicationLifetime.Cancel();
+            _shutdownStarted = true;
+            StopAllContexts();
             try
             {
-                _monitorTask?.GetAwaiter().GetResult();
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception)
-            {
-            }
-
-            try
-            {
-                _rconOperations.WaitForIdleAsync().GetAwaiter().GetResult();
+                Task.WhenAll(_serverContexts.Values.Select(context => context.WaitForShutdownAsync()))
+                    .GetAwaiter()
+                    .GetResult();
             }
             catch (Exception)
             {
@@ -275,6 +116,7 @@ public partial class App : Application
         }
 
         _applicationLifetime.Dispose();
+        _profileOperations.Dispose();
         base.OnExit(e);
     }
 
@@ -292,31 +134,215 @@ public partial class App : Application
         }
 
         _shutdownStarted = true;
-        _rconOperations.StopAcceptingNewOperations();
-        _applicationLifetime.Cancel();
-        try
-        {
-            if (_monitorTask is not null)
-            {
-                await _monitorTask;
-            }
-
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception)
-        {
-        }
-
-        await _rconOperations.WaitForIdleAsync();
-
+        await _profileOperations.WaitAsync();
+        _profileOperations.Release();
+        StopAllContexts();
+        await Task.WhenAll(_serverContexts.Values.Select(context => context.WaitForShutdownAsync()));
         DisposeResources();
         _shutdownCompleted = true;
         if (sender is Window window)
         {
             window.Closing -= OnMainWindowClosing;
             window.Close();
+        }
+    }
+
+    private ServerRuntimeContext CreateServerContext(
+        string profileId,
+        OperatorConfiguration savedConfiguration,
+        IOperatorConfigurationStore configurationStore,
+        ApplicationStartupOptions startup,
+        bool usingSavedDataSource) =>
+        ServerRuntimeContext.Create(
+            profileId,
+            savedConfiguration,
+            configurationStore,
+            startup,
+            ApplicationStartupOptions.Parse([]),
+            usingSavedDataSource,
+            OperatorProfileStoragePaths.GetRconSecretPath(profileId),
+            OperatorProfileStoragePaths.GetMapCatalogPath(profileId),
+            _applicationLifetime.Token);
+
+    private static ServerTabViewModel CreateTab(
+        ServerRuntimeContext context,
+        string displayName)
+    {
+        var tab = new ServerTabViewModel(
+            context.ProfileId,
+            displayName,
+            context.Shell,
+            context.Settings.SelectedAccentTheme.Key);
+        context.Settings.ProfileDisplayNameSaved += name => tab.DisplayName = name;
+        context.Settings.AccentThemeChanged += key =>
+        {
+            tab.AccentColorKey = key;
+            if (tab.IsActive)
+            {
+                AccentThemeService.Apply(key);
+            }
+        };
+        return tab;
+    }
+
+    private async Task<ServerTabViewModel> AddServerAsync()
+    {
+        await _profileOperations.WaitAsync(_applicationLifetime.Token);
+        try
+        {
+            if (_shutdownStarted || _workspaceStore is null || MainWindow is null)
+            {
+                throw new InvalidOperationException("Le gestionnaire multi-serveurs n’est pas disponible.");
+            }
+
+            var profileId = CreateProfileId();
+            var displayName = $"Serveur {_workspaceConfiguration.ProfileIds.Count + 1}";
+            var configuration = OperatorConfiguration.Default with
+            {
+                ProfileDisplayName = displayName
+            };
+            var configurationStore = CreateConfigurationStore(profileId);
+            await configurationStore.SaveAsync(configuration, _applicationLifetime.Token);
+            var context = CreateServerContext(
+                profileId,
+                configuration,
+                configurationStore,
+                ApplicationStartupOptions.Parse([]),
+                usingSavedDataSource: false);
+            try
+            {
+                await context.StartAsync(MainWindow.Dispatcher);
+                var updated = _workspaceConfiguration with
+                {
+                    ProfileIds = [.. _workspaceConfiguration.ProfileIds, profileId],
+                    ActiveProfileId = profileId
+                };
+                await _workspaceStore.SaveAsync(updated, _applicationLifetime.Token);
+                _workspaceConfiguration = updated;
+                _serverContexts.Add(profileId, context);
+                return CreateTab(context, displayName);
+            }
+            catch
+            {
+                context.StopAcceptingNewOperations();
+                context.Cancel();
+                await context.WaitForShutdownAsync();
+                context.Dispose();
+                throw;
+            }
+        }
+        finally
+        {
+            _profileOperations.Release();
+        }
+    }
+
+    private async Task<bool> RemoveServerAsync(ServerTabViewModel server)
+    {
+        await _profileOperations.WaitAsync(_applicationLifetime.Token);
+        try
+        {
+            if (_shutdownStarted ||
+                _workspaceStore is null ||
+                !_serverContexts.TryGetValue(server.ProfileId, out var context))
+            {
+                return false;
+            }
+
+            var answer = MessageBox.Show(
+                $"Retirer l’onglet « {server.DisplayName} » ?\n\nLe serveur BOIII ne sera pas touché. La configuration locale et le secret protégé resteront conservés sur ce PC.",
+                "Retirer un serveur",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (answer != MessageBoxResult.Yes)
+            {
+                return false;
+            }
+
+            var remainingIds = _workspaceConfiguration.ProfileIds
+                .Where(profileId => !string.Equals(profileId, server.ProfileId, StringComparison.Ordinal))
+                .ToArray();
+            var activeProfileId = string.Equals(
+                _workspaceConfiguration.ActiveProfileId,
+                server.ProfileId,
+                StringComparison.Ordinal)
+                ? remainingIds[0]
+                : _workspaceConfiguration.ActiveProfileId;
+            var updated = _workspaceConfiguration with
+            {
+                ProfileIds = remainingIds,
+                ActiveProfileId = activeProfileId
+            };
+            await _workspaceStore.SaveAsync(updated, _applicationLifetime.Token);
+            _workspaceConfiguration = updated;
+            context.StopAcceptingNewOperations();
+            context.Cancel();
+            await context.WaitForShutdownAsync();
+            context.Dispose();
+            _serverContexts.Remove(server.ProfileId);
+            return true;
+        }
+        finally
+        {
+            _profileOperations.Release();
+        }
+    }
+
+    private async Task SetActiveServerAsync(string profileId)
+    {
+        await _profileOperations.WaitAsync(_applicationLifetime.Token);
+        try
+        {
+            var selectedTab = _workspace?.Servers.FirstOrDefault(server =>
+                string.Equals(server.ProfileId, profileId, StringComparison.Ordinal));
+            if (selectedTab is not null)
+            {
+                AccentThemeService.Apply(selectedTab.AccentColorKey);
+            }
+
+            if (_shutdownStarted ||
+                _workspaceStore is null ||
+                string.Equals(_workspaceConfiguration.ActiveProfileId, profileId, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var updated = _workspaceConfiguration with { ActiveProfileId = profileId };
+            await _workspaceStore.SaveAsync(updated, _applicationLifetime.Token);
+            _workspaceConfiguration = updated;
+        }
+        finally
+        {
+            _profileOperations.Release();
+        }
+    }
+
+    private static JsonOperatorConfigurationStore CreateConfigurationStore(string profileId) =>
+        new(OperatorProfileStoragePaths.GetConfigurationPath(profileId));
+
+    private string CreateProfileId()
+    {
+        string profileId;
+        do
+        {
+            profileId = $"srv-{Guid.NewGuid():N}"[..16];
+        }
+        while (_serverContexts.ContainsKey(profileId));
+
+        return profileId;
+    }
+
+    private void StopAllContexts()
+    {
+        foreach (var context in _serverContexts.Values)
+        {
+            context.StopAcceptingNewOperations();
+        }
+
+        _applicationLifetime.Cancel();
+        foreach (var context in _serverContexts.Values)
+        {
+            context.Cancel();
         }
     }
 
@@ -327,39 +353,11 @@ public partial class App : Application
             return;
         }
 
-        foreach (var disposable in _disposables.AsEnumerable().Reverse())
+        foreach (var context in _serverContexts.Values.Reverse())
         {
-            disposable.Dispose();
+            context.Dispose();
         }
 
         _resourcesDisposed = true;
     }
-
-    private static async Task RunMonitorAsync(
-        IControlCenterSnapshotMonitor monitor,
-        ShellViewModel shell,
-        System.Windows.Threading.Dispatcher dispatcher,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await monitor.RunAsync(
-                async (_, token) =>
-                {
-                    await dispatcher.InvokeAsync(
-                        () => shell.ApplyCurrentSnapshotAsync(token),
-                        System.Windows.Threading.DispatcherPriority.Background,
-                        token).Task.Unwrap();
-                },
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-        }
-        catch (Exception exception)
-        {
-            await dispatcher.InvokeAsync(() => shell.ReportError(exception));
-        }
-    }
-
 }

@@ -33,7 +33,7 @@ public sealed class StatusBrushConverter : IValueConverter
         {
             ServiceHealth.Healthy or EventSeverity.Success or RankedStatus.Ranked or PlayerLifeState.Alive => "SuccessBrush",
             ServiceHealth.Warning or EventSeverity.Warning or RankedStatus.Unranked or PlayerLifeState.Downed => "WarningBrush",
-            ServiceHealth.Offline or ServiceHealth.Error or EventSeverity.Danger or SimulationStatus.Rejected => "DangerBrush",
+            ServiceHealth.Offline or ServiceHealth.Error or EventSeverity.Danger or SimulationStatus.Rejected or PlayerLifeState.Dead => "DangerBrush",
             ServiceHealth.Unknown or RankedStatus.Unknown or PlayerLifeState.Unknown => "TextSecondaryBrush",
             ServiceDeclaredState.Running or ServiceDeclaredState.Monitoring or ServiceDeclaredState.Connected or ServiceDeclaredState.Active => "SuccessBrush",
             ServiceDeclaredState.Paused or ServiceDeclaredState.Configured => "WarningBrush",
@@ -93,6 +93,7 @@ public sealed class StatusTextConverter : IValueConverter
             RankedStatus.Unknown => "INCONNU",
             PlayerLifeState.Alive => "EN VIE",
             PlayerLifeState.Downed => "À TERRE",
+            PlayerLifeState.Dead => "MORT",
             PlayerLifeState.Spectator => "SPECTATEUR",
             PlayerLifeState.Unknown => "INCONNU",
             _ => value?.ToString()?.ToUpperInvariant() ?? "INCONNU"

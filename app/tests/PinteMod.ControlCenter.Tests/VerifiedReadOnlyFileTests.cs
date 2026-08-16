@@ -25,6 +25,76 @@ public sealed class VerifiedReadOnlyFileTests
     }
 
     [TestMethod]
+    public async Task Metadata_ComesFromVerifiedHandleEvenWhenPathIsReplaced()
+    {
+        using var root = new TemporaryServerRoot();
+        var path = root.Write(
+            LocalPinteModFile.PinteModHeartbeat,
+            "{\"value\":\"original\"}");
+        var originalLastWrite = new DateTime(2026, 8, 12, 10, 0, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(path, originalLastWrite);
+        var replacementPath = path + ".replaced";
+        var replaced = false;
+        var reader = new ReadOnlyJsonFileReader(
+            root.Options,
+            openedPath =>
+            {
+                if (replaced)
+                {
+                    return;
+                }
+
+                replaced = true;
+                File.Move(openedPath, replacementPath);
+                File.WriteAllText(openedPath, "{\"value\":\"replacement\"}");
+                File.SetLastWriteTimeUtc(openedPath, originalLastWrite.AddHours(1));
+            });
+
+        var result = await reader.ReadAsync(
+            LocalPinteModFile.PinteModHeartbeat,
+            element => new TestJsonValue(element.GetProperty("value").GetString()!),
+            1024);
+
+        Assert.AreEqual(LocalReadStatus.Success, result.Status);
+        Assert.AreEqual("original", result.Value?.Value);
+        Assert.AreEqual(new DateTimeOffset(originalLastWrite), result.LastWriteTimeUtc);
+    }
+
+    [TestMethod]
+    public async Task FileGrowingAfterVerifiedSizeCheck_IsCappedAndRejected()
+    {
+        using var root = new TemporaryServerRoot();
+        const int maximumBytes = 128;
+        var path = root.Write(
+            LocalPinteModFile.PinteModHeartbeat,
+            "{\"value\":\"initial\"}");
+        var reader = new ReadOnlyJsonFileReader(
+            root.Options,
+            afterMetadataBeforeRead: openedPath =>
+                File.AppendAllText(openedPath, new string('x', maximumBytes * 4)));
+
+        var result = await reader.ReadAsync(
+            LocalPinteModFile.PinteModHeartbeat,
+            element => new TestJsonValue(element.GetProperty("value").GetString()!),
+            maximumBytes);
+
+        Assert.AreEqual(LocalReadStatus.Invalid, result.Status);
+        Assert.AreEqual("Fichier anormalement volumineux.", result.Message);
+    }
+
+    [TestMethod]
+    public async Task BoundedCopy_ReadsAtMostMaximumBytesFromLongerSource()
+    {
+        await using var source = new MemoryStream(new byte[4096]);
+        await using var destination = new MemoryStream();
+
+        await ReadOnlyJsonFileReader.CopyAtMostAsync(source, destination, 257);
+
+        Assert.AreEqual(257, destination.Length);
+        Assert.AreEqual(257, source.Position);
+    }
+
+    [TestMethod]
     public void OpenedTargetMismatch_IsRefusedBeforeRead()
     {
         var expected = Path.Combine(Path.GetTempPath(), "allowed", "data.json");
@@ -60,4 +130,6 @@ public sealed class VerifiedReadOnlyFileTests
         Assert.AreEqual("Source locale refusée.", result.Message);
         Assert.IsFalse(result.Message.Contains(outsidePath, StringComparison.OrdinalIgnoreCase));
     }
+
+    private sealed record TestJsonValue(string Value);
 }

@@ -20,10 +20,10 @@
                     <StackPanel><TextBlock Text="CARTE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding MapName}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="{Binding MapCode}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
-                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{StaticResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="INFÉRÉE DES LOGS SI DISPONIBLE" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,8,0,0" /><TextBlock Text="{Binding RoundSource}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
-                    <StackPanel><TextBlock Text="PINTE MOD" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PinteModVersion}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock Text="VERSION DU SNAPSHOT" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="PINTE MOD" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding PinteModVersion}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" /><TextBlock FontSize="9" Margin="0,5,0,0" TextWrapping="Wrap"><Run Text="COURANT " /><Run Text="{Binding PowerStateText, Mode=OneWay}" /><Run Text=" · PAP " /><Run Text="{Binding PackAPunchStateText, Mode=OneWay}" /></TextBlock></StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>
@@ -37,11 +37,11 @@
                 </Border>
             </controls:ResponsiveUniformGrid>
 
-            <Border Grid.Row="1" Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+            <Border Grid.Row="1" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="7" Padding="14,11" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="ACTIONS SERVEUR SIMULÉES · AUCUN TRANSPORT RCON" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
-                    <TextBlock Text="Les contrôles ci-dessous produisent uniquement un résultat local structuré."
+                    <TextBlock Text="{Binding ServerActionModeTitle}" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding ServerActionModeDescription}"
                                Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10"
                                Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
                     <controls:ResponsiveUniformGrid MinItemWidth="112" MaxColumns="6"
@@ -51,7 +51,7 @@
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="XUID" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.ShortXuid}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="OPTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Option}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="HEURE · STATUT" Style="{StaticResource EyebrowTextStyle}" /><TextBlock FontSize="12" Margin="0,4,0,0"><Run Text="{Binding LastSimulationResult.Time, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding LastSimulationResult.Status, Mode=OneWay}" Foreground="{Binding LastSimulationResult.StatusValue, Mode=OneWay, Converter={StaticResource StatusBrushConverter}}" /></TextBlock></StackPanel>
-                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{DynamicResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
                     </controls:ResponsiveUniformGrid>
                 </StackPanel>
             </Border>
@@ -64,11 +64,58 @@
                                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" />
                         <WrapPanel>
                             <ComboBox ItemsSource="{Binding MapOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedMap}" Width="230" Margin="0,0,10,10" />
-                            <Button Content="Changer" Style="{StaticResource SimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeMap}" />
+                            <Button Content="CHANGER · SIMULATION" Style="{StaticResource SimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeMap}" />
                         </WrapPanel>
-                        <Button Content="Redémarrer la carte" Style="{StaticResource DangerSimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.RestartMap}" HorizontalAlignment="Left" />
-                        <TextBlock Text="Le catalogue est local ; la commande de changement reste volontairement inactive."
+                        <Button Content="REDÉMARRER LA CARTE ACTIVE" Style="{StaticResource DangerButtonStyle}"
+                                Command="{Binding RestartMapCommand}" HorizontalAlignment="Left"
+                                ToolTip="Commande réelle fermée : ezzccrestartmap &lt;request_id&gt;" />
+                        <TextBlock Text="{Binding ChangeMapContractNotice}"
                                    Foreground="{StaticResource WarningBrush}" FontSize="10" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding ContractSourceSummary}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}" Margin="4">
+                    <StackPanel>
+                        <TextBlock Text="IDENTITÉ PUBLIQUE · CONTRAT LOCAL" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="{Binding ServerIdentityText}" Foreground="{DynamicResource AccentBrightBrush}"
+                                   FontSize="12" FontWeight="SemiBold" Margin="0,7,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding JoinPasswordStatus}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="10" Margin="0,4,0,10" />
+                        <TextBlock Text="NOUVEAU NOM DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <controls:BoiiiHostnameEditor EncodedText="{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Margin="0,0,10,8" />
+                            <Button Grid.Column="1" Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding SetHostnameCommand}" Margin="0,0,0,8" VerticalAlignment="Top"
+                                    ToolTip="Commande réelle fermée : ezzccsethostname" />
+                        </Grid>
+                        <TextBlock Text="Le bouton s’active lorsque le nom saisi diffère du nom actuellement observé."
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,0,0,10" TextWrapping="Wrap" />
+                        <TextBlock Text="NOUVEAU MOT DE PASSE RÉSEAU BOIII" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
+                        <WrapPanel>
+                            <PasswordBox x:Name="JoinPasswordBox" Width="220" MaxLength="32" Margin="0,0,8,8"
+                                         Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{DynamicResource AccentBrush}"
+                                         ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
+                            <Button Content="DÉFINIR LE MOT DE PASSE" Style="{StaticResource SecondaryButtonStyle}"
+                                    IsEnabled="{Binding CanSetJoinPassword}" Click="SetJoinPassword_Click" Margin="0,0,8,8"
+                                    ToolTip="Disponible uniquement avec RCON loopback sur la machine serveur" />
+                        </WrapPanel>
+                        <WrapPanel>
+                            <Button Content="SUPPRIMER LE MOT DE PASSE RÉSEAU" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding ClearJoinPasswordCommand}" Margin="0,0,8,8"
+                                    ToolTip="La valeur du mot de passe réseau BOIII n’est jamais lue ni affichée" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding SetJoinPasswordNotice}" Foreground="{StaticResource WarningBrush}"
+                                   FontSize="9" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
@@ -140,12 +187,22 @@
                             <Button Content="DÉLAI NORMAL" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding RestorePowerUpTimeoutCommand}" ToolTip="Commande réelle confirmée : ezzfreezepowerups off" Margin="0,0,8,8" />
                         </WrapPanel>
-                        <TextBlock Text="ACTIONS SPÉCIFIQUES À LA CARTE · SIMULATION" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
+                        <TextBlock Text="BOSS CONTRACTUELS · ACTION RÉELLE" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
+                        <TextBlock Text="{Binding BossTargetText}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,0,0,5" TextWrapping="Wrap" />
+                        <WrapPanel>
+                            <ComboBox ItemsSource="{Binding BossAliasOptions}" DisplayMemberPath="Label"
+                                      SelectedItem="{Binding SelectedBossAlias}" Width="190" Margin="0,0,8,8" />
+                            <Button Content="FAIRE APPARAÎTRE LE BOSS" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding SpawnBossCommand}" Margin="0,0,8,8"
+                                    ToolTip="Cible interne revalidée exclusivement par BOIII_XUID" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding BossCapacityText}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="9" Margin="0,0,0,8" />
+                        <TextBlock Text="ACTIONS SANS CONTRAT STABLE · SIMULATION" Style="{StaticResource EyebrowTextStyle}" Margin="0,5,0,6" />
                         <WrapPanel>
                             <Button Content="ÉVÉNEMENTS · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
                                     Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.TriggerEvent}" />
-                            <Button Content="BOSS · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
-                                    Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.SpawnBoss}" />
                             <Button Content="POWER-UP GLOBAL · SIMULATION" Style="{StaticResource SimulationButtonStyle}"
                                     Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.SpawnPowerUp}" />
                         </WrapPanel>
@@ -194,6 +251,8 @@
                         <TextBlock Text="Commandes manuelles fermées · aucune modification de la partie."
                                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,10" TextWrapping="Wrap" />
                         <WrapPanel>
+                            <Button Content="SANTÉ PINTE MOD" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding HealthDiagnosticCommand}"
+                                    ToolTip="Diagnostic read-only : ezzhealth full · résumé local seulement si BOIII ne transporte pas le texte" Margin="0,0,8,8" />
                             <Button Content="CARTE" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding MapDiagnosticCommand}"
                                     ToolTip="Diagnostic read-only : ezzmap" Margin="0,0,8,8" />
                             <Button Content="COURANT" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PowerDiagnosticCommand}"

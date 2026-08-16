@@ -1,6 +1,6 @@
 # TODO — PinteMod Control Center
 
-Dernière mise à jour : 2026-08-09
+Dernière mise à jour : 2026-08-12
 
 ## Interface graphique
 
@@ -49,9 +49,9 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — Phase 2.3 validée localement : 1 profil officiel, 0 fichier/record officiel et aucun candidat affiché.
 - **Terminé** — Phase 2.3 clôturée sans condition restante après verdict externe.
 - **Terminé** — Bloc A : logs locaux structurés de la session active, lecture incrémentale, filtrage et cache borné.
-- **À faire** — Snapshots supplémentaires hors périmètre tant qu’aucun contrat runtime stable n’est disponible.
+- **Terminé** — Auditer et consommer le heartbeat global et le snapshot runtime désormais fournis par PinteModReal.
 - **Terminé** — Confirmer sur le commit GitHub stable qu’aucun snapshot local persistant ne fournit l’inventaire courant ; documenter l’instantané interne de réanimation comme non consommable.
-- **À faire** — Concevoir ultérieurement un snapshot GSC read-only d’inventaire par BOIII_XUID, seulement après validation humaine et sans réutiliser l’état interne de réanimation.
+- **Terminé** — Intégrer le snapshot GSC read-only d’inventaire par BOIII_XUID produit par le bridge runtime v0.1.2, sans modifier PinteMod.
 
 ## RCON diagnostics et commandes
 
@@ -268,5 +268,156 @@ Dernière mise à jour : 2026-08-09
 - **Terminé** — Rendre `RconDiagnosticService` conservateur après le début du transport, sans retry ni élargissement de liste blanche.
 - **Terminé** — Compiler et tester Debug/Release : 0 avertissement, 0 erreur, 292/292 tests dans chaque configuration.
 - **Terminé** — Publier et auditer `PinteMod-ControlCenter-v2.2.0-rc.2-win-x64.zip` : 466 entrées, aucun fichier interdit, ancien XUID interdit ou chemin privé de compilation.
-- **À valider** — Soumettre uniquement la RC2 et son SHA-256 à la revue indépendante finale de clôture.
+- **Terminé** — Soumettre uniquement la RC2 et son SHA-256 à la revue indépendante finale de clôture ; SHA et révision embarquée confirmés.
 - **À valider** — Après verdict RC2 sans blocage, conserver la validation terrain groupée comme dernier jalon avant `v2.2.0` stable.
+
+## Développement post-RC2 — runtime PinteMod existant
+
+- **Terminé** — Créer la branche locale `codex/post-rc2-runtime-contracts` depuis le commit RC2 exact `90d4922…` sans toucher au tag ni aux assets validés.
+- **Terminé** — Auditer en lecture seule PinteModReal `0b293b5…` et confirmer le bridge runtime v0.1.2.
+- **Terminé** — Whitelister et lire strictement `health/pintemod.json` et `runtime/control_center_snapshot.json`.
+- **Terminé** — Utiliser le LastWriteTimeUtc vérifié comme autorité de fraîcheur et accepter `updated_at_utc` vide.
+- **Terminé** — Remplacer l’état synthétique PinteMod et les valeurs runtime inférées seulement avec une source fraîche de la session active.
+- **Terminé** — Afficher vie, arme équipée, munitions, inventaire, atouts et Godmode sans exposer de XUID complet.
+- **À faire** — Intégrer ultérieurement `control_center_capabilities.json`, seulement lorsqu’un contrat PinteMod stable existe.
+- **Bloqué** — ChangeMap/RestartMap restent simulés faute de contrat fermé et de feedback local.
+- **Bloqué** — TriggerEvent/SpawnBoss restent simulés faute de capacités génériques par carte.
+- **À faire** — Intégrer ultérieurement le feedback unifié des mutations lorsqu’il sera produit par PinteMod.
+
+## Correctifs terrain et audit UX post-RC2 — 2026-08-12
+
+- **Terminé** — Centraliser les 19 armes standard/universelles et les catalogues spéciaux PinteMod Weapons v0.5.2 par carte.
+- **Terminé** — Afficher les armes spéciales uniquement avec un runtime local frais, de session et carte cohérentes.
+- **Terminé** — Ajouter le Pack-a-Punch de l’arme tenue par BOIII_XUID, sans option libre et avec le verrou opérateur existant.
+- **Terminé** — Ajouter le retrait ciblé d’un atout depuis la même liste fermée que l’attribution.
+- **Terminé** — Afficher un fallback local autoritaire pour Carte, Courant, PAP, Manche et Joueurs lorsque BOIII ne transporte pas le texte RCON.
+- **Terminé** — Ajouter Santé PinteMod au panneau Serveur et limiter son fallback à un résumé local distinct de `ezzhealth full`.
+- **Terminé** — Documenter dans `UX_FEATURE_AUDIT.md` les fonctions gardées, ajoutées, refusées et toujours simulées.
+- **À valider** — Terrain : plusieurs armes standard, une arme spéciale de la carte, PAP arme normale/déjà PAP/non compatible et cinq fallbacks diagnostics.
+- **À faire** — Futur contrat PinteMod capabilities/action feedback pour carte, événements, boss et diagnostics non structurés.
+
+## Responsivité des actions joueur — 2026-08-12
+
+- **Terminé** — Séparer Armes, Atouts et Power-ups en grilles responsives autonomes sans largeur fixe sur les sélecteurs.
+- **Terminé** — Ajouter une régression XAML garantissant que de nouveaux boutons restent confinés à leur groupe responsive.
+- **Terminé** — Validation humaine du panneau responsive dans la preview `b57db391`.
+- **Terminé** — Produire le paquet global de revue ChatGPT du lot post-RC2, avec sources, patches, tests, binaire audité et manifestes SHA-256.
+- **Terminé** — Revue globale post-RC2 effectuée : deux blocages ciblés identifiés dans le lecteur JSON partagé.
+- **Terminé** — Plafonner la lecture à la limite contractuelle + 1 et refuser un fichier qui grossit avant parsing.
+- **Terminé** — Utiliser la longueur et le LastWriteTimeUtc du même handle vérifié avant/après lecture, sans retour au chemin.
+- **Terminé** — Revalider 381/381 tests en Debug et Release et produire le ZIP de contre-revue audité `0e4e0928`.
+- **Terminé** — Contre-revue ChatGPT validée sans blocage le 2026-08-13 ; lot post-RC2 autorisé pour le terrain.
+- **Terminé** — Validation terrain groupée réussie le 2026-08-13 : armes, PAP, retrait d’atout, power-up et fallbacks diagnostics acceptés.
+- **À faire** — Sur ordre explicite uniquement, préparer la publication stable issue de la candidate `0e4e092` sans modifier la RC2 historique.
+
+## Prépublication stable — profils serveurs et identité
+
+- **Terminé** — Empêcher les listes Armes et Cartes inchangées d’être reconstruites à chaque actualisation automatique.
+- **Terminé** — Ajouter plusieurs onglets serveurs avec configuration, lecture locale, secret DPAPI, catalogue et sécurité RCON isolés par profil.
+- **Terminé** — Migrer la configuration unique existante vers le profil principal sans perdre le chemin, l’adresse RCON ou le secret déjà protégé.
+- **Terminé** — Ajouter, retirer et renommer localement un onglet serveur sans modifier ni arrêter BOIII.
+- **Terminé** — Exécuter la suite complète Debug/Release : 0 avertissement, 0 erreur et 394/394 tests dans chaque configuration.
+- **Terminé** — Produire et auditer la preview autonome multi-serveurs : 466 entrées, audit packaging PASS.
+- **À valider** — Vérifier visuellement la barre d’onglets, l’ajout/retrait, le renommage et la stabilité des listes Armes, Cartes et Catalogue pendant plusieurs actualisations.
+- **Bloqué** — Modification du nom public BOIII : aucun contrat PinteMod fermé, validé et observable n’existe dans PinteModReal.
+- **Terminé** — Confirmation humaine reçue : « mot de passe serveur » désigne bien `g_password`, demandé aux joueurs pour rejoindre, et non le secret RCON.
+- **Bloqué** — Modification de `g_password` : attendre un contrat PinteMod typé, borné, sans journalisation de la valeur et avec une décision explicite sur la confidentialité du transport ; ne jamais utiliser une commande libre supposée.
+
+## Intégration contrats PinteModReal e279a59 — 2026-08-14
+
+### En cours
+
+- Aucun travail automatisé restant dans ce lot.
+
+### À valider
+
+- [Interface graphique] Vérifier le rendu responsive de la nouvelle carte Identité et du sélecteur Boss.
+- [Intégration PinteMod] Valider en une seule passe terrain Restart Map, Spawn Boss, Set Hostname et Clear Join Password.
+
+### Terminé
+
+- [Lecture locale] Quatre sources contractuelles bornées, confinées, asynchrones et mises en cache sans autorité fraîche artificielle.
+- [Sécurité] `supported` n’est jamais transformé en `installed`; Change Map reste inactif.
+- [RCON] Quatre nouvelles commandes fermées seulement, sans texte de commande libre ni retry automatique.
+- [Confidentialité] `g_password` n’est jamais lu/affiché et le boss reste ciblé en interne par BOIII_XUID.
+- [Tests] Debug et Release : 0 avertissement, 0 erreur et 413/413 tests réussis dans chaque configuration.
+- [Tests] Scans de whitelist, confidentialité, XAML, schémas et garantie read-only terminés.
+- [Documentation] Rapport et prompt de revue post-RC2 préparés.
+- [Correctif revue] Observer les quatre actions contractuelles après `DeliveryUnknown`/`TransportError` lorsque `CommandSent = true`, sans retry.
+- [Correctif revue] Conserver `ENVOYÉ · NON CONFIRMÉ` et le verrou humain lorsqu’aucune preuve locale corrélée n’arrive.
+- [Tests] Contre-revue transport incertain : 418/418 tests Debug et Release, 0 avertissement, 0 erreur.
+- [Revue] Contre-revue ciblée validée sans blocage ; validation terrain groupée autorisée.
+- [Packaging] Candidate terrain Windows x64 autonome auditée : 471 entrées, SHA-256 `C7B8933B27A8D9EBE0DFCDAA1F53C4D155BAAF4731F44B753E6B7C477CE6F92A`.
+- [Terrain] Copie Server3 de test sauvegardée et préparée en LAN-only sur le port 27121 avec les deux GSC candidats ; aucun serveur lancé.
+- [Terrain] Compilation/chargement GSC confirmé humainement sans erreur signalée sur la copie Server3 isolée.
+- [Terrain] Lecture hybride locale validée visuellement : session/runtime/PinteMod frais ; services auxiliaires non lancés correctement présentés comme arrêtés ou périmés.
+- [Terrain] Transport RCON local validé sur la copie isolée à `127.0.0.1:27121` via le diagnostic `ezzhealth full` et son fallback local frais `PinteMod : SAIN`.
+- [Terminé] Corriger l'écart terrain entre les scalaires JSON natifs produits par BOIII et les quatre schémas/lecteurs contractuels ; 419/419 tests Debug et Release.
+- [À valider] Relancer la candidate terrain `3bf033c`, confirmer l'identité locale puis effectuer Restart Map, Spawn Boss, Set Hostname et Clear Join Password en une passe groupée.
+- [À faire] Reporter les mêmes types JSON natifs dans les quatre schémas source de PinteModReal avant sa prochaine publication, sans modifier le GSC runtime déjà conforme.
+
+## Contrat identité v0.1.2 et ergonomie fenêtre — 2026-08-14
+
+- **Terminé** — Isoler les onglets serveurs sous une barre de déplacement dédiée et testée.
+- **Terminé** — Persister uniquement le hostname public côté PinteMod, sans écrire le CFG serveur ni aucun secret.
+- **Terminé** — Ajouter la définition de `g_password` par commande fermée, validation stricte et endpoint loopback uniquement.
+- **Terminé** — Garder le mot de passe hors binding, snapshot, feedback, activité, configuration et journal applicatif.
+- **Terminé** — Valider 39/39 tests PinteModReal et 438/438 tests Control Center en Debug et Release.
+- **À valider** — Chargement terrain du GSC v0.1.2 sur la copie Server3 et rendu de la nouvelle barre de déplacement.
+- **À valider** — Persistance du hostname après redémarrage complet du processus de test ; le titre de fenêtre BOIII n’est pas une autorité.
+- **À valider** — Test de confidentialité avec un mot de passe synthétique unique sur loopback et recherche exhaustive de toute fuite.
+- **Bloqué** — Publication de SET mot de passe tant que le test de fuite terrain n’est pas réussi.
+- **Terminé** — Produire la candidate autonome `3d624fa`, audit packaging PASS (471 entrées), SHA-256 `C8D9B56E0307FAB614F75DD4D07D11FDA4114FBE078D8DB3D036AF494D42FB8A`.
+- **Terminé** — Diagnostiquer par les preuves locales que SET mot de passe était appliqué et que le nom public BOIII dépend de `live_steam_server_name`.
+- **Terminé** — Corriger le contrat v0.1.3, accepter uniquement `^0`–`^9` et valider 445/445 tests Debug/Release.
+- **À valider** — Redémarrer manuellement la copie de test, confirmer `Control Center Contracts v0.1.3 loaded`, puis retester le nom coloré.
+- **À valider** — Tester le mot de passe avec un client totalement déconnecté puis reconnecté ; un joueur déjà en session ne constitue pas une preuve.
+- **Terminé** — Produire et auditer la candidate v0.1.3 `7bdb22f`, 471 entrées, SHA-256 `E7513B783C900B451F58E8E01F4B34EF0355DADB0BC2B2FB2C80AF881A073F46`.
+
+## Correctif `net_password` et densité visuelle — 2026-08-14
+
+- **Terminé** — Confirmer sur un client vierge que `g_password` n’empêche pas la connexion directe Ezz BOIII.
+- **Terminé** — Identifier dans le code public BOIII l’autorité réelle `net_password` et corriger le contrat PinteMod v0.1.4 sans commande libre.
+- **Terminé** — Conserver la valeur hors fichiers, snapshots, feedbacks, ViewModels et journaux ; loopback uniquement.
+- **Terminé** — Replier les détails de lecture des services et les XUID abrégés des profils Ranks, avec révélation explicite et clavier/souris.
+- **Terminé** — Afficher directement le numéro de meilleure manche sans préfixe `M`.
+- **Terminé** — Exécuter les suites complètes Debug et Release : 0 avertissement, 0 erreur et 447/447 tests dans chaque configuration.
+- **Terminé** — Préparer et auditer la candidate autonome `e9be7ca` liée au correctif PinteMod v0.1.4.
+- **Terminé** — Validation terrain du contrat v0.1.4 : connexion refusée sans `net_password`, refusée avec une valeur incorrecte et acceptée avec la bonne valeur.
+- **À valider** — Vérifier visuellement les deux flèches de détails sur Dashboard et Records en fenêtre grande et réduite.
+- **Terminé** — Rendre `DÉTAILS` et `IDENTIFIANT` discrets (8 px, opacité réduite, petite flèche) et mieux distinguer les champs actifs Nom/Mot de passe.
+- **Terminé** — Verrou terrain `net_password` levé avec une valeur synthétique ; aucune valeur n’a été transmise dans la conversation ni ajoutée au produit.
+- **Terminé** — Découpler la version informative du module de la compatibilité réelle `schema_version` / `command_contract_version`, tout en imposant un format sémantique borné.
+- **Terminé** — Remplacer le bandeau Serveur statique « aucun transport RCON » par l’état réel de la configuration.
+- **Terminé** — Valider le correctif compatible : 450/450 tests Debug et Release, audit du paquet autonome PASS.
+- **À valider** — Lancer la candidate `b135e7a` et confirmer que « APPLIQUER LE NOM » s’active avec un nom différent.
+- **À valider** — Sur la machine serveur en loopback uniquement, confirmer que « DÉFINIR LE MOT DE PASSE » s’active puis terminer le test terrain de confidentialité/refus-acceptation.
+
+## Personnalisation de la candidate publiable — 2026-08-14
+
+- **Terminé** — Ajouter six palettes d’accent fermées, persistées séparément pour chaque onglet serveur.
+- **Terminé** — Appliquer dynamiquement la palette de l’onglet actif sans modifier les couleurs sémantiques vert/orange/rouge.
+- **Terminé** — Isoler l’enregistrement de l’apparence afin qu’il ne puisse pas sauvegarder une source ou une cible RCON non vérifiée.
+- **Terminé** — Ajouter une palette BOIII `^0`–`^9`, l’insertion au curseur, la coloration d’une sélection et un aperçu direct du hostname.
+- **Terminé** — Valider 460/460 tests Debug et Release, 0 avertissement, 0 erreur ; paquet autonome audité PASS.
+- **Terminé** — Validation humaine de deux thèmes distincts, de leur persistance et du comportement par onglet.
+- **Terminé** — Validation humaine de l’éditeur multicolore et de son aperçu direct.
+- **Terminé** — Validation terrain `net_password` réussie : refus sans valeur, refus avec mauvaise valeur, acceptation avec la bonne valeur, puis nettoyage côté client et serveur.
+- **Terminé** — Code fonctionnel gelé ; métadonnées et libellés alignés sur la version `2.2.0` stable.
+- **Terminé** — Audit final Debug/Release : 0 avertissement, 0 erreur et 460/460 tests réussis dans chaque configuration.
+- **Terminé** — Première candidate stable auditée, puis remplacée par le paquet final `25e0e16` après correction documentaire.
+- **Terminé** — Première revue ChatGPT terminée avec deux corrections documentaires, désormais levées.
+- **Terminé** — Regrouper sources, binaire, empreinte, preuve et prompt dans un unique ZIP de revue `PinteMod-ControlCenter-v2.2.0-stable-review-8653210.zip`.
+- **Terminé** — Blocage de revue levé par le verdict final `VALIDÉ`.
+
+## Contre-revue stable — corrections documentaires finales — 2026-08-16
+
+- **Terminé** — Remplacer toutes les annonces RC2/292 tests des README distribués par la version stable `2.2.0` et 460/460 tests.
+- **Terminé** — Présenter `LISEZ-MOI.txt` comme version stable et utiliser un partage UNC manifestement générique.
+- **Terminé** — Neutraliser l’adresse LAN terrain du fixture et tous les chemins locaux de capture/copie serveur signalés.
+- **Terminé** — Exécuter 12/12 tests ciblés puis 460/460 tests Debug et Release, sans avertissement ni erreur.
+- **Terminé** — Figer la révision `25e0e16`, reconstruire `PinteMod-ControlCenter-v2.2.0-win-x64.zip`, audit PASS et SHA-256 `B3C0368DD662C2C04B41F04ECA4D9FBC19A19CE998C86CD5923B6EE793A080A0`.
+- **Terminé** — Produire l’unique paquet d’ultime contre-revue contenant sources exactes, ZIP stable, preuve et prompt : `PinteMod-ControlCenter-v2.2.0-final-review-25e0e16.zip`.
+- **Terminé** — Verdict ChatGPT final : `VALIDÉ`, aucun blocage, publication `v2.2.0` autorisée.
+- **À faire** — Publier GitHub uniquement après l’ordre explicite de l’opérateur.
+- **À faire (facultatif)** — Harmoniser ultérieurement les descriptions historiques de Restart Map/Boss dans quelques passages non bloquants des README.

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
@@ -6,6 +7,10 @@ namespace PinteMod.ControlCenter.Infrastructure.Local;
 
 internal sealed class LocalFileAccessRefusedException()
     : IOException("La source locale réellement ouverte ne correspond pas au chemin autorisé.");
+
+internal readonly record struct VerifiedFileMetadata(
+    long Length,
+    DateTime LastWriteTimeUtc);
 
 internal static class VerifiedReadOnlyFile
 {
@@ -51,6 +56,25 @@ internal static class VerifiedReadOnlyFile
         }
     }
 
+    public static VerifiedFileMetadata GetMetadata(FileStream stream)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!GetFileInformationByHandle(stream.SafeFileHandle, out var information))
+        {
+            var error = Marshal.GetLastWin32Error();
+            throw new IOException(
+                "Les métadonnées du fichier local ouvert ne peuvent pas être vérifiées.",
+                new Win32Exception(error));
+        }
+
+        var length = ((long)information.FileSizeHigh << 32) | information.FileSizeLow;
+        var fileTime = ((long)information.LastWriteTime.HighDateTime << 32) |
+                       information.LastWriteTime.LowDateTime;
+        return new VerifiedFileMetadata(
+            length,
+            DateTime.FromFileTimeUtc(fileTime));
+    }
+
     private static string GetFinalPath(SafeFileHandle handle)
     {
         var capacity = InitialPathBufferLength;
@@ -93,4 +117,32 @@ internal static class VerifiedReadOnlyFile
         StringBuilder filePath,
         uint filePathLength,
         uint flags);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetFileInformationByHandle(
+        SafeFileHandle file,
+        out ByHandleFileInformation fileInformation);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeFileTime
+    {
+        public uint LowDateTime;
+        public uint HighDateTime;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ByHandleFileInformation
+    {
+        public uint FileAttributes;
+        public NativeFileTime CreationTime;
+        public NativeFileTime LastAccessTime;
+        public NativeFileTime LastWriteTime;
+        public uint VolumeSerialNumber;
+        public uint FileSizeHigh;
+        public uint FileSizeLow;
+        public uint NumberOfLinks;
+        public uint FileIndexHigh;
+        public uint FileIndexLow;
+    }
 }

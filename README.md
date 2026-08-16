@@ -5,24 +5,26 @@
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-292%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-460%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
+[![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current release candidate:** v2.2.0-rc.2, containing the four final security and packaging corrections requested after Preview 13.
-> Debug and Release builds complete with **0 warnings, 0 errors and 292/292 tests passing**.
+> **Current stable release:** v2.2.0.
+> Debug and Release builds complete with **0 warnings, 0 errors and 460/460 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download v2.2.0-rc.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0-rc.2)
+[Download v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
 ![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
 
 ## Highlights
 
 - dark, responsive WPF dashboard designed for 1920×1080 and smaller windows;
+- up to eight isolated server tabs, each with its own data source, RCON context and visual accent;
 - current map/session, service health, players, events and operator status;
 - local read-only Ranks, round records and official Easter Egg Records;
 - structured Live Console with filters, search, pause, auto-scroll and neutralized copy;
@@ -30,6 +32,8 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 - manual, allowlisted BOIII RCON diagnostics;
 - Community Soft Pause v0.3 observation plus confirmed Pause/Resume controls;
 - confirmed server actions for rounds, power, Pack-a-Punch, music, passages, zombies and power-up lifetime;
+- contract-backed restart-map, boss spawn and public-server-name controls when PinteMod publishes fresh compatible capabilities;
+- ephemeral BOIII connection-password control, restricted to a loopback RCON endpoint and never persisted or displayed;
 - XUID-targeted player assistance, inventory grants, power-ups, moderation and roles;
 - local read-only moderation history;
 - hybrid map catalogue combining official maps, an explicitly pasted rotation, local custom entries and the currently observed map;
@@ -119,7 +123,9 @@ No BOIII server, BAT file or external tool is launched by these commands.
 
 ## Real and simulated controls
 
-Stable, audited contracts are enabled only when their targeting and verification rules are known. Map change/restart and generic boss/event controls remain visibly simulated because PinteMod v2.1.1 does not yet expose a sufficiently safe generic contract for them.
+Stable, audited controls are enabled only when their targeting and verification rules are known. Restart Map, supported boss aliases, public hostname changes and clearing the connection password use closed PinteMod contracts with local correlated feedback. Setting the BOIII connection password is available only through an explicitly configured loopback RCON endpoint and the value remains ephemeral.
+
+Generic Change Map and generic events remain visibly simulated because no sufficiently safe, authoritative contract exists for them. A missing, stale or incompatible capability never becomes an available real action.
 
 Detailed future PinteMod requirements are documented in [`docs/PINTEMOD_REQUIREMENTS_NEXT.md`](docs/PINTEMOD_REQUIREMENTS_NEXT.md), including a dedicated heartbeat, authoritative runtime snapshot, map capabilities and structured mutation feedback.
 
@@ -137,18 +143,18 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-The corrected V1 candidate has completed its automated validation. The final independent closure review of RC2 is still pending:
+PinteMod Control Center v2.2.0 has completed its automated and field validation:
 
 ```text
 Debug build     PASS — 0 warnings, 0 errors
 Release build   PASS — 0 warnings, 0 errors
-Debug tests     PASS — 292/292
-Release tests   PASS — 292/292
+Debug tests     PASS — 460/460
+Release tests   PASS — 460/460
 ZIP audit       PASS — no PDB, private build path, forbidden XUID, secret, server file or unsafe path
-Global review   PENDING — RC2 closure review required
+Field checks    PASS — local reads, diagnostics, confirmed actions and net_password
 ```
 
-RC1 was withdrawn after the stricter review. RC2 is the only candidate to review or test. A final grouped field validation remains the operational gate before promoting it to the stable `v2.2.0` tag. No test should be performed while players could be disrupted.
+The stable package is built from an identified Git commit, published as a self-contained Windows x64 archive and verified before release. Operational mutations remain manual, confirmed and protected by conservative delivery semantics.
 
 ## Related project
 

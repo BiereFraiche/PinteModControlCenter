@@ -8,10 +8,10 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <Border Width="58" Height="58" CornerRadius="29" Background="{StaticResource AccentSoftBrush}"
-                        BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
+                <Border Width="58" Height="58" CornerRadius="29" Background="{DynamicResource AccentSoftBrush}"
+                        BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
                     <TextBlock Text="{Binding SelectedPlayer.Initials}" FontSize="16" FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrightBrush}"
+                               Foreground="{DynamicResource AccentBrightBrush}"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Column="1" Margin="14,3,8,0">
@@ -26,7 +26,7 @@
                 </StackPanel>
                 <Border Grid.Column="2" Style="{StaticResource SimulationBadgeBorderStyle}" VerticalAlignment="Center">
                     <TextBlock Text="{Binding PlayerActionsBadge}" FontSize="10" FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrightBrush}" />
+                               Foreground="{DynamicResource AccentBrightBrush}" />
                 </Border>
             </Grid>
 
@@ -39,13 +39,30 @@
                 <StackPanel Margin="0,0,0,8"><TextBlock Text="PRÉSENCE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.PresenceText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
             </controls:ResponsiveUniformGrid>
 
-            <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="5" Padding="12,10" Margin="0,0,0,16"
+            <Border Background="{DynamicResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                    Visibility="{Binding SelectedPlayer.RuntimeDataAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="ÉTAT RUNTIME PINTE MOD · READ-ONLY" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
+                    <controls:ResponsiveUniformGrid MinItemWidth="125" MaxColumns="5">
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="VIE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.HealthText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="ARME ÉQUIPÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.EquippedWeaponText}" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="MUNITIONS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.AmmunitionText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,14,8"><TextBlock Text="GODMODE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.GodModeText}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="ATOUTS" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding SelectedPlayer.PerksText}" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
+                    </controls:ResponsiveUniformGrid>
+                    <TextBlock Text="{Binding SelectedPlayer.WeaponsText}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource AccentSoftBrush}" CornerRadius="5" Padding="12,10" Margin="0,0,0,16"
                     Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
                 <TextBlock Text="Choisissez une action. Elle sera évaluée localement sans aucune commande serveur."
                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" />
             </Border>
 
-            <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+            <Border Background="{DynamicResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16"
                     Visibility="{Binding LastSimulationResult, Converter={StaticResource NullToVisibilityConverter}}">
                 <StackPanel>
@@ -56,7 +73,7 @@
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="XUID" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.ShortXuid}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="OPTION" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Text="{Binding LastSimulationResult.Option}" FontSize="12" Margin="0,4,0,0" /></StackPanel>
                         <StackPanel Margin="0,0,12,8"><TextBlock Text="HEURE · STATUT" Style="{StaticResource EyebrowTextStyle}" /><TextBlock FontSize="12" Margin="0,4,0,0"><Run Text="{Binding LastSimulationResult.Time, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding LastSimulationResult.Status, Mode=OneWay}" Foreground="{Binding LastSimulationResult.StatusValue, Mode=OneWay, Converter={StaticResource StatusBrushConverter}}" /></TextBlock></StackPanel>
-                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{StaticResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
+                        <StackPanel Margin="0,0,0,8"><TextBlock Text="COMMANDE ENVOYÉE" Style="{StaticResource EyebrowTextStyle}" /><TextBlock Foreground="{DynamicResource AccentBrightBrush}" FontWeight="Bold" FontSize="12" Margin="0,4,0,0"><Run Text="CommandSent = " /><Run Text="{Binding LastSimulationResult.CommandSent, Mode=OneWay}" /></TextBlock></StackPanel>
                     </controls:ResponsiveUniformGrid>
                 </StackPanel>
             </Border>
@@ -97,15 +114,39 @@
             <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                 <StackPanel>
                     <TextBlock Text="ARMES &amp; ATOUTS" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,10" />
-                    <WrapPanel>
-                        <ComboBox ItemsSource="{Binding WeaponOptions}" SelectedItem="{Binding SelectedWeapon}" Width="145" Margin="0,0,8,8" />
-                        <Button Content="DONNER L’ARME" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GiveWeapon}" />
-                        <ComboBox ItemsSource="{Binding PerkOptions}" SelectedItem="{Binding SelectedPerk}" Width="145" Margin="0,0,8,8" />
-                        <Button Content="DONNER L’ATOUT" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GivePerk}" />
-                        <Button Content="TOUS LES ATOUTS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GiveAllPerks}" />
-                        <ComboBox ItemsSource="{Binding PowerUpOptions}" SelectedItem="{Binding SelectedPowerUp}" Width="145" Margin="0,0,8,8" />
-                        <Button Content="FAIRE APPARAÎTRE LE POWER-UP" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}" CommandParameter="{x:Static core:SimulationAction.GivePowerUpPlayer}" />
-                    </WrapPanel>
+                    <TextBlock Text="ARME" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,2" />
+                    <controls:ResponsiveUniformGrid x:Name="WeaponActionGrid" MinItemWidth="145" MaxColumns="3" Margin="-4,0,-4,6">
+                        <ComboBox ItemsSource="{Binding WeaponOptions}" SelectedItem="{Binding SelectedWeapon}" Margin="4" />
+                        <Button Content="DONNER L’ARME" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GiveWeapon}" Margin="4" />
+                        <Button Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.PackAPunchCurrentWeapon}" Margin="4"
+                                ToolTip="Utilise exclusivement l’arme actuellement tenue et le BOIII_XUID du joueur">
+                            <TextBlock Text="PACK-A-PUNCH ARME TENUE" TextWrapping="Wrap" TextAlignment="Center" />
+                        </Button>
+                    </controls:ResponsiveUniformGrid>
+
+                    <TextBlock Text="ATOUT" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,2" />
+                    <controls:ResponsiveUniformGrid x:Name="PerkActionGrid" MinItemWidth="125" MaxColumns="4" Margin="-4,0,-4,6">
+                        <ComboBox ItemsSource="{Binding PerkOptions}" SelectedItem="{Binding SelectedPerk}" Margin="4" />
+                        <Button Content="DONNER L’ATOUT" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GivePerk}" Margin="4" />
+                        <Button Content="RETIRER L’ATOUT" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.RemovePerk}" Margin="4" />
+                        <Button Content="TOUS LES ATOUTS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GiveAllPerks}" Margin="4" />
+                    </controls:ResponsiveUniformGrid>
+
+                    <TextBlock Text="POWER-UP JOUEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,2" />
+                    <controls:ResponsiveUniformGrid x:Name="PowerUpActionGrid" MinItemWidth="145" MaxColumns="2" Margin="-4,0,-4,6">
+                        <ComboBox ItemsSource="{Binding PowerUpOptions}" SelectedItem="{Binding SelectedPowerUp}" Margin="4" />
+                        <Button Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PlayerActionCommand}"
+                                CommandParameter="{x:Static core:SimulationAction.GivePowerUpPlayer}" Margin="4">
+                            <TextBlock Text="FAIRE APPARAÎTRE LE POWER-UP" TextWrapping="Wrap" TextAlignment="Center" />
+                        </Button>
+                    </controls:ResponsiveUniformGrid>
+                    <TextBlock Text="{Binding WeaponCatalogStatus}" Foreground="{DynamicResource AccentBrightBrush}"
+                               FontSize="9" TextWrapping="Wrap" Margin="0,3,0,0" />
                     <TextBlock Text="Listes fermées issues des alias stables PinteMod · aucune saisie de commande libre"
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
                 </StackPanel>
@@ -129,7 +170,7 @@
                     </WrapPanel>
                     <TextBlock Text="Mute, ban et rôle utilisent les écritures administratives internes de PinteMod après confirmation. Le Control Center n’écrit jamais directement dans ces fichiers."
                                Foreground="{StaticResource WarningBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    <Border Background="{DynamicResource AccentSoftBrush}" BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,10,0,0"
                             Visibility="{Binding HasPlayerHistoryResult, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>

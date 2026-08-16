@@ -8,4 +8,10 @@ public interface IServerAdministrationCommandService
         ServerAdministrationRequest request,
         RconEndpoint endpoint,
         CancellationToken cancellationToken = default);
+
+    Task<ServerAdministrationExecutionResult> SetJoinPasswordAsync(
+        string requestId,
+        string joinPassword,
+        RconEndpoint endpoint,
+        CancellationToken cancellationToken = default);
 }

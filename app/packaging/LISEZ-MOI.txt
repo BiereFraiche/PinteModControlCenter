@@ -1,7 +1,7 @@
-PINTE MOD CONTROL CENTER v2.2.0 — RELEASE CANDIDATE 2
-=====================================================
+PINTE MOD CONTROL CENTER v2.2.0 — VERSION STABLE
+=================================================
 
-Cette version est une candidate opérateur. Elle peut être utilisée sans installer
+Cette version stable peut être utilisée sans installer
 le SDK .NET lorsque le paquet portable Windows x64 complet est fourni.
 
 DÉMARRAGE
@@ -71,6 +71,8 @@ copiés dans une archive de revue.
 - Fondation RCON et Pause/Reprendre : validées.
 - Diagnostics Carte, Courant, Pack-a-Punch, Manche et Joueurs : validés par tests
   automatisés et vérification humaine sur serveur réel.
+- Protection des connexions directes par `net_password` : refus sans valeur ou avec
+  une valeur incorrecte, connexion acceptée avec la bonne valeur.
 - Commandes gameplay réelles : Pause/Reprendre avec retour local ; actions serveur et
   joueur listées dans l’interface avec vérification manuelle obligatoire.
 - L’historique de modération local du joueur sélectionné est consultable en lecture
@@ -78,6 +80,8 @@ copiés dans une archive de revue.
 - Le catalogue de cartes combine les 14 cartes officielles, une ligne de rotation
   collée explicitement, les cartes custom ajoutées localement et la carte observée.
   Aucun server_zm.cfg n’est lu automatiquement et aucune écriture serveur n’est faite.
-- Changement/redémarrage de carte, boss et événement restent simulés tant qu’un
-  contrat générique sûr n’est pas disponible.
-- Depuis un autre PC, la source LAN attend le partage read-only \\portable\PinteModData.
+- Changement de carte et événements génériques restent simulés tant qu’un contrat
+  sûr n’est pas disponible. Redémarrage de carte et boss utilisent les contrats
+  fermés lorsqu’ils sont publiés comme disponibles par PinteMod.
+- Depuis un autre PC, la source LAN attend un partage read-only explicite tel que
+  \\serveur-exemple\PinteModData.

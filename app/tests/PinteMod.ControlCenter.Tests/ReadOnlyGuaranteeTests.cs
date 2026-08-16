@@ -61,21 +61,54 @@ public sealed class ReadOnlyGuaranteeTests
     }
 
     [TestMethod]
-    public async Task ReadingAllFiveAuthorizedFiles_DoesNotChangeSizeDateOrHash()
+    public async Task ReadingAllAuthorizedSessionHeartbeatAndRuntimeFiles_DoesNotChangeSizeDateOrHash()
     {
         using var root = new TemporaryServerRoot();
         var paths = new List<string> { root.WriteSession() };
         paths.AddRange(Enum.GetValues<LocalServiceKind>().Select(kind => root.WriteHeartbeat(kind, Now)));
+        paths.Add(root.WritePinteModHeartbeat(Now.AddSeconds(-2)));
+        paths.Add(root.WriteRuntimeSnapshot(Now.AddSeconds(-2)));
         var before = paths.ToDictionary(path => path, TemporaryServerRoot.Fingerprint);
         var clock = new FakeClock(Now);
         using var sessionReader = new SessionManifestReader(root.Options, clock);
         using var heartbeatReader = new ServiceHeartbeatReader(root.Options, clock);
+        using var pinteModHeartbeatReader = new PinteModHeartbeatReader(root.Options, clock);
+        using var runtimeReader = new ControlCenterRuntimeSnapshotReader(root.Options, clock);
 
         await sessionReader.ReadAsync();
         foreach (var service in Enum.GetValues<LocalServiceKind>())
         {
             await heartbeatReader.ReadAsync(service);
         }
+        await pinteModHeartbeatReader.ReadAsync("session-local-001");
+        await runtimeReader.ReadAsync("session-local-001", "zm_tomb");
+
+        foreach (var path in paths)
+        {
+            Assert.AreEqual(before[path], TemporaryServerRoot.Fingerprint(path), $"Le fichier a changé : {path}");
+        }
+    }
+
+    [TestMethod]
+    public async Task ReadingControlCenterContracts_DoesNotChangeSizeDateOrHash()
+    {
+        using var root = new TemporaryServerRoot();
+        var paths = new[]
+        {
+            root.Write(LocalPinteModFile.ControlCenterCapabilities, ContractCapabilities()),
+            root.Write(LocalPinteModFile.ControlCenterActionFeedback, ContractFeedback()),
+            root.Write(LocalPinteModFile.ControlCenterMapTransition, ContractTransition()),
+            root.Write(LocalPinteModFile.ControlCenterServerIdentity, ContractIdentity())
+        };
+        foreach (var path in paths)
+        {
+            File.SetLastWriteTimeUtc(path, Now.AddSeconds(-2).UtcDateTime);
+        }
+
+        var before = paths.ToDictionary(path => path, TemporaryServerRoot.Fingerprint);
+        using var reader = new ControlCenterContractReader(root.Options, new FakeClock(Now));
+
+        _ = await reader.ReadAsync("session-local-001", "zm_tomb");
 
         foreach (var path in paths)
         {
@@ -187,5 +220,21 @@ public sealed class ReadOnlyGuaranteeTests
         Soft pause: map/EE script timers are NOT frozen
         END
 
+        """;
+
+    private static string ContractCapabilities() => """
+        {"schema_version":1,"module_version":"2.1.1","contract_module_version":"0.1.3","command_contract_version":1,"session_id":"session-local-001","sequence":1,"generated_gettime":1,"updated_at_utc":"","time_authority":"session_gettime_and_file_mtime","map_code":"zm_tomb","map_source":"runtime","map_installation_authority":"unknown","map_count":0,"rotation_state":"unknown","rotation_entry_count":0,"change_map":false,"restart_map":true,"event_count":0,"boss_count":0,"power_up_count":0,"diagnostic_count":0,"transition_state":"idle","set_hostname":true,"set_join_password":true,"clear_join_password":true,"join_password_transport":"loopback_rcon_ephemeral","map_profile":"OFFICIAL","power_support":"SUPPORTED","pack_a_punch_support":"SUPPORTED","event_support":"NONE","boss_support":"NONE","music_support":"SUPPORTED","dog_round_support":"NONE","active_pintemod_bosses":0,"max_pintemod_bosses":2}
+        """;
+
+    private static string ContractFeedback() => """
+        {"schema_version":1,"session_id":"session-local-001","sequence":1,"generated_gettime":1,"updated_at_utc":"","time_authority":"session_gettime_and_file_mtime","request_id":"request_0001","action":"restart_map","status":"accepted","result_code":"accepted"}
+        """;
+
+    private static string ContractTransition() => """
+        {"schema_version":1,"request_id":"request_0001","action":"restart_map","requested_map":"zm_tomb","originating_session_id":"session-local-001","status":"transitioning","result_code":"transition_started","generated_gettime":1,"updated_at_utc":"","time_authority":"session_gettime_and_file_mtime"}
+        """;
+
+    private static string ContractIdentity() => """
+        {"schema_version":1,"session_id":"session-local-001","sequence":1,"generated_gettime":1,"updated_at_utc":"","time_authority":"session_gettime_and_file_mtime","public_hostname":"PinteMod Test","public_hostname_state":"observed","join_password_enabled":false,"revision":1}
         """;
 }

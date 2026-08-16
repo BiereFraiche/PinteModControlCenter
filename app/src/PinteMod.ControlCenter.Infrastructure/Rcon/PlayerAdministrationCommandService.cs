@@ -13,11 +13,6 @@ public sealed class PlayerAdministrationCommandService(
     IClock clock,
     IRconOperationGate? operationGate = null) : IPlayerAdministrationCommandService
 {
-    private static readonly HashSet<string> AllowedWeaponAliases = new(StringComparer.Ordinal)
-    {
-        "raygun", "raygunmk2", "kn44", "haymaker", "dingo"
-    };
-
     private static readonly HashSet<string> AllowedPerkAliases = new(StringComparer.Ordinal)
     {
         "jug", "quick", "speed", "doubletap", "staminup", "deadshot", "mule", "cherry", "widows"
@@ -157,10 +152,14 @@ public sealed class PlayerAdministrationCommandService(
                 $"ammo {xuid}",
             PlayerAdministrationAction.ToggleGodMode when request.PointsAmount is null && option is null =>
                 $"godmode {xuid}",
-            PlayerAdministrationAction.GiveWeapon when request.PointsAmount is null && option is not null && AllowedWeaponAliases.Contains(option) =>
+            PlayerAdministrationAction.GiveWeapon when request.PointsAmount is null && option is not null && PlayerWeaponCatalog.IsAllowedAlias(option) =>
                 $"ezzweapon {xuid} {option}",
+            PlayerAdministrationAction.PackAPunchCurrentWeapon when request.PointsAmount is null && option is null =>
+                $"ezzpapweapon {xuid}",
             PlayerAdministrationAction.GivePerk when request.PointsAmount is null && option is not null && AllowedPerkAliases.Contains(option) =>
                 $"ezzperk {xuid} {option}",
+            PlayerAdministrationAction.RemovePerk when request.PointsAmount is null && option is not null && AllowedPerkAliases.Contains(option) =>
+                $"ezzremoveperk {xuid} {option}",
             PlayerAdministrationAction.GiveAllPerks when request.PointsAmount is null && option is null =>
                 $"ezzallperks {xuid}",
             PlayerAdministrationAction.GivePowerUp when request.PointsAmount is null && option is not null && AllowedPowerUpAliases.Contains(option) =>

@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PinteMod.ControlCenter.Controls;
+using PinteMod.ControlCenter.Services;
 using PinteMod.ControlCenter.ViewModels;
 using PinteMod.ControlCenter.Views;
 
@@ -54,6 +56,17 @@ public sealed class SettingsViewRuntimeTests
                     background.Color == foreground.Color));
                 Assert.IsTrue(FindLogicalChildren<TextBlock>(view).Any(text =>
                     text.Text.Contains("Une simple copie des fichiers serveur ne suffit pas.", StringComparison.Ordinal)));
+
+                var hostnameEditor = new BoiiiHostnameEditor { EncodedText = "^1Rou^4ge" };
+                hostnameEditor.Measure(new Size(640, 240));
+                hostnameEditor.Arrange(new Rect(0, 0, 640, 240));
+                hostnameEditor.UpdateLayout();
+                var preview = (TextBlock)hostnameEditor.FindName("PreviewTextBlock");
+                Assert.AreEqual(2, preview.Inlines.Count);
+
+                AccentThemeService.Apply("violet");
+                var appliedAccent = ((SolidColorBrush)application.FindResource("AccentBrush")).Color;
+                Assert.AreEqual(AccentThemeService.Resolve("violet").AccentColor, appliedAccent);
 
                 application.Shutdown();
             }
