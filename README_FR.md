@@ -22,6 +22,28 @@ Créé et maintenu par **BiereFraiche**, avec l’assistance de développement d
 
 [Télécharger v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
+## Integration Preview 4B1 Fix15
+
+Cette branche prépare la prochaine génération du Control Center sans remplacer la stable v2.2.0 :
+
+| Élément | État Fix15 |
+|---|---|
+| Version produit | `2.4.0-preview-integration.4b1.fix15` |
+| Compilation | Debug et Release, 0 avertissement, 0 erreur |
+| Tests automatisés | 586/586 réussis dans les deux configurations |
+| Distribution | EXE autonome + dossier portable + ZIP + SHA-256 |
+| Validation terrain | Server3, Agent multi-PC et interface VM encore à confirmer humainement |
+
+La Preview ajoute notamment le Manager jusqu’à huit serveurs, l’adaptation BOIII/PinteMod/GSC tiers, l’historique de chat local, l’Agent SMB récupérable et le conditionnement en deux formats. Une capacité PinteMod first-party n’est activée que si ses scripts correspondent à des empreintes SHA-256 connues ; un script tiers portant le même nom reste limité et ne reçoit aucun transport de commandes.
+
+Pour reconstruire tous les livrables en une passe sous Windows :
+
+```powershell
+.\BUILD_PREVIEW.bat
+```
+
+Le Control Center peut être installé dans une VM Windows et affiché depuis un autre PC au moyen de la console de l’hyperviseur ou de RDP derrière un VPN/passerelle sécurisée. Il n’ajoute aucun serveur web ni port de contrôle distant. Voir le [guide de déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
+
 ![Direction graphique validée de PinteMod Control Center](design/pintemod-control-center-reference.png)
 
 ## Fonctionnalités principales
@@ -42,7 +64,7 @@ Créé et maintenu par **BiereFraiche**, avec l’assistance de développement d
 - catalogue de cartes officiel/custom local sans lecture automatique de `server_zm.cfg` ;
 - confirmation humaine, verrou transversal et aucun retry automatique.
 
-## Prochaine étape : v2.3 Adaptive BOIII Core
+## Vision : Adaptive BOIII Core
 
 La stable v2.2.0 est le socle, pas la ligne d’arrivée. Le prochain grand chantier vise à rendre le Control Center **utile avec BOIII seul**, puis progressivement plus riche lorsque des capacités fiables sont réellement disponibles :
 
@@ -130,7 +152,15 @@ Lancer depuis les sources :
 dotnet run --project .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Debug
 ```
 
-Ces commandes ne lancent aucun serveur BOIII, BAT ou outil externe.
+Pour compiler, tester, publier et auditer automatiquement les deux formats Preview :
+
+```powershell
+.\BUILD_PREVIEW.bat
+```
+
+Les sorties sont placées dans `app/artifacts/integration-preview4b1-fix15-win-x64/` : EXE unique, dossier autonome, deux ZIP et fichier `SHA256SUMS.txt`.
+
+Les commandes `dotnet` de compilation et de test ne lancent aucun serveur BOIII, BAT ou outil externe. Le script Preview appelle uniquement les outils locaux de compilation, de test, de compression et d’audit.
 
 ## Contrôles réels et limites volontaires
 
@@ -153,6 +183,20 @@ Les besoins futurs sont documentés dans [`docs/PINTEMOD_REQUIREMENTS_NEXT.md`](
 Les builds, paquets portables, configurations locales, secrets DPAPI, copies serveur et données runtime sont exclus de Git.
 
 ## État de validation
+
+Preview 4B1 Fix15 automatisée :
+
+```text
+Compilation Debug     PASS — 0 avertissement, 0 erreur
+Compilation Release   PASS — 0 avertissement, 0 erreur
+Tests Debug           PASS — 586/586
+Tests Release         PASS — 586/586
+Paquet mono-EXE       PASS — 1 EXE autonome, audit confidentialité réussi
+Paquet dossier        PASS — 465 fichiers, archive et audit réussis
+Validation terrain    EN ATTENTE — Server3, Agent multi-PC et interface dans la VM
+```
+
+Stable publique v2.2.0 :
 
 ```text
 Compilation Debug     PASS — 0 avertissement, 0 erreur
