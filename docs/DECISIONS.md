@@ -945,3 +945,13 @@ Dernière mise à jour : 2026-08-12
 **Décision.** Tous les fichiers `*.gsc` du dépôt sont conservés et extraits avec des fins de ligne LF via `.gitattributes`. Les ZIP restent binaires. Les empreintes revues ne sont jamais calculées après une normalisation implicite au runtime : la reproductibilité appartient au dépôt et au processus de build.
 
 **Validation.** Le test d’installation depuis la ressource embarquée reste obligatoire sur Windows local et GitHub Actions. Toute modification d’octets d’un GSC first-party exige une nouvelle empreinte revue, jamais un assouplissement de la règle fail-closed.
+
+## ADR-117 — L’auto-diagnostic s’exécute avant tout contexte serveur
+
+**Décision.** Fix16 fournit un mode `--self-test` traité immédiatement au démarrage de l’application, avant la construction du Manager, des profils, du stockage DPAPI, de l’Agent et des transports. La page Paramètres consomme le même service, mais uniquement après une demande manuelle de l’opérateur.
+
+**Périmètre.** Le contrôle porte sur la plateforme, la version produit, les assemblages, les six vues WPF et les ressources PinteMod/Bridge embarquées. Les payloads sont installés dans un enfant GUID d’une racine temporaire fixe, analysés avec les mêmes règles first-party que le produit, puis cet enfant exact est supprimé.
+
+**Confidentialité.** Le rapport utilise des messages fermés. Il ne sérialise ni exception, profil serveur, secret, nom de machine/utilisateur, adresse réseau ou chemin privé. Le chemin de sortie en ligne de commande doit être local, absolu et terminer par `.txt` ; un chemin UNC est refusé.
+
+**Automatisation.** Le build et la CI exigent le code de sortie `0` et `RESULTAT=PASS` avant de créer les archives. `SELF-TEST.txt` reçoit sa propre empreinte dans `SHA256SUMS.txt`. Cet automatisme réduit le besoin d’une VM pour la validation de packaging, sans prétendre remplacer les essais terrain Server3 et Agent multi-PC.

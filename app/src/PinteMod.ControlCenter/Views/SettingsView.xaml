@@ -294,6 +294,42 @@
 
             <Border Style="{StaticResource CardStyle}" Margin="4">
                 <StackPanel>
+                    <Grid>
+                        <TextBlock Text="AUTO-DIAGNOSTIC LOCAL" Style="{StaticResource SectionTitleStyle}" />
+                        <Border HorizontalAlignment="Right" Background="{StaticResource SuccessSoftBrush}"
+                                BorderBrush="{StaticResource SuccessBrush}" BorderThickness="1" CornerRadius="4" Padding="7,3">
+                            <TextBlock Text="SANS SERVEUR" Foreground="{StaticResource SuccessBrush}" FontSize="9" FontWeight="Bold" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="Vérifie la version, les assemblages, les six pages et les payloads embarqués dans une racine temporaire supprimée ensuite."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,7,0,10" TextWrapping="Wrap" />
+                    <TextBlock Text="Aucun profil, secret DPAPI, réseau ou transport RCON n’est utilisé."
+                               Foreground="{StaticResource SuccessBrush}" FontSize="10" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <Button Content="LANCER L’AUTO-DIAGNOSTIC"
+                            Command="{Binding RunSelfTestCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,12,0,0" />
+                    <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,10,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding SelfTestStatus}"
+                                       Foreground="{Binding SelfTestHealth, Converter={StaticResource StatusBrushConverter}}"
+                                       FontSize="10" FontWeight="Bold" />
+                            <TextBox Text="{Binding SelfTestReport, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto" MaxHeight="220" Margin="0,8,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button Content="COPIER LE RAPPORT" Command="{Binding CopySelfTestReportCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" />
+                                <TextBlock Text="{Binding SelfTestCopyStatus}" Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="9" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
                     <TextBlock Text="SÉCURITÉ" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="Garanties actives du mode opérateur." Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,16" />
                     <Grid Margin="0,0,0,12"><Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" HorizontalAlignment="Left" /><TextBlock Text="Aucun port entrant ni découverte réseau" Margin="18,0,0,0" FontSize="12" /></Grid>
@@ -327,7 +363,7 @@
                 <StackPanel>
                     <TextBlock Text="À PROPOS" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="PinteMod Control Center" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,0" />
-                    <TextBlock Text="Version 2.4.0 · Preview 4B1 Fix15 · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
+                    <TextBlock Text="Version 2.4.0 · Preview 4B1 Fix16 · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
                     <TextBlock Text="Base serveur : PinteMod v2.1.1 stable" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,14,0,0" />
                     <TextBlock Text="Application Windows locale, sans compte, serveur web ni port entrant."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,8,0,0" />

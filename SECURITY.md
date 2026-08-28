@@ -22,7 +22,7 @@ Use synthetic identifiers and a dedicated test copy when preparing a reproductio
 
 ## Supported baseline
 
-Security fixes target the latest source on `main` and the latest documented operator preview. The current development candidate is Integration Preview 4B1 Fix15; v2.2.0 remains the public stable baseline and 4A7 Fix2 the human-validated fallback for the Manager line.
+Security fixes target the latest source on `main` and the latest documented operator preview. The current development candidate is Integration Preview 4B1 Fix16; v2.2.0 remains the public stable baseline and 4A7 Fix2 the human-validated fallback for the Manager line.
 
 ## Operational guarantees
 

@@ -225,6 +225,34 @@ public sealed class SettingsOperatorViewModelTests
     }
 
     [TestMethod]
+    public async Task SelfTest_ProducesAndCopiesAnAnonymizedReportWithoutRcon()
+    {
+        var report = new ControlCenterSelfTestReport(
+            "2.4.0-preview-integration.4b1.fix16",
+            DateTimeOffset.Parse("2026-08-28T16:00:00Z"),
+            [new ControlCenterSelfTestCheck("Interface WPF", true, "Six pages chargées.")]);
+        var selfTest = new StubSelfTestService(report);
+        var clipboard = new CapturingClipboard();
+        var viewModel = new SettingsViewModel(
+            clipboardService: clipboard,
+            selfTestService: selfTest);
+
+        viewModel.RunSelfTestCommand.Execute(null);
+        await selfTest.Called.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await WaitForCommandAsync(viewModel.RunSelfTestCommand);
+
+        Assert.AreEqual("RÉUSSI", viewModel.SelfTestStatus);
+        Assert.AreEqual(ServiceHealth.Healthy, viewModel.SelfTestHealth);
+        StringAssert.Contains(viewModel.SelfTestReport, "RESULTAT=PASS");
+        Assert.IsTrue(viewModel.CanCopySelfTestReport);
+
+        viewModel.CopySelfTestReportCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.CopySelfTestReportCommand);
+        Assert.AreEqual(viewModel.SelfTestReport, clipboard.Text);
+        Assert.AreEqual("Rapport anonymisé copié.", viewModel.SelfTestCopyStatus);
+    }
+
+    [TestMethod]
     public void AdaptiveNativeProfile_DisablesPinteModRconDiagnostics()
     {
         var service = new StubRconDiagnosticService(new RconExecutionResult(
@@ -351,5 +379,27 @@ public sealed class SettingsOperatorViewModelTests
         }
 
         public Task<string?> ReadAsync(CancellationToken cancellationToken = default) => Task.FromResult(_secret);
+    }
+
+    private sealed class StubSelfTestService(ControlCenterSelfTestReport report) : IControlCenterSelfTestService
+    {
+        public TaskCompletionSource Called { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<ControlCenterSelfTestReport> RunAsync(CancellationToken cancellationToken = default)
+        {
+            Called.TrySetResult();
+            return Task.FromResult(report);
+        }
+    }
+
+    private sealed class CapturingClipboard : ITextClipboardService
+    {
+        public string? Text { get; private set; }
+
+        public bool TrySetText(string text)
+        {
+            Text = text;
+            return true;
+        }
     }
 }

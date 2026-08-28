@@ -1,8 +1,11 @@
-# Préparation GitHub — Integration Preview 4B1 Fix15
+# Publication GitHub — Integration Preview 4B1 Fix15
+
+Statut au 2026-08-28 : PR #7 fusionnée et prerelease publiée sur
+`v2.4.0-preview-integration.4b1.fix15`.
 
 ## Dépôts et rôles
 
-- `BiereFraiche/PinteModControlCenter` : code source, CI, pull request et future release du Control Center ;
+- `BiereFraiche/PinteModControlCenter` : code source, CI, pull request et release du Control Center ;
 - `BiereFraiche/PinteMod` : code serveur PinteMod et métadonnées publiques actuellement consultées par le vérificateur de mises à jour.
 
 Ne pas mélanger les tags ou releases des deux produits.
@@ -44,11 +47,11 @@ La branche doit être poussée sans force uniquement après ordre explicite. La 
 - aucun Generic Bridge installé automatiquement ;
 - aucun port entrant ou service de contrôle distant.
 
-## Publication éventuelle après validation humaine
+## Publication réalisée
 
-- créer une prerelease, jamais une stable ;
+- prerelease, jamais stable ;
 - titre : `PinteMod Control Center v2.4.0 — Integration Preview 4B1 Fix15` ;
-- joindre l’EXE unique, le ZIP du dossier et leurs SHA-256 ;
-- joindre les notes `docs/RELEASE_NOTES_v2.4.0-preview-integration.4b1.fix15.md` ;
-- joindre `SHA256SUMS.txt` ou publier une empreinte séparée pour chaque asset ;
-- ne jamais remplacer silencieusement un asset portant le même nom.
+- tag sur `c0c0c660d28fc373cdff4f6cc1196929815a96c5` ;
+- assets : EXE unique, ZIP mono-EXE, ZIP dossier et `SHA256SUMS.txt` ;
+- quatre digests GitHub vérifiés identiques aux fichiers locaux ;
+- URL : <https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0-preview-integration.4b1.fix15>.

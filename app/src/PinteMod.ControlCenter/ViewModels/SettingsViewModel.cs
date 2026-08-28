@@ -20,6 +20,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly MapCatalogState? _mapCatalogState;
     private readonly ITextClipboardService? _clipboardService;
     private readonly IControlCenterSnapshotStore? _snapshotStore;
+    private readonly IControlCenterSelfTestService? _selfTestService;
     private readonly bool _allowPinteModDiagnostics;
     private string _profileDisplayName;
     private AccentThemeOption _selectedAccentTheme = AccentThemeService.Resolve(OperatorAccentTheme.DefaultKey);
@@ -48,6 +49,10 @@ public sealed class SettingsViewModel : PageViewModel
     private string _mapCatalogStatus = "CATALOGUE OFFICIEL";
     private string _mapCatalogMessage = "14 cartes officielles disponibles · ajoutez les customs localement ou importez une ligne de rotation.";
     private ServiceHealth _mapCatalogHealth = ServiceHealth.Unknown;
+    private string _selfTestStatus = "NON EXÉCUTÉ";
+    private string _selfTestReport = "L’auto-diagnostic ne lit aucun profil serveur et n’envoie aucune commande.";
+    private ServiceHealth _selfTestHealth = ServiceHealth.Unknown;
+    private string _selfTestCopyStatus = "Aucun rapport copié.";
 
     public SettingsViewModel(
         ControlCenterDataMode dataMode = ControlCenterDataMode.Simulation,
@@ -66,7 +71,8 @@ public sealed class SettingsViewModel : PageViewModel
         ITextClipboardService? clipboardService = null,
         IControlCenterSnapshotStore? snapshotStore = null,
         ServerIntegrationProfile? integrationProfile = null,
-        bool allowPinteModDiagnostics = true)
+        bool allowPinteModDiagnostics = true,
+        IControlCenterSelfTestService? selfTestService = null)
         : base("Paramètres", "Configuration opérateur locale ou LAN · diagnostics RCON manuels")
     {
         _localDataSourceProbe = localDataSourceProbe;
@@ -80,6 +86,7 @@ public sealed class SettingsViewModel : PageViewModel
         _clipboardService = clipboardService;
         _snapshotStore = snapshotStore;
         _allowPinteModDiagnostics = allowPinteModDiagnostics;
+        _selfTestService = selfTestService;
         var configuration = initialConfiguration ?? OperatorConfiguration.Default;
         _profileDisplayName = configuration.ProfileDisplayName;
         _selectedAccentTheme = AccentThemeService.Resolve(configuration.AccentColorKey);
@@ -178,6 +185,13 @@ public sealed class SettingsViewModel : PageViewModel
         CopyRconResponseCommand = new AsyncRelayCommand(
             CopyRconResponseAsync,
             () => CanCopyRconResponse);
+        RunSelfTestCommand = new AsyncRelayCommand(
+            RunSelfTestAsync,
+            () => _selfTestService is not null,
+            _ => SetSelfTestFailure());
+        CopySelfTestReportCommand = new AsyncRelayCommand(
+            CopySelfTestReportAsync,
+            () => CanCopySelfTestReport);
         ImportMapRotationCommand = new AsyncRelayCommand(
             ImportMapRotationAsync,
             () => CanImportMapRotation,
@@ -227,6 +241,10 @@ public sealed class SettingsViewModel : PageViewModel
     public AsyncRelayCommand TestRconPowerUpCatalogCommand { get; }
 
     public AsyncRelayCommand CopyRconResponseCommand { get; }
+
+    public AsyncRelayCommand RunSelfTestCommand { get; }
+
+    public AsyncRelayCommand CopySelfTestReportCommand { get; }
 
     public AsyncRelayCommand ImportMapRotationCommand { get; }
 
@@ -516,6 +534,42 @@ public sealed class SettingsViewModel : PageViewModel
         get => _rconCopyStatus;
         private set => SetProperty(ref _rconCopyStatus, value);
     }
+
+    public string SelfTestStatus
+    {
+        get => _selfTestStatus;
+        private set => SetProperty(ref _selfTestStatus, value);
+    }
+
+    public string SelfTestReport
+    {
+        get => _selfTestReport;
+        private set
+        {
+            if (SetProperty(ref _selfTestReport, value))
+            {
+                OnPropertyChanged(nameof(CanCopySelfTestReport));
+                CopySelfTestReportCommand?.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public ServiceHealth SelfTestHealth
+    {
+        get => _selfTestHealth;
+        private set => SetProperty(ref _selfTestHealth, value);
+    }
+
+    public string SelfTestCopyStatus
+    {
+        get => _selfTestCopyStatus;
+        private set => SetProperty(ref _selfTestCopyStatus, value);
+    }
+
+    public bool CanCopySelfTestReport =>
+        _clipboardService is not null &&
+        !string.IsNullOrWhiteSpace(SelfTestReport) &&
+        SelfTestStatus is "RÉUSSI" or "ÉCHEC";
 
     public string RconCommandSent
     {
@@ -883,6 +937,38 @@ public sealed class SettingsViewModel : PageViewModel
             ? "Réponse neutralisée copiée."
             : "Copie impossible : le presse-papiers Windows est momentanément indisponible.";
         return Task.CompletedTask;
+    }
+
+    private async Task RunSelfTestAsync()
+    {
+        if (_selfTestService is null)
+        {
+            return;
+        }
+
+        SelfTestStatus = "EN COURS";
+        SelfTestHealth = ServiceHealth.Unknown;
+        SelfTestReport = "Chargement des vues et vérification des ressources embarquées…";
+        SelfTestCopyStatus = "Aucun rapport copié.";
+        var report = await _selfTestService.RunAsync();
+        SelfTestReport = report.ToDisplayText();
+        SelfTestStatus = report.Success ? "RÉUSSI" : "ÉCHEC";
+        SelfTestHealth = report.Success ? ServiceHealth.Healthy : ServiceHealth.Error;
+    }
+
+    private Task CopySelfTestReportAsync()
+    {
+        SelfTestCopyStatus = _clipboardService?.TrySetText(SelfTestReport) == true
+            ? "Rapport anonymisé copié."
+            : "Copie impossible : le presse-papiers Windows est momentanément indisponible.";
+        return Task.CompletedTask;
+    }
+
+    private void SetSelfTestFailure()
+    {
+        SelfTestStatus = "ÉCHEC";
+        SelfTestHealth = ServiceHealth.Error;
+        SelfTestReport = "Le self-test n’a pas pu être terminé dans son environnement local.";
     }
 
     private void SetRconFailure(string message)

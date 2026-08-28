@@ -2,6 +2,18 @@
 
 Dernière mise à jour : 2026-08-28
 
+## Integration Preview 4B1 Fix16
+
+- **Terminé techniquement** — Ajouter un auto-diagnostic local sans profil serveur, secret DPAPI, réseau ni RCON.
+- **Terminé techniquement** — Vérifier version, assemblages, six vues WPF et payloads embarqués.
+- **Terminé techniquement** — Produire un rapport anonymisé exploitable depuis l’interface, le build et la CI.
+- **Terminé techniquement** — Ajouter `SELF-TEST.txt` aux empreintes de livraison.
+- **Terminé techniquement** — Exécuter 596/596 tests en Debug et Release.
+- **À valider humainement** — Lisibilité du nouveau panneau Paramètres sur la machine ou VM disponible.
+- **À valider humainement** — Server3, puis seulement Server1/2.
+- **À valider humainement** — Synchronisation Agent bidirectionnelle, SHA différent, absence de downgrade et récupération automatique.
+- **À faire sur ordre explicite en cours** — Push, PR et intégration GitHub de Fix16.
+
 ## Integration Preview 4B1 Fix15
 
 - **Terminé techniquement** — Importer Fix14 sur une branche issue de la dernière base publique Control Center.
@@ -12,7 +24,8 @@ Dernière mise à jour : 2026-08-28
 - **À valider humainement** — Interface et onboarding Fix15.
 - **À valider humainement** — Server3, puis seulement Server1/2.
 - **À valider humainement** — Synchronisation Agent bidirectionnelle, SHA différent, absence de downgrade et récupération automatique.
-- **À faire sur ordre explicite** — Push, PR et éventuelle prerelease GitHub.
+- **Terminé** — Push, PR #7 et fusion sur `main`.
+- **Terminé** — Prerelease GitHub publiée avec EXE, deux ZIP et empreintes auditées.
 
 ## Interface graphique
 

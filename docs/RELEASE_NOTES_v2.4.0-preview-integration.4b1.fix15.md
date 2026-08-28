@@ -22,11 +22,11 @@
 - joueurs ciblés par identifiant stable, jamais uniquement par pseudo ;
 - aucune donnée runtime ou configuration locale dans les distributions.
 
-## Validation requise avant prerelease
+## Validation automatisée et essais terrain restants
 
 - cycle automatisé local réussi : 0 avertissement/erreur, 586/586 tests Debug et Release, audits des deux paquets réussis ;
-- test de l’interface et du redimensionnement ;
-- Server3 avant Server1/2 ;
-- mise à jour Agent bidirectionnelle, même version/SHA différent, aucun downgrade et récupération après arrêt.
+- test de l’interface et du redimensionnement : en attente ;
+- Server3 avant Server1/2 : en attente ;
+- mise à jour Agent bidirectionnelle, même version/SHA différent, aucun downgrade et récupération après arrêt : en attente.
 
 Empreintes locales de préparation : voir `docs/STATUS_PREVIEW4B1_FIX15.md` et `app/artifacts/integration-preview4b1-fix15-win-x64/SHA256SUMS.txt`.

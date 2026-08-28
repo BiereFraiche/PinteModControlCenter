@@ -277,7 +277,8 @@ public sealed class ServerRuntimeContext : IDisposable
             snapshotStore,
             integrationProfile,
             allowPinteModDiagnostics: string.IsNullOrWhiteSpace(integrationRoot) ||
-                                     integrationProfile.SupportsPinteModClosedCommands);
+                                     integrationProfile.SupportsPinteModClosedCommands,
+            selfTestService: new ControlCenterSelfTestService());
         var managedRuntimeProbe = new ManagedServerRuntimeProbe();
         bool ProbeManagedServerRunning()
         {

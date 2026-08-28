@@ -7,7 +7,8 @@ Date : 2026-08-28
 - stable publique : `v2.2.0` ;
 - base Manager validée humainement : Onboarding Preview 4A7 Fix2 ;
 - candidat de développement : `2.4.0-preview-integration.4b1.fix15` ;
-- statut : Preview, non stable, sans release publique.
+- statut : prerelease GitHub publiée, non stable ;
+- URL : `https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0-preview-integration.4b1.fix15`.
 
 ## Contenu
 
