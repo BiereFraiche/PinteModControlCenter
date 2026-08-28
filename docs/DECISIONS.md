@@ -937,3 +937,11 @@ Dernière mise à jour : 2026-08-12
 **VM.** Le Control Center peut s’exécuter dans une VM Windows et être affiché depuis un autre PC au moyen d’une console d’hyperviseur ou d’un RDP/VPN déjà administré. Cette capacité ne justifie aucun listener, port entrant, raw shell, découverte réseau ou contrôle distant ajouté au produit.
 
 **Distribution.** Une même construction produit un EXE unique et un dossier autonome. Les deux formats contiennent le même produit, sont audités séparément et restent des candidats Preview jusqu’aux tests humains Server3 et Agent multi-PC.
+
+## ADR-116 — Les scripts GSC audités utilisent un encodage de lignes canonique
+
+**Constat.** Les empreintes first-party portent sur les octets exacts. Sans règle Git explicite, un checkout Windows peut convertir un GSC LF en CRLF et rendre l’empreinte différente alors que le contenu logique n’a pas changé. La première CI de la PR Fix15 a correctement refusé le Bridge dans cette situation.
+
+**Décision.** Tous les fichiers `*.gsc` du dépôt sont conservés et extraits avec des fins de ligne LF via `.gitattributes`. Les ZIP restent binaires. Les empreintes revues ne sont jamais calculées après une normalisation implicite au runtime : la reproductibilité appartient au dépôt et au processus de build.
+
+**Validation.** Le test d’installation depuis la ressource embarquée reste obligatoire sur Windows local et GitHub Actions. Toute modification d’octets d’un GSC first-party exige une nouvelle empreinte revue, jamais un assouplissement de la règle fail-closed.

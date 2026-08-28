@@ -3954,4 +3954,19 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 
 - validation humaine Server3 ;
 - scénario Agent bidirectionnel entre deux PC ;
-- push, PR et prerelease uniquement sur ordre explicite.
+- prerelease uniquement sur ordre explicite après validation humaine.
+
+## 2026-08-28 — Publication de la branche Fix15 et correction de reproductibilité CI
+
+### GitHub
+
+- branche `codex/integration-preview-4b1-fix15` poussée après ordre explicite ;
+- pull request #7 ouverte vers `main` avec les limites Preview et les validations documentées ;
+- README français et anglais complétés sans masquer la stable v2.2.0.
+
+### Écart détecté par la première CI
+
+- les builds Debug et Release réussissaient, mais le test du Bridge embarqué échouait sur le runner Windows ;
+- cause : les fichiers `.gsc` n’avaient pas de règle de fin de ligne explicite, ce qui permettait un checkout CRLF et modifiait leur SHA-256 ;
+- correction : `*.gsc text eol=lf` dans `.gitattributes`, afin que l’empreinte first-party soit identique sur chaque checkout ;
+- la politique fail-closed reste inchangée et n’accepte aucune empreinte de contenu transformé.
