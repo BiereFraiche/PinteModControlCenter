@@ -45,6 +45,21 @@ public sealed class LiveConsoleViewModelTests
         Assert.IsFalse(viewModel.AutoScrollEnabled);
     }
 
+
+    [TestMethod]
+    public async Task LiveConsole_DisplaysOldestToNewestSoAutoScrollEndsOnLatestEvent()
+    {
+        var latest = Event("Dernier", 20);
+        var oldest = Event("Premier", 10);
+        var viewModel = new LogsViewModel(new MutableStore(Snapshot([latest, oldest])));
+
+        await viewModel.InitializeAsync();
+
+        CollectionAssert.AreEqual(
+            new[] { "Premier", "Dernier" },
+            viewModel.Events.Select(item => item.Title).ToArray());
+    }
+
     [TestMethod]
     public async Task PauseEvents_HaveDedicatedFilterAndExplicitLocalSource()
     {

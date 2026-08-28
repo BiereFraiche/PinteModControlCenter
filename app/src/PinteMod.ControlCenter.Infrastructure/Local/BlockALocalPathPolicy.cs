@@ -61,6 +61,19 @@ public sealed class BlockALocalPathPolicy
         return ResolveRelativePath(Path.Combine("logs", "sessions", sessionId, fileName));
     }
 
+    public string ResolveSessionChatLogPath(string sessionId)
+    {
+        if (!IsSafeIdentifier(sessionId, 96))
+        {
+            throw new InvalidOperationException("Identifiant de session non autorisé.");
+        }
+
+        return ResolveRelativePath(Path.Combine("logs", "sessions", sessionId, "chat", "session.log"));
+    }
+
+    public static string GetSessionChatLogSourceLabel(string sessionId) =>
+        $"logs/sessions/{(IsSafeIdentifier(sessionId, 96) ? sessionId : "<session-invalide>")}/chat/session.log";
+
     public string ResolveLocalizationDirectory(bool manual) =>
         ResolveRelativePath(Path.Combine("localization", manual ? "manual" : "auto"));
 

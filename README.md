@@ -1,11 +1,15 @@
-# PinteMod Control Center v2.2
+# PinteMod Control Center
+
+> **Current development build: Integration Preview 4B1 Fix15 (`2.4.0-preview-integration.4b1.fix15`).** It adds adaptive BOIII/PinteMod/third-party GSC support, the multi-server Manager and the SMB Agent. First-party capabilities now require a reviewed SHA-256 fingerprint. The Preview builds and passes automated tests, but still requires human Server3 and multi-PC Agent validation. v2.2.0 remains the latest public stable release.
+
+See the [Fix15 status](docs/STATUS_PREVIEW4B1_FIX15.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX15_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-460%20passing-24C875)
+![Preview tests](https://img.shields.io/badge/Preview-586%20tests%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 [![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
@@ -18,6 +22,28 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
 [Download v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
+
+## Integration Preview 4B1 Fix15
+
+This branch prepares the next Control Center generation without replacing stable v2.2.0:
+
+| Item | Fix15 status |
+|---|---|
+| Product version | `2.4.0-preview-integration.4b1.fix15` |
+| Build | Debug and Release, 0 warnings, 0 errors |
+| Automated tests | 586/586 passing in both configurations |
+| Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 |
+| Field validation | Server3, multi-PC Agent and VM UI checks still require a human operator |
+
+The Preview adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. A first-party PinteMod capability is enabled only when its scripts match reviewed SHA-256 fingerprints; an unrelated script using the same filename stays restricted and receives no command transport.
+
+Build and audit every deliverable in one pass on Windows:
+
+```powershell
+.\BUILD_PREVIEW.bat
+```
+
+The Control Center can run in a Windows VM and be viewed from another PC through the hypervisor console or RDP behind a secured VPN/gateway. It adds no web server or remote-control port. See the [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 ![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
 
@@ -39,7 +65,7 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 - hybrid map catalogue combining official maps, an explicitly pasted rotation, local custom entries and the currently observed map;
 - shared mutation lock, human confirmation, conservative UDP delivery semantics and no automatic retry.
 
-## Next: v2.3 Adaptive BOIII Core
+## Vision: Adaptive BOIII Core
 
 The stable v2.2.0 is the foundation, not the finish line. The next research and development track aims to make the Control Center **useful with native BOIII alone** and progressively richer when trusted capabilities are available:
 
@@ -58,6 +84,7 @@ This work is a phased roadmap, not a feature claim for v2.2.0. Security, explici
 The Control Center is deliberately local-first:
 
 - no web server, account system, cloud service or inbound port;
+- VM access may use an existing hypervisor console or RDP behind a secured VPN/gateway; the application itself does not expose remote-control functionality;
 - no network discovery or broadcast;
 - RCON only after an explicit operator action and only to numeric loopback/private/link-local addresses;
 - the RCON secret is protected with Windows DPAPI `CurrentUser` and is never displayed again;
@@ -133,7 +160,15 @@ Run from source:
 dotnet run --project .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Debug
 ```
 
-No BOIII server, BAT file or external tool is launched by these commands.
+To build, test, publish and audit both Preview formats automatically:
+
+```powershell
+.\BUILD_PREVIEW.bat
+```
+
+Outputs are written to `app/artifacts/integration-preview4b1-fix15-win-x64/`: standalone EXE, self-contained folder, both ZIP files and `SHA256SUMS.txt`.
+
+The `dotnet` build and test commands do not launch a BOIII server, BAT file or external tool. The Preview script only invokes local build, test, compression and audit tooling.
 
 ## Real and simulated controls
 
@@ -156,6 +191,20 @@ Detailed future PinteMod requirements are documented in [`docs/PINTEMOD_REQUIREM
 Generated builds, portable archives, local settings, DPAPI secrets, server copies and runtime data are intentionally excluded from Git.
 
 ## Validation status
+
+Integration Preview 4B1 Fix15 automated validation:
+
+```text
+Debug build       PASS — 0 warnings, 0 errors
+Release build     PASS — 0 warnings, 0 errors
+Debug tests       PASS — 586/586
+Release tests     PASS — 586/586
+Single-EXE audit  PASS — one self-contained EXE, privacy audit passed
+Folder audit      PASS — 465 files, archive and privacy audit passed
+Field validation  PENDING — Server3, multi-PC Agent and VM interface
+```
+
+Public stable v2.2.0:
 
 PinteMod Control Center v2.2.0 has completed its automated and field validation:
 

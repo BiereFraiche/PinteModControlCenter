@@ -1,0 +1,39 @@
+PinteMod Control Center v2.4.0 — Integration Preview 4B1 Fix15
+
+CHANGEMENTS PAR RAPPORT À FIX14
+- reconnaissance PinteMod first-party uniquement par empreintes SHA-256 connues ;
+- noms de fichiers seuls insuffisants pour activer les commandes ;
+- lifecycle grisé lorsqu’aucun lanceur n’est prouvé ;
+- version Windows alignée sur Fix15 ;
+- production d’un EXE unique et d’un dossier portable autonome ;
+- documentation de déploiement en VM sans port entrant Control Center.
+
+VALIDATION AUTOMATIQUE
+1. Extraire le dépôt ou le ZIP dans un nouveau dossier.
+2. Double-cliquer BUILD_PREVIEW.bat.
+3. Attendre Restore, builds Debug/Release, tests Debug/Release et les deux publications.
+4. Attendu : 0 avertissement, 0 erreur, tous les tests réussis.
+
+SORTIES
+- single-exe\PinteMod.ControlCenter.exe : fichier unique autonome ;
+- folder\ : dossier autonome à copier ou recompresser ;
+- PinteMod.ControlCenter-folder-win-x64.zip : copie compressée du dossier.
+
+PHASE HUMAINE — SERVER3 EN PREMIER
+1. Lancer le format choisi sur le poste de test ou la VM Windows.
+2. Vérifier l’onboarding, les six pages et le redimensionnement.
+3. Ajouter Server3 et confirmer le provider attendu.
+4. Vérifier qu’un BOIII natif sans PinteMod n’affiche aucune donnée simulée.
+5. Vérifier qu’un faux GSC portant un nom PinteMod reste fail-closed.
+6. Tester démarrage/arrêt local uniquement sur Server3.
+7. Tester ensuite l’Agent SMB entre deux PC déjà appairés : montée de version, même version/SHA différent, aucun downgrade et récupération automatique.
+8. Ne généraliser à Server1/2 qu’après réussite de Server3.
+
+VM / ACCÈS DEPUIS UN AUTRE PC
+- suivre docs/DEPLOIEMENT_VM_FR.md ;
+- utiliser la console de l’hyperviseur ou RDP via VPN/passerelle déjà sécurisée ;
+- ne jamais exposer RDP, SMB, RCON ou un port Control Center directement sur Internet ;
+- le Control Center n’ouvre aucun port et n’héberge aucun serveur distant.
+
+STATUT
+Le cycle automatisé local a réussi avec 0 avertissement/erreur et 586/586 tests en Debug et Release. Fix15 reste une Preview tant que les tests humains Server3 et le scénario Agent multi-PC ne sont pas validés.

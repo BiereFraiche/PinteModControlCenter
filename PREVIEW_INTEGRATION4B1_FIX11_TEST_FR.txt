@@ -1,0 +1,14 @@
+PinteMod Control Center — Integration Preview 4B1 Fix11
+
+Correctif ciblé synchronisation bidirectionnelle :
+- la confirmation d’update ne compare plus l’heure du portable à celle du PC serveur ;
+- preuve exacte = statut Agent signé + package disponible signé + version cible + SHA-256 exact ;
+- si les deux PC ont déjà exactement le même SHA, la synchronisation se termine immédiatement ;
+- les erreurs de fin de synchronisation indiquent maintenant si update.json n’a pas été consommé, si l’Agent n’a pas redémarré, ou si le SHA republié est différent.
+
+TEST
+1. Compiler via BUILD_PREVIEW.bat.
+2. Lancer Fix11 sur le PC qui possède la version la plus récente.
+3. Depuis l’autre PC, utiliser SYNCHRONISER LES DEUX PC.
+4. Résultat attendu : confirmation « Synchronisation confirmée par SHA-256 » sans dépendre de l’écart d’horloge entre les PC.
+5. En cas d’échec, copier le nouveau message précis dans ChatGPT.

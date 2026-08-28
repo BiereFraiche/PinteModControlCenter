@@ -3,11 +3,11 @@
 ## Dossiers recommandés
 
 ```text
-E:\Dev\PinteMod-ControlCenter\
-E:\Dev\PinteMod-ControlCenter\app\
-E:\Dev\PinteMod-ControlCenter\reference\
-E:\Dev\PinteMod-ControlCenter\server-sandbox\UnrankedServer\
-E:\Dev\PinteMod-ControlCenter\samples\
+<racine-du-dépôt>\
+<racine-du-dépôt>\app\
+<racine-du-dépôt>\reference\
+<racine-du-dépôt>\server-sandbox\UnrankedServer\
+<racine-du-dépôt>\samples\
 ```
 
 ## Copie du serveur
@@ -16,13 +16,13 @@ Une copie complète peut être utile pour les tests d'intégration, mais :
 - elle ne doit jamais être le serveur de production ;
 - elle ne doit jamais être ajoutée à Git ;
 - les secrets et données joueurs doivent être retirés avant tout partage ;
-- Codex doit ouvrir `E:\Dev\PinteMod-ControlCenter`, jamais le dossier de production.
+- Codex doit ouvrir `<racine-du-dépôt>`, jamais le dossier de production.
 
 Le prototype UI n'a pas besoin des binaires BOIII ni des assets du jeu.
 
 ## À placer dans `reference/`
 
-- `PinteMod_v2.1.1_FINAL.zip`
+- `PinteMod_v2.1.1.zip`
 
 ## À placer dans `design/`
 
@@ -39,7 +39,7 @@ Uniquement des copies nettoyées :
 ## Installation Codex
 
 Dans l'application de bureau Codex :
-1. ajouter le dossier `E:\Dev\PinteMod-ControlCenter`;
+1. ajouter le dossier `<racine-du-dépôt>`;
 2. vérifier que le projet local sélectionné est le bon;
 3. lancer la nouvelle tâche avec le prompt fourni;
 4. examiner chaque diff avant application;

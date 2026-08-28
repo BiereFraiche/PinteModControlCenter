@@ -22,11 +22,13 @@ Use synthetic identifiers and a dedicated test copy when preparing a reproductio
 
 ## Supported baseline
 
-Security fixes target the latest source on `main` and the latest documented operator preview. The current development baseline is v2.2 MVP Preview 13.
+Security fixes target the latest source on `main` and the latest documented operator preview. The current development candidate is Integration Preview 4B1 Fix15; v2.2.0 remains the public stable baseline and 4A7 Fix2 the human-validated fallback for the Manager line.
 
 ## Operational guarantees
 
 - no inbound listener or automatic network discovery;
+- no Control Center remote-control server; VM access must be supplied by an existing hypervisor console or secured RDP/VPN gateway;
+- optional outbound HTTPS GET to GitHub (`BiereFraiche/PinteMod`) for release metadata only; no server paths, IPs, XUIDs, profiles or secrets are sent;
 - explicit numeric private/local RCON targets only;
 - DPAPI `CurrentUser` secret storage;
 - closed command allowlists and strict option validation;

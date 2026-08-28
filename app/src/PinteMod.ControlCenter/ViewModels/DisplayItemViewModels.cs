@@ -342,6 +342,14 @@ public sealed class RecordItemViewModel
                 : "CLASSEMENT SIMULÉ";
         Provenance = DisplayText.Provenance(record.Provenance);
         IsEasterEgg = record.IsEasterEgg;
+        PlayerCount = record.PlayerCount;
+        PositionValue = record.Position;
+        DurationValue = record.Duration;
+        HolderNames = record.Holder
+            .Split(" + ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(value => value.Length > 0)
+            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
     }
 
     public string MapCode { get; }
@@ -363,6 +371,14 @@ public sealed class RecordItemViewModel
     public string Provenance { get; }
 
     public bool IsEasterEgg { get; }
+
+    public int PlayerCount { get; }
+
+    public int PositionValue { get; }
+
+    public TimeSpan DurationValue { get; }
+
+    public IReadOnlyList<string> HolderNames { get; }
 }
 
 public sealed class RankProfileItemViewModel

@@ -123,23 +123,31 @@ public sealed class LogsViewModel : PageViewModel
         : "FLUX ACTIF";
 
     public string SourceSummary => _isHybridLocal
-        ? $"Session locale active · lecture {DisplayText.ReadStatus(_logSnapshot.Source.ReadStatus)} · " +
-          $"{_logSnapshot.FilesScanned} source(s) · pause {DisplayText.ReadStatus(_pauseLogSource.ReadStatus)} · " +
-          $"{_logSnapshot.LinesIgnored} ignorée(s) · {_logSnapshot.MalformedLines} malformée(s)"
+        ? _logSnapshot.Source.Provenance == DataProvenance.Unavailable
+            ? "Aucun journal structuré n’est disponible pour ce provider."
+            : $"Session locale active · lecture {DisplayText.ReadStatus(_logSnapshot.Source.ReadStatus)} · " +
+              $"{_logSnapshot.FilesScanned} source(s) · pause {DisplayText.ReadStatus(_pauseLogSource.ReadStatus)} · " +
+              $"{_logSnapshot.LinesIgnored} ignorée(s) · {_logSnapshot.MalformedLines} malformée(s)"
         : "Source entièrement simulée";
 
     public string SourceLabel => _isHybridLocal
-        ? _pauseLogSource.ReadStatus == LocalReadStatus.Success
-            ? "logs/sessions/<session-active> + logs/pause.log"
-            : "logs/sessions/<session-active>"
+        ? _logSnapshot.Source.Provenance == DataProvenance.Unavailable
+            ? _logSnapshot.Source.SourceLabel
+            : _pauseLogSource.ReadStatus == LocalReadStatus.Success
+                ? "logs/sessions/<session-active> + logs/pause.log"
+                : "logs/sessions/<session-active>"
         : _logSnapshot.Source.SourceLabel;
 
     public string FreshnessSummary => _isHybridLocal
-        ? $"Fraîcheur {DisplayText.Freshness(_logSnapshot.Source.Freshness)} · âge {DisplayText.FormatAge(_logSnapshot.Source.Age)} · " +
-          $"pause {DisplayText.Freshness(_pauseLogSource.Freshness)} · cache mémoire {_logSnapshot.CachedEventCount} événement(s)"
+        ? _logSnapshot.Source.Provenance == DataProvenance.Unavailable
+            ? "Fraîcheur indisponible · aucune source à lire."
+            : $"Fraîcheur {DisplayText.Freshness(_logSnapshot.Source.Freshness)} · âge {DisplayText.FormatAge(_logSnapshot.Source.Age)} · " +
+              $"pause {DisplayText.Freshness(_pauseLogSource.Freshness)} · cache mémoire {_logSnapshot.CachedEventCount} événement(s)"
         : "Actualisation simulée";
 
-    public string RefreshLabel => _isHybridLocal ? "ACTUALISATION LOCALE · 2 S" : "ACTUALISATION SIMULÉE";
+    public string RefreshLabel => _isHybridLocal
+        ? _logSnapshot.Source.Provenance == DataProvenance.Unavailable ? "AUCUNE SOURCE STRUCTURÉE" : "ACTUALISATION LOCALE · 2 S"
+        : "ACTUALISATION SIMULÉE";
 
     public string SearchToolTip => _isHybridLocal
         ? "Filtrer uniquement les champs déjà neutralisés"
@@ -151,7 +159,9 @@ public sealed class LogsViewModel : PageViewModel
         var snapshot = await _snapshotStore.GetSnapshotAsync(cancellationToken);
         _isHybridLocal = snapshot.DataContext.Mode == ControlCenterDataMode.HybridLocal;
         Description = _isHybridLocal
-            ? "Flux d’événements locaux neutralisés, filtrable et strictement en lecture seule"
+            ? snapshot.LocalObservation.Logs.Source.Provenance == DataProvenance.Unavailable
+                ? "Aucun journal structuré n’est prouvé pour ce serveur · aucune donnée simulée n’est affichée"
+                : "Flux d’événements locaux neutralisés, filtrable et strictement en lecture seule"
             : "Flux d’événements simulé, filtrable et strictement en lecture seule";
         _logSnapshot = snapshot.LocalObservation.Logs;
         _pauseLogSource = snapshot.LocalObservation.CommunityPauseLogSource;
@@ -228,10 +238,13 @@ public sealed class LogsViewModel : PageViewModel
     private void ApplyFilter()
     {
         var filtered = _source.Where(item =>
-            (SelectedFilter == "TOUS" || string.Equals(item.Category, SelectedFilter, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrWhiteSpace(SearchText) ||
-             item.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-             item.Details.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
+                (SelectedFilter == "TOUS" || string.Equals(item.Category, SelectedFilter, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrWhiteSpace(SearchText) ||
+                 item.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                 item.Details.Contains(SearchText, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(item => item.SessionElapsed.HasValue ? 0 : 1)
+            .ThenBy(item => item.SessionElapsed ?? TimeSpan.Zero)
+            .ThenBy(item => item.OccurredAt);
 
         Events.Clear();
         foreach (var item in filtered)

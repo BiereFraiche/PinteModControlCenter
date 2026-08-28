@@ -1,3 +1,4 @@
+﻿using System.IO;
 using System.ComponentModel;
 using System.Windows;
 using PinteMod.ControlCenter.Composition;
@@ -27,6 +28,72 @@ public partial class App : Application
         base.OnStartup(e);
         try
         {
+            var preferredUiUpdateIndex = Array.FindIndex(e.Args, argument => string.Equals(argument, "--preferred-ui-apply-update", StringComparison.OrdinalIgnoreCase));
+            if (preferredUiUpdateIndex >= 0 && preferredUiUpdateIndex + 1 < e.Args.Length && int.TryParse(e.Args[preferredUiUpdateIndex + 1], out var previousPreferredUiPid))
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                _ = ApplyPreferredUiUpdateAsync(previousPreferredUiPid);
+                return;
+            }
+
+            var managedUiUpdateIndex = Array.FindIndex(e.Args, argument => string.Equals(argument, "--managed-ui-apply-update", StringComparison.OrdinalIgnoreCase));
+            if (managedUiUpdateIndex >= 0 && managedUiUpdateIndex + 1 < e.Args.Length && int.TryParse(e.Args[managedUiUpdateIndex + 1], out var previousUiPid))
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                _ = ApplyManagedUiUpdateAsync(previousUiPid);
+                return;
+            }
+
+            var updateIndex = Array.FindIndex(e.Args, argument => string.Equals(argument, "--remote-agent-apply-update", StringComparison.OrdinalIgnoreCase));
+            if (updateIndex >= 0 && updateIndex + 1 < e.Args.Length && int.TryParse(e.Args[updateIndex + 1], out var previousAgentPid))
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                _ = ApplyRemoteAgentUpdateAsync(previousAgentPid);
+                return;
+            }
+
+            if (e.Args.Any(argument => string.Equals(argument, "--remote-agent", StringComparison.OrdinalIgnoreCase)))
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                if (RemoteAgentRecoveryTaskService.ShouldSuppressAgentStartForUpdate())
+                {
+                    Shutdown(0);
+                    return;
+                }
+                _ = RunRemoteAgentAsync();
+                return;
+            }
+
+            if (ManagedControlCenterInstallationService.ShouldApplyPendingOnStartup())
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                if (ManagedControlCenterInstallationService.StartPendingUpdate(Environment.ProcessId) is not null)
+                {
+                    Shutdown(0);
+                    return;
+                }
+            }
+
+            // Remember the exact user-facing EXE location on this machine. Remote
+            // Agent updates will keep this same file synchronized instead of
+            // imposing a Start-menu/Desktop installation. Internal Agent/fallback
+            // executables are excluded by the registration service.
+            PreferredControlCenterPathService.RegisterCurrentExecutable();
+            ManagedControlCenterInstallationService.RemoveLegacyShortcuts();
+
+            // The same executable is both the server/profile manager and the Control Center.
+            // Keep shutdown explicit while the modal manager is the only window.
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            var managerViewModel = await ServerManagerViewModel.CreateAsync(_applicationLifetime.Token);
+            var managerWindow = new ServerManagerWindow(managerViewModel);
+            if (managerWindow.ShowDialog() != true)
+            {
+                Shutdown(0);
+                return;
+            }
+
+            var managerSelectedProfileId = managerViewModel.SelectedProfile?.ProfileId;
+
             _workspaceStore = new JsonOperatorWorkspaceConfigurationStore();
             _workspaceConfiguration = await _workspaceStore.LoadAsync(_applicationLifetime.Token);
             var parsedStartup = ApplicationStartupOptions.Parse(e.Args);
@@ -39,23 +106,33 @@ public partial class App : Application
             {
                 var configurationStore = CreateConfigurationStore(profileId);
                 var savedConfiguration = await configurationStore.LoadAsync(_applicationLifetime.Token);
+                var managedConfiguration = await new JsonManagedServerProfileStore(
+                    OperatorProfileStoragePaths.GetManagedServerProfilePath(profileId))
+                    .LoadAsync(_applicationLifetime.Token);
                 var receivesCommandLine = hasExplicitDataSelection &&
                                           string.Equals(
                                               profileId,
                                               _workspaceConfiguration.ActiveProfileId,
                                               StringComparison.Ordinal);
+                var managerSelectedProfile = !receivesCommandLine &&
+                                             !string.IsNullOrWhiteSpace(managerSelectedProfileId) &&
+                                             string.Equals(profileId, managerSelectedProfileId, StringComparison.Ordinal);
                 var usingSavedDataSource = !receivesCommandLine &&
                                            savedConfiguration.ActivateDataSourceOnStartup &&
                                            !string.IsNullOrWhiteSpace(savedConfiguration.ServerRoot);
                 var startup = receivesCommandLine
                     ? parsedStartup
-                    : ApplicationStartupOptions.Resolve([], savedConfiguration);
+                    : ApplicationStartupOptions.Resolve(
+                        [],
+                        savedConfiguration,
+                        managerSelectedProfile && savedConfiguration.ActivateDataSourceOnStartup);
                 var context = CreateServerContext(
                     profileId,
                     savedConfiguration,
                     configurationStore,
                     startup,
-                    usingSavedDataSource);
+                    usingSavedDataSource,
+                    managedConfiguration.RemoteAgentId);
                 var tab = CreateTab(context, savedConfiguration.ProfileDisplayName);
                 _serverContexts.Add(profileId, context);
                 tabs.Add(tab);
@@ -66,12 +143,22 @@ public partial class App : Application
                 _workspaceConfiguration.ActiveProfileId,
                 AddServerAsync,
                 RemoveServerAsync,
-                SetActiveServerAsync);
+                SetActiveServerAsync,
+                _workspaceConfiguration.AdvancedMode,
+                SetDisplayModeAsync);
             AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
             var window = new MainWindow { DataContext = _workspace };
             MainWindow = window;
             window.Closing += OnMainWindowClosing;
             window.Show();
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+            if (managerViewModel.KeepManagerOpenAfterControlCenter)
+            {
+                var companionManager = new ServerManagerWindow(managerViewModel, companionWindow: true);
+                companionManager.Show();
+                window.Activate();
+            }
 
             foreach (var context in _serverContexts.Values)
             {
@@ -87,12 +174,172 @@ public partial class App : Application
         }
         catch (Exception)
         {
-            MessageBox.Show(
+            PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
                 "Le Control Center n’a pas pu être initialisé. Vérifiez les paramètres de lancement et les sources locales.",
                 "PinteMod Control Center",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(-1);
+        }
+    }
+
+
+    private async Task ApplyRemoteAgentUpdateAsync(int previousAgentPid)
+    {
+        try
+        {
+            var source = Environment.ProcessPath;
+            var target = RemoteAgentConfigurationStore.GetExecutablePath();
+            var pending = RemoteAgentConfigurationStore.GetPendingUpdatePath();
+            if (string.IsNullOrWhiteSpace(source) ||
+                !string.Equals(Path.GetFullPath(source), Path.GetFullPath(pending), StringComparison.OrdinalIgnoreCase))
+            {
+                RemoteAgentRecoveryTaskService.ClearUpdateInProgress();
+                Shutdown(-3);
+                return;
+            }
+
+            try
+            {
+                using var previous = System.Diagnostics.Process.GetProcessById(previousAgentPid);
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(25));
+                await previous.WaitForExitAsync(timeout.Token);
+            }
+            catch (ArgumentException)
+            {
+                // Previous Agent already exited.
+            }
+            catch (OperationCanceledException)
+            {
+                RemoteAgentRecoveryTaskService.ClearUpdateInProgress();
+                Shutdown(-4);
+                return;
+            }
+
+            Directory.CreateDirectory(RemoteAgentConfigurationStore.GetAgentHome());
+            var replaced = false;
+            for (var attempt = 1; attempt <= 10 && !replaced; attempt++)
+            {
+                try
+                {
+                    File.Copy(source, target, overwrite: true);
+                    replaced = true;
+                }
+                catch (IOException)
+                {
+                    if (attempt < 10) await Task.Delay(250 * attempt);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    if (attempt < 10) await Task.Delay(250 * attempt);
+                }
+            }
+
+            try
+            {
+                if (File.Exists(RemoteAgentConfigurationStore.GetStopRequestPath()))
+                {
+                    File.Delete(RemoteAgentConfigurationStore.GetStopRequestPath());
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+            }
+
+            if (!replaced)
+            {
+                RemoteAgentRecoveryTaskService.ClearUpdateInProgress();
+                if (File.Exists(target))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = target,
+                        Arguments = "--remote-agent",
+                        WorkingDirectory = RemoteAgentConfigurationStore.GetAgentHome(),
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                    });
+                }
+                Shutdown(-5);
+                return;
+            }
+
+            PreferredControlCenterPathService.DiscoverRunningUserInterface();
+            await PreferredControlCenterPathService.SynchronizePreferredExecutableAsync(source, _applicationLifetime.Token);
+            await ManagedControlCenterInstallationService.InstallOrStageAsync(source, _applicationLifetime.Token);
+            ManagedControlCenterInstallationService.RemoveLegacyShortcuts();
+
+            RemoteAgentRecoveryTaskService.ClearUpdateInProgress();
+            RemoteAgentRecoveryTaskService.EnsureInstalled(target, out _);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = target,
+                Arguments = "--remote-agent",
+                WorkingDirectory = RemoteAgentConfigurationStore.GetAgentHome(),
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+            });
+            Shutdown(0);
+        }
+        catch
+        {
+            RemoteAgentRecoveryTaskService.ClearUpdateInProgress();
+            Shutdown(-5);
+        }
+    }
+
+
+    private async Task ApplyPreferredUiUpdateAsync(int previousUiPid)
+    {
+        try
+        {
+            var success = await PreferredControlCenterPathService.ApplyPendingCurrentExecutableUpdateAsync(previousUiPid, _applicationLifetime.Token);
+            Shutdown(success ? 0 : -7);
+        }
+        catch (OperationCanceledException)
+        {
+            Shutdown(-7);
+        }
+        catch
+        {
+            Shutdown(-7);
+        }
+    }
+
+    private async Task ApplyManagedUiUpdateAsync(int previousUiPid)
+    {
+        try
+        {
+            var success = await ManagedControlCenterInstallationService.ApplyPendingAsync(previousUiPid, _applicationLifetime.Token);
+            Shutdown(success ? 0 : -6);
+        }
+        catch (OperationCanceledException)
+        {
+            Shutdown(-6);
+        }
+        catch
+        {
+            Shutdown(-6);
+        }
+    }
+
+    private async Task RunRemoteAgentAsync()
+    {
+        var host = new RemoteLaunchAgentHost();
+        try
+        {
+            var exitCode = await host.RunAsync(_applicationLifetime.Token).ConfigureAwait(false);
+            await Dispatcher.InvokeAsync(() => Shutdown(exitCode));
+        }
+        catch (OperationCanceledException)
+        {
+            await Dispatcher.InvokeAsync(() => Shutdown(0));
+        }
+        catch
+        {
+            await Dispatcher.InvokeAsync(() => Shutdown(-2));
         }
     }
 
@@ -152,7 +399,8 @@ public partial class App : Application
         OperatorConfiguration savedConfiguration,
         IOperatorConfigurationStore configurationStore,
         ApplicationStartupOptions startup,
-        bool usingSavedDataSource) =>
+        bool usingSavedDataSource,
+        string remoteAgentId = "") =>
         ServerRuntimeContext.Create(
             profileId,
             savedConfiguration,
@@ -162,7 +410,60 @@ public partial class App : Application
             usingSavedDataSource,
             OperatorProfileStoragePaths.GetRconSecretPath(profileId),
             OperatorProfileStoragePaths.GetMapCatalogPath(profileId),
-            _applicationLifetime.Token);
+            _applicationLifetime.Token,
+            () => LaunchManagedProfileAsync(profileId),
+            () => StopManagedProfileAsync(profileId),
+            remoteAgentId);
+
+    private async Task<ServerLaunchResult> LaunchManagedProfileAsync(string profileId)
+    {
+        try
+        {
+            var manager = await ServerManagerViewModel.CreateAsync(_applicationLifetime.Token);
+            var profile = manager.Profiles.FirstOrDefault(candidate =>
+                string.Equals(candidate.ProfileId, profileId, StringComparison.Ordinal));
+            if (profile is null)
+            {
+                return new ServerLaunchResult(false, "Profil serveur introuvable dans le Manager.");
+            }
+
+            manager.SelectedProfile = profile;
+            return await manager.LaunchSelectedAsync(_applicationLifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return new ServerLaunchResult(false, "Lancement annulé.");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return new ServerLaunchResult(false, exception.Message);
+        }
+    }
+
+    private async Task<ServerLaunchResult> StopManagedProfileAsync(string profileId)
+    {
+        try
+        {
+            var manager = await ServerManagerViewModel.CreateAsync(_applicationLifetime.Token);
+            var profile = manager.Profiles.FirstOrDefault(candidate =>
+                string.Equals(candidate.ProfileId, profileId, StringComparison.Ordinal));
+            if (profile is null)
+            {
+                return new ServerLaunchResult(false, "Profil serveur introuvable dans le Manager.");
+            }
+
+            manager.SelectedProfile = profile;
+            return await manager.StopSelectedAsync(_applicationLifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return new ServerLaunchResult(false, "Arrêt annulé.");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return new ServerLaunchResult(false, exception.Message);
+        }
+    }
 
     private static ServerTabViewModel CreateTab(
         ServerRuntimeContext context,
@@ -249,7 +550,7 @@ public partial class App : Application
                 return false;
             }
 
-            var answer = MessageBox.Show(
+            var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
                 $"Retirer l’onglet « {server.DisplayName} » ?\n\nLe serveur BOIII ne sera pas touché. La configuration locale et le secret protégé resteront conservés sur ce PC.",
                 "Retirer un serveur",
                 MessageBoxButton.YesNo,
@@ -281,6 +582,26 @@ public partial class App : Application
             context.Dispose();
             _serverContexts.Remove(server.ProfileId);
             return true;
+        }
+        finally
+        {
+            _profileOperations.Release();
+        }
+    }
+
+    private async Task SetDisplayModeAsync(bool advancedMode)
+    {
+        await _profileOperations.WaitAsync(_applicationLifetime.Token);
+        try
+        {
+            if (_shutdownStarted || _workspaceStore is null)
+            {
+                return;
+            }
+
+            var updated = _workspaceConfiguration with { AdvancedMode = advancedMode };
+            await _workspaceStore.SaveAsync(updated, _applicationLifetime.Token);
+            _workspaceConfiguration = updated;
         }
         finally
         {

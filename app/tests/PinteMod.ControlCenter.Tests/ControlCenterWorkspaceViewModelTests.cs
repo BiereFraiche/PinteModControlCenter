@@ -86,6 +86,33 @@ public sealed class ControlCenterWorkspaceViewModelTests
         Assert.AreEqual("Serveur secondaire", second.DisplayName);
     }
 
+
+    [TestMethod]
+    public async Task ToggleDisplayMode_ChangesAndPersistsAdvancedMode()
+    {
+        var first = CreateTab("primary", "Serveur principal");
+        bool? saved = null;
+        var workspace = new ControlCenterWorkspaceViewModel(
+            [first],
+            first.ProfileId,
+            () => Task.FromResult(CreateTab("srv-second", "Serveur 2")),
+            _ => Task.FromResult(true),
+            _ => Task.CompletedTask,
+            advancedMode: false,
+            displayModeChanged: value =>
+            {
+                saved = value;
+                return Task.CompletedTask;
+            });
+
+        workspace.ToggleDisplayModeCommand.Execute(null);
+        await WaitForCommandAsync(workspace.ToggleDisplayModeCommand);
+
+        Assert.IsTrue(workspace.AdvancedMode);
+        Assert.AreEqual(true, saved);
+        Assert.AreEqual("MODE SIMPLE", workspace.DisplayModeButtonLabel);
+    }
+
     [TestMethod]
     public void EachTabKeepsAnIndependentValidatedAccentColor()
     {

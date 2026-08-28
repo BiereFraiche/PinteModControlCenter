@@ -1,17 +1,30 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>PinteMod.ControlCenter</AssemblyName>
     <RootNamespace>PinteMod.ControlCenter</RootNamespace>
-    <Version>2.2.0</Version>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
-    <FileVersion>2.2.0.0</FileVersion>
-    <InformationalVersion>2.2.0</InformationalVersion>
+    <Version>2.4.0-preview-integration.4b1.fix15</Version>
+    <AssemblyVersion>2.4.0.0</AssemblyVersion>
+    <FileVersion>2.4.0.15</FileVersion>
+    <InformationalVersion>2.4.0-preview-integration.4b1.fix15</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>PinteMod Control Center</Product>
-    <Description>Interface opérateur locale ou LAN pour PinteMod.</Description>
+    <Description>Gestionnaire multi-serveurs BOIII, PinteMod et intégrations adaptatives.</Description>
+    <ApplicationIcon>Assets\PinteMod.AppIcon.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+    <DebugType>None</DebugType>
+    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\PinteMod.AppIcon.png" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\PinteMod.ControlCenter.Core\PinteMod.ControlCenter.Core.csproj" />
     <ProjectReference Include="..\PinteMod.ControlCenter.Infrastructure\PinteMod.ControlCenter.Infrastructure.csproj" />
@@ -21,11 +34,14 @@
     <Content Include="..\..\contracts\control-center\v1\*.schema.json"
              Link="contracts\control-center\v1\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
+             CopyToPublishDirectory="Never" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\packaging\LISEZ-MOI.txt"
           Link="LISEZ-MOI.txt"
-          CopyToPublishDirectory="PreserveNewest" />
+          CopyToPublishDirectory="Never" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PinteMod.ControlCenter.Tests" />
   </ItemGroup>
 </Project>

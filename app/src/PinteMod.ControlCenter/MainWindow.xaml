@@ -1,8 +1,9 @@
-<Window x:Class="PinteMod.ControlCenter.MainWindow"
+﻿<Window x:Class="PinteMod.ControlCenter.MainWindow"
         x:Name="RootWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Icon="Assets/PinteMod.AppIcon.png"
         Title="{Binding WindowTitle}"
         Width="1060" Height="840"
         MinWidth="900" MinHeight="640"
@@ -86,7 +87,7 @@
                     </StackPanel>
 
                     <Border Grid.Row="1" Style="{StaticResource SimulationBadgeBorderStyle}" Margin="2,0,2,22"
-                            Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=1100}">
+                            Visibility="{Binding AdvancedMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
                             <TextBlock Text="{Binding ActiveServer.Shell.ModeLabel}" FontWeight="SemiBold" FontSize="11"
                                        Foreground="{DynamicResource AccentBrightBrush}" />
@@ -96,7 +97,7 @@
                     </Border>
                     <Border Grid.Row="1" Style="{StaticResource SimulationBadgeBorderStyle}" Margin="2,0,2,22"
                             ToolTip="{Binding ActiveServer.Shell.ModeDescription}"
-                            Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=1100:Invert}">
+                            Visibility="{Binding SimpleMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBlock Text="{Binding ActiveServer.Shell.ModeShortLabel}" FontWeight="Bold" FontSize="10"
                                    Foreground="{DynamicResource AccentBrightBrush}"
                                    HorizontalAlignment="Center" />
@@ -107,7 +108,8 @@
                             <DataTemplate>
                                 <RadioButton Style="{StaticResource NavigationRadioStyle}"
                                              Content="{Binding Title}" Tag="{Binding Glyph}"
-                                             ToolTip="{Binding Title}"
+                                             ToolTip="{Binding AvailabilityHint}"
+                                             IsEnabled="{Binding IsEnabled}"
                                              IsChecked="{Binding IsSelected, Mode=OneWay}"
                                              Command="{Binding DataContext.ActiveServer.Shell.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                              CommandParameter="{Binding}" />
@@ -119,7 +121,7 @@
                                 Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=1100}">
                         <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,0,0,14" />
                         <TextBlock Text="PINTE MOD v2.1.1" Style="{StaticResource EyebrowTextStyle}" />
-                        <TextBlock Text="Control Center v2.2 · Local uniquement" Margin="0,4,0,0"
+                        <TextBlock Text="Mode simple par défaut · détails sur demande" Margin="0,4,0,0"
                                    Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
                     </StackPanel>
                 </Grid>
@@ -211,9 +213,13 @@
                             <TextBlock Text="{Binding ActiveServer.Shell.CurrentPage.Title}" FontSize="22" FontWeight="SemiBold" />
                             <TextBlock Text="{Binding ActiveServer.Shell.CurrentPage.Description}" Margin="0,4,0,0"
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
-                                       Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=1000}" />
+                                       Visibility="{Binding AdvancedMode, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="{Binding DisplayModeButtonLabel}" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding ToggleDisplayModeCommand}" Margin="0,0,8,0"
+                                    ToolTip="Afficher ou masquer les informations techniques"
+                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
                             <Button Content="ACTUALISER" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding ActiveServer.Shell.RefreshCommand}" Margin="0,0,14,0"
                                     shell:WindowChrome.IsHitTestVisibleInChrome="True" />
@@ -253,10 +259,10 @@
                     <Grid Margin="14,0">
                         <TextBlock Text="{Binding ActiveServer.Shell.ReadOnlyFooterLabel}" Style="{StaticResource EyebrowTextStyle}"
                                    VerticalAlignment="Center"
-                                   Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=980}" />
+                                   Visibility="{Binding AdvancedMode, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
-                            <TextBlock Text="Version 2.2.0" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
+                            <TextBlock Text="Version 2.4.0 · Integration Preview 4B1 Fix15" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
                         </StackPanel>
                     </Grid>
                 </Border>

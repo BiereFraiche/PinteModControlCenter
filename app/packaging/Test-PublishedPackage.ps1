@@ -9,6 +9,24 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+function Get-Sha256Hex {
+    param([Parameter(Mandatory = $true)][string] $Path)
+
+    $stream = [IO.File]::OpenRead($Path)
+    try {
+        $sha256 = [Security.Cryptography.SHA256]::Create()
+        try {
+            return [BitConverter]::ToString($sha256.ComputeHash($stream)).Replace('-', '')
+        }
+        finally {
+            $sha256.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $resolvedPackage = (Resolve-Path -LiteralPath $PackagePath).Path
@@ -74,5 +92,5 @@ if ($findings.Count -gt 0) {
     throw "Audit du paquet en échec : $($findings.Count) problème(s)."
 }
 
-$hash = (Get-FileHash -LiteralPath $resolvedPackage -Algorithm SHA256).Hash
+$hash = Get-Sha256Hex -Path $resolvedPackage
 Write-Output "PACKAGE_AUDIT_PASS entries=$($entryNames.Count) sha256=$hash"

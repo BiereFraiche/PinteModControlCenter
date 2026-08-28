@@ -38,6 +38,45 @@ public sealed class OperatorWorkspaceConfigurationStoreTests
         Assert.IsFalse(File.Exists(directory.ConfigurationPath + ".tmp"));
     }
 
+
+    [TestMethod]
+    public async Task SaveAndLoad_PreservesSimpleAdvancedDisplayPreference()
+    {
+        using var directory = new TemporaryWorkspaceDirectory();
+        var store = new JsonOperatorWorkspaceConfigurationStore(directory.ConfigurationPath);
+        var expected = new OperatorWorkspaceConfiguration(
+            OperatorWorkspaceConfiguration.CurrentSchemaVersion,
+            ["primary"],
+            "primary")
+        {
+            AdvancedMode = true
+        };
+
+        await store.SaveAsync(expected);
+        var result = await store.LoadAsync();
+
+        Assert.IsTrue(result.AdvancedMode);
+    }
+
+    [TestMethod]
+    public async Task SaveAndLoad_PreservesKeepManagerOpenPreference()
+    {
+        using var directory = new TemporaryWorkspaceDirectory();
+        var store = new JsonOperatorWorkspaceConfigurationStore(directory.ConfigurationPath);
+        var expected = new OperatorWorkspaceConfiguration(
+            OperatorWorkspaceConfiguration.CurrentSchemaVersion,
+            ["primary"],
+            "primary")
+        {
+            KeepManagerOpenAfterControlCenter = true
+        };
+
+        await store.SaveAsync(expected);
+        var result = await store.LoadAsync();
+
+        Assert.IsTrue(result.KeepManagerOpenAfterControlCenter);
+    }
+
     [TestMethod]
     public async Task InvalidOrDuplicateProfileIds_AreRejectedBeforeWrite()
     {

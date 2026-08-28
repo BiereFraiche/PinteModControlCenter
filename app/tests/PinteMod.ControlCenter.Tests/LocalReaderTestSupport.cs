@@ -283,6 +283,14 @@ internal sealed class TemporaryServerRoot : IDisposable
         return path;
     }
 
+    public string WriteSessionChatLog(string sessionId, string contents)
+    {
+        var path = BlockAPaths.ResolveSessionChatLogPath(sessionId);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, contents, new UTF8Encoding(false));
+        return path;
+    }
+
     public string WriteCommunityPauseFeedback(string contents) =>
         WriteBlockA(BlockALocalFile.CommunityPauseFeedback, contents);
 

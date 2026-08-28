@@ -1,0 +1,8 @@
+PinteMod Control Center - Onboarding Preview 4A4 Fix2
+
+Correction ciblée :
+- l’auto-actualisation post-démarrage ne s’exécute que pour un profil HybridLocal réel ;
+- un lancement de simulation termine immédiatement au lieu d’attendre des heartbeats inexistants ;
+- aucune modification du mécanisme réel de démarrage/arrêt serveur.
+
+Relancer BUILD_PREVIEW.bat.

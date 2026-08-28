@@ -61,15 +61,6 @@ public sealed class ServerAdministrationCommandService(
                     false);
             }
 
-            if (!RconEndpointValidator.IsLoopbackAddress(endpoint.Address))
-            {
-                return Result(
-                    request,
-                    ServerAdministrationExecutionStatus.InvalidConfiguration,
-                    "Définir le mot de passe joueur exige une adresse RCON loopback.",
-                    false);
-            }
-
             command = $"ezzccsetjoinpassword {request.RequestId} {sensitiveJoinPassword}";
         }
         else if (!TryBuildCommand(request, out command))
@@ -171,6 +162,13 @@ public sealed class ServerAdministrationCommandService(
             ServerAdministrationAction.KillAllZombies when request.TargetRound is null && hasNoContractArguments => "ezzkillzombies",
             ServerAdministrationAction.MakePowerUpsPermanent when request.TargetRound is null && hasNoContractArguments => "ezzfreezepowerups on",
             ServerAdministrationAction.RestorePowerUpTimeout when request.TargetRound is null && hasNoContractArguments => "ezzfreezepowerups off",
+            ServerAdministrationAction.ChangeMap when
+                request.TargetRound is null &&
+                request.TargetXuid is null &&
+                ControlCenterCommandValidator.IsValidMapRequestId(request.RequestId) &&
+                request.Option is not null &&
+                OfficialMapCatalog.Contains(request.Option) =>
+                $"ezzccmap {request.RequestId} {request.Option}",
             ServerAdministrationAction.RestartMap when
                 request.TargetRound is null &&
                 request.Option is null &&

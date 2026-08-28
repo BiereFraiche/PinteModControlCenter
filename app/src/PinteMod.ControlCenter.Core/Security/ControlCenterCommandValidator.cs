@@ -11,6 +11,11 @@ public static class ControlCenterCommandValidator
         value is { Length: >= 8 and <= 32 } &&
         value.All(character => char.IsAsciiLetterOrDigit(character) || character is '_' or '-');
 
+    public static bool IsValidMapRequestId(string? value) =>
+        value is { Length: 32 } && value.All(character =>
+            (character >= '0' && character <= '9') ||
+            (character >= 'a' && character <= 'f'));
+
     public static bool IsValidBossAlias(string? value) =>
         value is not null && KnownBossAliases.Contains(value);
 
@@ -35,7 +40,7 @@ public static class ControlCenterCommandValidator
             }
 
             if (!char.IsAsciiLetterOrDigit(character) &&
-                character is not (' ' or '-' or '_' or '.' or '[' or ']' or '(' or ')'))
+                character is not (' ' or '-' or '_' or '.' or '[' or ']' or '(' or ')' or '|'))
             {
                 return false;
             }

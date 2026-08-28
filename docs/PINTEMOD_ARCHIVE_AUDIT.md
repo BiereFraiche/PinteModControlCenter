@@ -4,10 +4,10 @@ Date : 2026-08-02
 
 ## Provenance
 
-Le handoff annonce `reference/PinteMod_v2.1.1_FINAL.zip`, mais ce fichier n'est pas présent. L'unique archive disponible et auditée est :
+Le handoff historique annonçait `reference/PinteMod_v2.1.1_FINAL.zip`. L’archive disponible et auditée est :
 
 ```text
-E:\Dev\PinteMod-ControlCenter\reference\PinteMod_v2.1.1.zip
+reference\PinteMod_v2.1.1.zip
 ```
 
 - taille compressée : 281 410 octets ;

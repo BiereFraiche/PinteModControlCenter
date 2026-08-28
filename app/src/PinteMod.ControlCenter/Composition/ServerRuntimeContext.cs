@@ -60,7 +60,10 @@ public sealed class ServerRuntimeContext : IDisposable
         bool usingSavedDataSource,
         string rconSecretPath,
         string mapCatalogPath,
-        CancellationToken applicationLifetime)
+        CancellationToken applicationLifetime,
+        Func<Task<ServerLaunchResult>>? serverLaunchAction = null,
+        Func<Task<ServerLaunchResult>>? serverStopAction = null,
+        string remoteAgentId = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileId);
         ArgumentNullException.ThrowIfNull(savedConfiguration);
@@ -71,16 +74,41 @@ public sealed class ServerRuntimeContext : IDisposable
         LocalPinteModOptions? localOptions = null;
         IControlCenterSnapshotMonitor? snapshotMonitor = null;
         string? configurationNotice = null;
+        var integrationProfile = ServerIntegrationProfile.Unknown;
+        var integrationRoot = startup.ServerRoot ?? savedConfiguration.ServerRoot;
+        if (!string.IsNullOrWhiteSpace(integrationRoot))
+        {
+            try
+            {
+                integrationProfile = new ServerInstallationAnalyzer().Analyze(integrationRoot).IntegrationProfile;
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                integrationProfile = ServerIntegrationProfile.Unknown;
+            }
+        }
+
+        // A real registered BOIII root must never inherit the demo snapshot just
+        // because it has no PinteMod/Bridge data source. Keep it real and empty.
+        if (startup.DataMode == ControlCenterDataMode.Simulation &&
+            !string.IsNullOrWhiteSpace(integrationRoot))
+        {
+            dataProvider = new AdaptiveUnavailableControlCenterDataProvider(
+                integrationRoot,
+                integrationProfile);
+        }
 
         try
         {
             if (startup.DataMode == ControlCenterDataMode.HybridLocal)
             {
-                localOptions = new LocalPinteModOptions(
-                    startup.ServerRoot!,
-                    usingSavedDataSource && savedConfiguration.DataLocation == OperatorDataLocation.Lan
+                var configuredRoot = startup.ServerRoot!;
+                var rootLayout = Directory.Exists(Path.Combine(configuredRoot, "boiii", "scriptdata", "pintemod"))
+                    ? LocalPinteModRootLayout.ServerRoot
+                    : usingSavedDataSource && savedConfiguration.DataLocation == OperatorDataLocation.Lan
                         ? LocalPinteModRootLayout.PinteModDataRoot
-                        : LocalPinteModRootLayout.ServerRoot);
+                        : LocalPinteModRootLayout.ServerRoot;
+                localOptions = new LocalPinteModOptions(configuredRoot, rootLayout);
                 var clock = new SystemClock();
                 var sessionReader = new SessionManifestReader(localOptions, clock);
                 var heartbeatReader = new ServiceHeartbeatReader(localOptions, clock);
@@ -149,8 +177,12 @@ public sealed class ServerRuntimeContext : IDisposable
         {
             startup = safeFallback;
             localOptions = null;
-            dataProvider = simulatedProvider;
-            configurationNotice = "La source enregistrée est inaccessible · démarrage sécurisé en simulation.";
+            dataProvider = !string.IsNullOrWhiteSpace(integrationRoot)
+                ? new AdaptiveUnavailableControlCenterDataProvider(integrationRoot, integrationProfile)
+                : simulatedProvider;
+            configurationNotice = !string.IsNullOrWhiteSpace(integrationRoot)
+                ? "La source structurée enregistrée est inaccessible · le profil réel reste affiché sans données inventées."
+                : "La source enregistrée est inaccessible · démarrage sécurisé en simulation.";
             foreach (var disposable in disposables.AsEnumerable().Reverse())
             {
                 disposable.Dispose();
@@ -159,12 +191,33 @@ public sealed class ServerRuntimeContext : IDisposable
             disposables.Clear();
         }
 
+        if (!string.IsNullOrWhiteSpace(integrationRoot) &&
+            integrationRoot.StartsWith(@"\\", StringComparison.Ordinal) &&
+            !string.IsNullOrWhiteSpace(remoteAgentId))
+        {
+            dataProvider = new RemoteAgentRuntimeControlCenterDataProvider(
+                dataProvider, integrationRoot, profileId, remoteAgentId);
+        }
+
         var snapshotStore = new CachedControlCenterSnapshotStore(dataProvider);
         disposables.Add(snapshotStore);
         if (startup.DataMode == ControlCenterDataMode.HybridLocal)
         {
             snapshotMonitor = new HybridLocalSnapshotMonitor(snapshotStore);
         }
+
+        var chatClock = new SystemClock();
+        PlayerChatLogReader? playerChatReader = null;
+        if (localOptions is not null)
+        {
+            playerChatReader = new PlayerChatLogReader(localOptions, chatClock);
+            disposables.Add(playerChatReader);
+        }
+
+        var playerChatHistoryStore = new JsonPlayerChatHistoryStore(
+            OperatorProfileStoragePaths.GetPlayerChatHistoryPath(profileId),
+            chatClock);
+        disposables.Add(playerChatHistoryStore);
 
         var simulationService = new SimulationActionService();
         var selectionState = new PlayerSelectionState();
@@ -203,9 +256,12 @@ public sealed class ServerRuntimeContext : IDisposable
         var rconOperations = new OperatorRconOperationCoordinator();
         var records = new RecordsViewModel(snapshotStore);
         var logs = new LogsViewModel(snapshotStore, operatorActivityStore, clipboardService);
+        var playerChat = new PlayerChatViewModel(snapshotStore, playerChatHistoryStore, playerChatReader);
         var settings = new SettingsViewModel(
             startup.DataMode,
-            dataProvider.GetType().Name,
+            integrationProfile.Kind == ManagedServerIntegrationKind.Unknown
+                ? dataProvider.GetType().Name
+                : $"{integrationProfile.ProviderLabel} · {dataProvider.GetType().Name}",
             localOptions?.ServerRoot,
             snapshotMonitor?.Interval,
             new LocalDataSourceProbe(),
@@ -218,7 +274,40 @@ public sealed class ServerRuntimeContext : IDisposable
             mapCatalogService,
             mapCatalogState,
             clipboardService,
-            snapshotStore);
+            snapshotStore,
+            integrationProfile,
+            allowPinteModDiagnostics: string.IsNullOrWhiteSpace(integrationRoot) ||
+                                     integrationProfile.SupportsPinteModClosedCommands);
+        var managedRuntimeProbe = new ManagedServerRuntimeProbe();
+        bool ProbeManagedServerRunning()
+        {
+            if (string.IsNullOrWhiteSpace(integrationRoot)) return false;
+            var port = settings.CreateRconEndpoint()?.Port ?? savedConfiguration.RconPort;
+            return managedRuntimeProbe.IsRunning(integrationRoot, port);
+        }
+
+        async Task<bool> ProbeServerControlTransportAsync(CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(integrationRoot) ||
+                !integrationRoot.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                // Local launch/stop never depends on the remote Agent.
+                return true;
+            }
+
+            var managedStore = new JsonManagedServerProfileStore(
+                OperatorProfileStoragePaths.GetManagedServerProfilePath(profileId));
+            var managedConfiguration = await managedStore.LoadAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(managedConfiguration.RemoteAgentId)) return false;
+
+            var remoteProbe = await new RemoteLaunchClientService().ProbeAsync(
+                integrationRoot,
+                profileId,
+                managedConfiguration.RemoteAgentId,
+                cancellationToken);
+            return remoteProbe.Paired && remoteProbe.Online;
+        }
+
         var dashboard = new DashboardViewModel(
             snapshotStore,
             simulationService,
@@ -229,7 +318,13 @@ public sealed class ServerRuntimeContext : IDisposable
             operatorActivityStore,
             rconOperations,
             mutationSafety,
-            playerHistoryReader);
+            playerHistoryReader,
+            playerChat,
+            serverLaunchAction,
+            serverStopAction,
+            integrationProfile,
+            ProbeManagedServerRunning,
+            ProbeServerControlTransportAsync);
         var players = new PlayersViewModel(
             snapshotStore,
             simulationService,
@@ -255,7 +350,10 @@ public sealed class ServerRuntimeContext : IDisposable
             mapCatalogService,
             mapCatalogState,
             clipboardService,
-            selectionState);
+            selectionState,
+            integrationProfile: integrationProfile,
+            allowSimulationActions: startup.DataMode == ControlCenterDataMode.Simulation &&
+                                    string.IsNullOrWhiteSpace(integrationRoot));
         var shell = new ShellViewModel(
             snapshotStore,
             dashboard,
@@ -263,7 +361,11 @@ public sealed class ServerRuntimeContext : IDisposable
             server,
             records,
             logs,
-            settings);
+            settings,
+            playerChat: playerChat,
+            restrictUnprovedCapabilities: startup.DataMode == ControlCenterDataMode.Simulation &&
+                                           !string.IsNullOrWhiteSpace(integrationRoot),
+            integrationProfile: integrationProfile);
         return new ServerRuntimeContext(
             profileId,
             shell,

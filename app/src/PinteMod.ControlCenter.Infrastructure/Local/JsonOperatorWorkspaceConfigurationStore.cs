@@ -150,7 +150,11 @@ public sealed partial class JsonOperatorWorkspaceConfigurationStore : IOperatorW
         return new OperatorWorkspaceConfiguration(
             OperatorWorkspaceConfiguration.CurrentSchemaVersion,
             profileIds,
-            activeProfileId);
+            activeProfileId)
+        {
+            AdvancedMode = configuration.AdvancedMode,
+            KeepManagerOpenAfterControlCenter = configuration.KeepManagerOpenAfterControlCenter
+        };
     }
 
     [GeneratedRegex("^[a-z0-9][a-z0-9-]{0,39}$", RegexOptions.CultureInvariant)]

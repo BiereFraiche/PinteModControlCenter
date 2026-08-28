@@ -1,6 +1,8 @@
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
+using PinteMod.ControlCenter.Infrastructure.Local;
 using PinteMod.ControlCenter.Services;
 using PinteMod.ControlCenter.ViewModels;
 
@@ -220,6 +222,34 @@ public sealed class SettingsOperatorViewModelTests
         Assert.AreEqual("RÉUSSI", viewModel.RconTestStatus);
         Assert.AreEqual("Commande envoyée : Oui", viewModel.RconCommandSent);
         StringAssert.Contains(viewModel.RconResponse, "zm_tomb");
+    }
+
+    [TestMethod]
+    public void AdaptiveNativeProfile_DisablesPinteModRconDiagnostics()
+    {
+        var service = new StubRconDiagnosticService(new RconExecutionResult(
+            RconDiagnosticCommand.HealthFull,
+            RconExecutionStatus.Success,
+            "OK",
+            true,
+            DateTimeOffset.UtcNow));
+        var root = Path.Combine(Path.GetTempPath(), "PinteMod.ControlCenter.SettingsAdaptiveTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "boiii"));
+        try
+        {
+            var viewModel = new SettingsViewModel(
+                rconDiagnosticService: service,
+                rconSecretStore: new MemorySecretStore(),
+                integrationProfile: new ServerInstallationAnalyzer().Analyze(root).IntegrationProfile,
+                allowPinteModDiagnostics: false);
+
+            Assert.IsFalse(viewModel.CanRunRconDiagnostic);
+            Assert.IsFalse(viewModel.TestRconHealthCommand.CanExecute(null));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
     }
 
     [DataTestMethod]

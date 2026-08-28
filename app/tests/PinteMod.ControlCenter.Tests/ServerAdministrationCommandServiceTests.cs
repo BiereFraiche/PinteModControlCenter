@@ -104,6 +104,56 @@ public sealed class ServerAdministrationCommandServiceTests
     }
 
     [TestMethod]
+    public async Task ChangeMap_OfficialMapUsesClosedCommandAndLanEndpointIsAllowed()
+    {
+        var client = new CapturingClient("CHANGE_MAP_ACCEPTED");
+        var service = CreateService(client);
+        var lanEndpoint = new RconEndpoint("192.168.50.25", 27018, TimeSpan.FromSeconds(3));
+
+        var result = await service.ExecuteAsync(
+            new ServerAdministrationRequest(
+                ServerAdministrationAction.ChangeMap,
+                RequestId: "0123456789abcdef0123456789abcdef",
+                Option: "zm_castle"),
+            lanEndpoint);
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.SentAwaitingManualVerification, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        CollectionAssert.AreEqual(new[] { "ezzccmap 0123456789abcdef0123456789abcdef zm_castle" }, client.Commands);
+    }
+
+    [TestMethod]
+    public async Task ChangeMap_CustomOrInjectedMapIsRejectedBeforeSecretAndTransport()
+    {
+        var client = new CapturingClient(string.Empty);
+        var secret = new CountingSecretStore("secret");
+        var service = new ServerAdministrationCommandService(client, secret, new FakeClock(DateTimeOffset.UtcNow));
+        var invalid = new[]
+        {
+            "zm_custom",
+            "zm_castle;quit",
+            "map zm_castle",
+            "../zm_castle"
+        };
+
+        foreach (var map in invalid)
+        {
+            var result = await service.ExecuteAsync(
+                new ServerAdministrationRequest(
+                    ServerAdministrationAction.ChangeMap,
+                    RequestId: "fedcba9876543210fedcba9876543210",
+                    Option: map),
+                Endpoint);
+
+            Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidRequest, result.Status);
+            Assert.IsFalse(result.CommandSent);
+        }
+
+        Assert.AreEqual(0, secret.ReadCount);
+        Assert.AreEqual(0, client.Commands.Count);
+    }
+
+    [TestMethod]
     public async Task SetJoinPassword_LoopbackUsesDedicatedCommandWithoutReturningSecret()
     {
         var client = new CapturingClient(string.Empty);
@@ -123,7 +173,24 @@ public sealed class ServerAdministrationCommandServiceTests
     }
 
     [TestMethod]
-    public async Task SetJoinPassword_LanAddressIsRejectedBeforeSecretAndTransport()
+    public async Task SetJoinPassword_PrivateLanAddressUsesClosedCommandWithoutReturningSecret()
+    {
+        var client = new CapturingClient(string.Empty);
+        var service = CreateService(client);
+
+        var result = await service.SetJoinPasswordAsync(
+            "request_0005",
+            "Safe#2026",
+            new RconEndpoint("192.168.50.25", 27018, TimeSpan.FromSeconds(3)));
+
+        Assert.AreEqual(ServerAdministrationExecutionStatus.SentAwaitingManualVerification, result.Status);
+        Assert.IsTrue(result.CommandSent);
+        CollectionAssert.AreEqual(new[] { "ezzccsetjoinpassword request_0005 Safe#2026" }, client.Commands);
+        Assert.IsFalse(result.DisplayMessage.Contains("Safe#2026", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task SetJoinPassword_PublicAddressIsRejectedBeforeSecretAndTransport()
     {
         var client = new CapturingClient(string.Empty);
         var secret = new CountingSecretStore("secret");
@@ -132,7 +199,7 @@ public sealed class ServerAdministrationCommandServiceTests
         var result = await service.SetJoinPasswordAsync(
             "request_0005",
             "Safe#2026",
-            new RconEndpoint("192.168.50.25", 27018, TimeSpan.FromSeconds(3)));
+            new RconEndpoint("8.8.8.8", 27018, TimeSpan.FromSeconds(3)));
 
         Assert.AreEqual(ServerAdministrationExecutionStatus.InvalidConfiguration, result.Status);
         Assert.IsFalse(result.CommandSent);

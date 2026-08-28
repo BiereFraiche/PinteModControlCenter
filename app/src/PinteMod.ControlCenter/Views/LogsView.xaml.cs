@@ -8,6 +8,7 @@ namespace PinteMod.ControlCenter.Views;
 public partial class LogsView : UserControl
 {
     private LogsViewModel? _viewModel;
+    private bool _scrollToEndPending;
 
     public LogsView()
     {
@@ -22,19 +23,36 @@ public partial class LogsView : UserControl
         if (_viewModel is not null)
         {
             _viewModel.Events.CollectionChanged += OnEventsChanged;
+            ScheduleScrollToEnd();
         }
     }
 
     private void OnEventsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_viewModel is not { AutoScrollEnabled: true, IsDisplayPaused: false })
+        ScheduleScrollToEnd();
+    }
+
+    private void ScheduleScrollToEnd()
+    {
+        if (_scrollToEndPending || _viewModel is not { AutoScrollEnabled: true, IsDisplayPaused: false })
         {
             return;
         }
 
+        _scrollToEndPending = true;
         Dispatcher.BeginInvoke(
-            () => EventScroller.ScrollToEnd(),
-            DispatcherPriority.Background);
+            () =>
+            {
+                _scrollToEndPending = false;
+                if (_viewModel is not { AutoScrollEnabled: true, IsDisplayPaused: false })
+                {
+                    return;
+                }
+
+                EventScroller.UpdateLayout();
+                EventScroller.ScrollToVerticalOffset(EventScroller.ScrollableHeight);
+            },
+            DispatcherPriority.ContextIdle);
     }
 
     private void DetachViewModel()

@@ -13,6 +13,7 @@ public enum ServerAdministrationAction
     KillAllZombies,
     MakePowerUpsPermanent,
     RestorePowerUpTimeout,
+    ChangeMap,
     RestartMap,
     SpawnBoss,
     SetHostname,

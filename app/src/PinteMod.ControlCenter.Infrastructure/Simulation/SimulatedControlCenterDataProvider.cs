@@ -127,14 +127,6 @@ public sealed class SimulatedControlCenterDataProvider(
                     : selectedScenario == SimulationScenario.ServerStopped
                         ? ServiceDeclaredState.Unknown
                         : ServiceDeclaredState.Connected
-            },
-            new("Live Console", selectedScenario == SimulationScenario.ServerStopped ? "Donnée inconnue" : "Lecture seule active",
-                selectedScenario == SimulationScenario.ServerStopped ? ServiceHealth.Unknown : ServiceHealth.Healthy,
-                SnapshotTime.AddSeconds(-3))
-            {
-                DeclaredState = selectedScenario == SimulationScenario.ServerStopped
-                    ? ServiceDeclaredState.Unknown
-                    : ServiceDeclaredState.Running
             }
         ];
     }

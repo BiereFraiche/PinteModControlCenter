@@ -10,20 +10,26 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
     private readonly Func<Task<ServerTabViewModel>> _addServer;
     private readonly Func<ServerTabViewModel, Task<bool>> _removeServer;
     private readonly Func<string, Task> _activeServerChanged;
+    private readonly Func<bool, Task> _displayModeChanged;
     private ServerTabViewModel _activeServer;
     private string? _workspaceNotice;
+    private bool _advancedMode;
 
     public ControlCenterWorkspaceViewModel(
         IEnumerable<ServerTabViewModel> servers,
         string? activeProfileId,
         Func<Task<ServerTabViewModel>> addServer,
         Func<ServerTabViewModel, Task<bool>> removeServer,
-        Func<string, Task> activeServerChanged)
+        Func<string, Task> activeServerChanged,
+        bool advancedMode = false,
+        Func<bool, Task>? displayModeChanged = null)
     {
         ArgumentNullException.ThrowIfNull(servers);
         _addServer = addServer ?? throw new ArgumentNullException(nameof(addServer));
         _removeServer = removeServer ?? throw new ArgumentNullException(nameof(removeServer));
         _activeServerChanged = activeServerChanged ?? throw new ArgumentNullException(nameof(activeServerChanged));
+        _displayModeChanged = displayModeChanged ?? (_ => Task.CompletedTask);
+        _advancedMode = advancedMode;
         Servers = new ObservableCollection<ServerTabViewModel>(servers);
         if (Servers.Count == 0)
         {
@@ -50,6 +56,10 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
             RemoveServerAsync,
             _ => Servers.Count > 1,
             _ => WorkspaceNotice = "L’onglet serveur n’a pas pu être retiré.");
+        ToggleDisplayModeCommand = new AsyncRelayCommand(
+            ToggleDisplayModeAsync,
+            null,
+            _ => WorkspaceNotice = "Le mode d’affichage n’a pas pu être mémorisé.");
     }
 
     public ObservableCollection<ServerTabViewModel> Servers { get; }
@@ -59,6 +69,25 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
     public AsyncRelayCommand AddServerCommand { get; }
 
     public AsyncRelayCommand<ServerTabViewModel> RemoveServerCommand { get; }
+
+    public AsyncRelayCommand ToggleDisplayModeCommand { get; }
+
+    public bool AdvancedMode
+    {
+        get => _advancedMode;
+        private set
+        {
+            if (SetProperty(ref _advancedMode, value))
+            {
+                OnPropertyChanged(nameof(SimpleMode));
+                OnPropertyChanged(nameof(DisplayModeButtonLabel));
+            }
+        }
+    }
+
+    public bool SimpleMode => !AdvancedMode;
+
+    public string DisplayModeButtonLabel => AdvancedMode ? "MODE SIMPLE" : "MODE AVANCÉ";
 
     public ServerTabViewModel ActiveServer
     {
@@ -79,6 +108,12 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
     {
         get => _workspaceNotice;
         private set => SetProperty(ref _workspaceNotice, value);
+    }
+
+    private async Task ToggleDisplayModeAsync()
+    {
+        AdvancedMode = !AdvancedMode;
+        await _displayModeChanged(AdvancedMode);
     }
 
     private async Task SelectServerAsync(ServerTabViewModel server)

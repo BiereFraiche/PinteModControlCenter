@@ -13,8 +13,7 @@ public sealed class HybridControlCenterDataProvider(
     [
         LocalServiceKind.Supervisor,
         LocalServiceKind.BanService,
-        LocalServiceKind.GeoIpBridge,
-        LocalServiceKind.LiveConsole
+        LocalServiceKind.GeoIpBridge
     ];
 
     public async Task<DashboardSnapshot> GetSnapshotAsync(CancellationToken cancellationToken = default)

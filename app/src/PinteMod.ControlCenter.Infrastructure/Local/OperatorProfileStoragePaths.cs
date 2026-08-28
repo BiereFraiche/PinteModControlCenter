@@ -13,6 +13,15 @@ public static class OperatorProfileStoragePaths
     public static string GetMapCatalogPath(string profileId) =>
         Path.Combine(GetProfileFolder(profileId), "map-catalog.json");
 
+    public static string GetPlayerChatHistoryPath(string profileId) =>
+        Path.Combine(GetProfileFolder(profileId), "player-chat-history.json");
+
+    public static string GetManagedServerProfilePath(string profileId) =>
+        Path.Combine(GetProfileFolder(profileId), "managed-server.json");
+
+    public static string GetRemoteAgentSecretPath(string profileId) =>
+        Path.Combine(GetProfileFolder(profileId), "remote-agent.secret.dpapi");
+
     private static string GetProfileFolder(string profileId)
     {
         if (!JsonOperatorWorkspaceConfigurationStore.IsValidProfileId(profileId))

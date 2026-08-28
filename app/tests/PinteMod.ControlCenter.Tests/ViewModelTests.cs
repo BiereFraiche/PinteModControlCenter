@@ -32,6 +32,300 @@ public sealed class ViewModelTests
         }
     }
 
+
+    [TestMethod]
+    public void Shell_RealUnstructuredServer_DisablesUnprovedDataPages()
+    {
+        var store = new CachedControlCenterSnapshotStore(
+            new SimulatedControlCenterDataProvider(SimulationScenario.Healthy));
+        var simulation = new SimulationActionService();
+        var selection = new PlayerSelectionState();
+        var shell = new ShellViewModel(
+            store,
+            new DashboardViewModel(store, simulation, selection),
+            new PlayersViewModel(store, simulation, selection),
+            new ServerViewModel(store, simulation),
+            new RecordsViewModel(store),
+            new LogsViewModel(store),
+            new SettingsViewModel(),
+            startClock: false,
+            restrictUnprovedCapabilities: true);
+
+        var players = shell.NavigationItems.Single(item => item.Title == "Joueurs");
+        var records = shell.NavigationItems.Single(item => item.Title == "Records");
+        Assert.IsFalse(players.IsEnabled);
+        Assert.IsFalse(records.IsEnabled);
+        Assert.IsFalse(shell.NavigateTo("Joueurs"));
+        Assert.AreEqual("Dashboard", shell.CurrentPage.Title);
+    }
+
+    [TestMethod]
+    public void Shell_AdaptiveThirdPartyProfile_GraysUnprovedPages()
+    {
+        var store = new CachedControlCenterSnapshotStore(
+            new SimulatedControlCenterDataProvider(SimulationScenario.Healthy));
+        var simulation = new SimulationActionService();
+        var selection = new PlayerSelectionState();
+        var profile = new ServerIntegrationProfile(
+            ManagedServerIntegrationKind.ThirdPartyScripts,
+            "GSC tiers · audit read-only",
+            IntegrationCommandTransport.None,
+            [
+                new IntegrationCapability(IntegrationCapabilityKey.ServerLifecycle, IntegrationCapabilityAvailability.Available, "BOIII", "BOIII"),
+                new IntegrationCapability(IntegrationCapabilityKey.Players, IntegrationCapabilityAvailability.Observed, "Hooks observés", "Audit"),
+                new IntegrationCapability(IntegrationCapabilityKey.Chat, IntegrationCapabilityAvailability.Observed, "Hooks observés", "Audit")
+            ],
+            ThirdPartyGscAudit.Empty);
+        var server = new ServerViewModel(store, simulation, integrationProfile: profile);
+        var shell = new ShellViewModel(
+            store,
+            new DashboardViewModel(store, simulation, selection),
+            new PlayersViewModel(store, simulation, selection),
+            server,
+            new RecordsViewModel(store),
+            new LogsViewModel(store),
+            new SettingsViewModel(),
+            startClock: false,
+            integrationProfile: profile);
+
+        Assert.IsFalse(shell.NavigationItems.Single(item => item.Title == "Joueurs").IsEnabled);
+        Assert.IsFalse(shell.NavigationItems.Single(item => item.Title == "Records").IsEnabled);
+        Assert.IsFalse(server.SupportsPinteModClosedCommands);
+    }
+
+    [TestMethod]
+    public void ServerView_PinteModProfile_RecognizesClosedCommandTransport()
+    {
+        var store = new CachedControlCenterSnapshotStore(
+            new SimulatedControlCenterDataProvider(SimulationScenario.Healthy));
+        var profile = new ServerIntegrationProfile(
+            ManagedServerIntegrationKind.PinteMod,
+            "PinteMod",
+            IntegrationCommandTransport.PinteModClosedRconV1,
+            [],
+            ThirdPartyGscAudit.Empty);
+
+        var server = new ServerViewModel(
+            store,
+            new SimulationActionService(),
+            integrationProfile: profile);
+
+        Assert.IsTrue(server.SupportsPinteModClosedCommands);
+    }
+
+    [TestMethod]
+    public void AdaptiveSettingsAndDashboard_ShowThirdPartyLimitedMode()
+    {
+        var profile = new ServerIntegrationProfile(
+            ManagedServerIntegrationKind.ThirdPartyScripts,
+            "GSC tiers · audit read-only",
+            IntegrationCommandTransport.None,
+            [new IntegrationCapability(IntegrationCapabilityKey.ServerLifecycle, IntegrationCapabilityAvailability.Available, "BOIII", "BOIII")],
+            ThirdPartyGscAudit.Empty);
+        var settings = new SettingsViewModel(integrationProfile: profile);
+        var store = new CachedControlCenterSnapshotStore(
+            new SimulatedControlCenterDataProvider(SimulationScenario.Healthy));
+        var dashboard = new DashboardViewModel(
+            store,
+            new SimulationActionService(),
+            new PlayerSelectionState(),
+            integrationProfile: profile);
+
+        Assert.AreEqual("MODE ADAPTATIF LIMITÉ", settings.ModeLabel);
+        Assert.AreEqual("ADP", settings.ModeShortLabel);
+        Assert.AreEqual("GSC TIERS · MODE LIMITÉ", dashboard.IntegrationProviderLabel);
+    }
+
+    [TestMethod]
+    public async Task Dashboard_StartServer_UsesRegisteredProfileLauncher()
+    {
+        var store = new MutableSnapshotStore(
+            SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy));
+        var launched = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dashboard = new DashboardViewModel(
+            store,
+            new SimulationActionService(),
+            new PlayerSelectionState(),
+            serverLaunchAction: () =>
+            {
+                launched.TrySetResult(true);
+                return Task.FromResult(new ServerLaunchResult(true, "Serveur démarré."));
+            });
+
+        Assert.IsTrue(dashboard.CanStartServer);
+        Assert.IsTrue(dashboard.StartServerCommand.CanExecute(null));
+        dashboard.StartServerCommand.Execute(null);
+
+        await launched.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        for (var attempt = 0; attempt < 20 && dashboard.StartServerCommand.IsExecuting; attempt++)
+        {
+            await Task.Delay(50);
+        }
+
+        Assert.IsFalse(dashboard.StartServerCommand.IsExecuting);
+        Assert.AreEqual("Serveur démarré.", dashboard.ServerLaunchStatus);
+    }
+
+    [TestMethod]
+    public async Task Dashboard_StartServer_IsDisabledWhenHybridServerIsAlreadyRunning()
+    {
+        var simulated = SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy);
+        var snapshot = simulated with
+        {
+            Server = simulated.Server with { ServerRunning = true, ServerRunningAvailable = true },
+            DataContext = simulated.DataContext with
+            {
+                Mode = ControlCenterDataMode.HybridLocal,
+                ModeLabel = "MODE HYBRIDE LOCAL",
+                ServerRoot = "C:\\Server3"
+            }
+        };
+        var dashboard = new DashboardViewModel(
+            new MutableSnapshotStore(snapshot),
+            new SimulationActionService(),
+            new PlayerSelectionState(),
+            serverLaunchAction: () => Task.FromResult(new ServerLaunchResult(true, "Ne doit pas être appelé.")));
+
+        await dashboard.InitializeAsync();
+
+        Assert.IsTrue(dashboard.ServerAlreadyRunning);
+        Assert.IsFalse(dashboard.CanStartServer);
+        Assert.IsFalse(dashboard.StartServerCommand.CanExecute(null));
+    }
+
+    [TestMethod]
+    public async Task Dashboard_StopServer_IsEnabledOnlyWhenServerIsRunning()
+    {
+        var simulated = SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy);
+        var running = simulated with
+        {
+            Server = simulated.Server with { ServerRunning = true, ServerRunningAvailable = true },
+            DataContext = simulated.DataContext with
+            {
+                Mode = ControlCenterDataMode.HybridLocal,
+                ModeLabel = "MODE HYBRIDE LOCAL",
+                ServerRoot = "C:\\Server3"
+            }
+        };
+        var stopped = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var store = new MutableSnapshotStore(running);
+        var dashboard = new DashboardViewModel(
+            store,
+            new SimulationActionService(),
+            new PlayerSelectionState(),
+            confirmationService: new AlwaysConfirmService(),
+            serverLaunchAction: () => Task.FromResult(new ServerLaunchResult(false, "Déjà lancé.")),
+            serverStopAction: () =>
+            {
+                store.SetSnapshot(running with
+                {
+                    Server = running.Server with { ServerRunning = false, ServerRunningAvailable = true },
+                    Services = []
+                });
+                stopped.TrySetResult(true);
+                return Task.FromResult(new ServerLaunchResult(true, "Serveur arrêté."));
+            });
+
+        await dashboard.InitializeAsync();
+
+        Assert.IsTrue(dashboard.ServerAlreadyRunning);
+        Assert.IsTrue(dashboard.CanStopServer);
+        Assert.IsFalse(dashboard.CanStartServer);
+        dashboard.StopServerCommand.Execute(null);
+        await stopped.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        for (var attempt = 0; attempt < 50 && dashboard.StopServerCommand.IsExecuting; attempt++)
+        {
+            await Task.Delay(50);
+        }
+
+        Assert.IsFalse(dashboard.StopServerCommand.IsExecuting);
+        Assert.IsFalse(dashboard.ServerAlreadyRunning);
+        Assert.IsFalse(dashboard.CanStopServer);
+        Assert.IsTrue(dashboard.CanStartServer);
+    }
+
+    [TestMethod]
+    public async Task Dashboard_RemoteServerControlsStayDisabledWhenAuthenticatedTransportIsUnavailable()
+    {
+        var simulated = SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy);
+        var running = simulated with
+        {
+            Server = simulated.Server with { ServerRunning = true, ServerRunningAvailable = true },
+            DataContext = simulated.DataContext with
+            {
+                Mode = ControlCenterDataMode.HybridLocal,
+                ModeLabel = "MODE RÉEL · BOIII NATIF",
+                ServerRoot = @"\\server\share\Server4"
+            }
+        };
+        var dashboard = new DashboardViewModel(
+            new MutableSnapshotStore(running),
+            new SimulationActionService(),
+            new PlayerSelectionState(),
+            serverLaunchAction: () => Task.FromResult(new ServerLaunchResult(true, "Ne doit pas être appelé.")),
+            serverStopAction: () => Task.FromResult(new ServerLaunchResult(true, "Ne doit pas être appelé.")),
+            serverRunningProbe: () => true,
+            serverControlTransportAvailabilityProbe: _ => Task.FromResult(false));
+
+        await dashboard.InitializeAsync();
+
+        Assert.IsFalse(dashboard.ServerControlTransportAvailable);
+        Assert.IsFalse(dashboard.CanStartServer);
+        Assert.IsFalse(dashboard.CanStopServer);
+        Assert.IsFalse(dashboard.StartServerCommand.CanExecute(null));
+        Assert.IsFalse(dashboard.StopServerCommand.CanExecute(null));
+        StringAssert.Contains(dashboard.ServerControlTransportStatus, "Agent SMB");
+    }
+
+    [TestMethod]
+    public async Task Dashboard_RealNativeStoppedSnapshotDisplaysObservedServerStateWithoutGameplayData()
+    {
+        var simulated = SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy);
+        var real = simulated with
+        {
+            Server = simulated.Server with
+            {
+                ServerRunning = false,
+                ServerRunningAvailable = true,
+                RoundAvailable = false,
+                PlayersConnectedAvailable = false,
+                SessionDurationAvailable = false,
+                RankedStatusAvailable = false,
+                MapProvenance = DataProvenance.Unavailable,
+                SessionProvenance = DataProvenance.Unavailable
+            },
+            DataContext = simulated.DataContext with
+            {
+                Mode = ControlCenterDataMode.HybridLocal,
+                ModeLabel = "MODE RÉEL · BOIII NATIF",
+                ServerRoot = @"C:\Server4",
+                SessionSource = LocalSourceMetadata.Unavailable("Aucune télémétrie structurée")
+            },
+            Players = [],
+            Services = [],
+            Events = []
+        };
+        var nativeProfile = new ServerIntegrationProfile(
+            ManagedServerIntegrationKind.BoiiiNative,
+            "BOIII natif",
+            IntegrationCommandTransport.None,
+            [],
+            ThirdPartyGscAudit.Empty);
+        var dashboard = new DashboardViewModel(
+            new MutableSnapshotStore(real),
+            new SimulationActionService(),
+            new PlayerSelectionState(),
+            integrationProfile: nativeProfile,
+            serverRunningProbe: () => false);
+
+        await dashboard.InitializeAsync();
+
+        Assert.AreEqual("SERVEUR ARRÊTÉ · PROCESSUS BOIII ABSENT", dashboard.ServerRuntimeStatusLabel);
+        Assert.AreEqual("—", dashboard.RoundDisplay);
+        Assert.AreEqual("— / —", dashboard.PlayersDisplay);
+        StringAssert.Contains(dashboard.ModeSummary, "aucune donnée de démonstration");
+    }
+
     [TestMethod]
     public async Task PlayerSelection_IsSharedBetweenDashboardAndPlayersByXuid()
     {
@@ -435,6 +729,7 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "MOT DE PASSE RÉSEAU BOIII");
         StringAssert.Contains(xaml, "<controls:BoiiiHostnameEditor");
         StringAssert.Contains(xaml, "EncodedText=\"{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"");
+        StringAssert.Contains(xaml, "Command=\"{Binding RestoreObservedHostnameCommand}\"");
         Assert.IsFalse(xaml.Contains("Password=\"{Binding", StringComparison.Ordinal));
     }
 
@@ -459,6 +754,18 @@ public sealed class ViewModelTests
     }
 
     [TestMethod]
+    public void Dashboard_ContainsReadOnlyRecentPlayerChatPanel()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "DashboardView.xaml"));
+
+        StringAssert.Contains(xaml, "DERNIERS MESSAGES JOUEURS");
+        StringAssert.Contains(xaml, "ItemsSource=\"{Binding PlayerChat.RecentMessages}\"");
+        StringAssert.Contains(xaml, "CHAT LOCAL · READ-ONLY");
+        Assert.IsFalse(xaml.Contains("PlayerChat.Xuid", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public void DashboardServiceDiagnostics_AreCollapsedByDefaultAndRemainAvailable()
     {
         var presentationRoot = FindPresentationSourceRoot();
@@ -470,6 +777,41 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "{Binding ReadStatusText, Mode=OneWay}");
         StringAssert.Contains(xaml, "{Binding FreshnessText, Mode=OneWay}");
         StringAssert.Contains(xaml, "{Binding ProvenanceText, Mode=OneWay}");
+    }
+
+    [TestMethod]
+    public void RecordsView_UsesStableFilterKeysAndPlacesRankProfilesAfterRecords()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "RecordsView.xaml"));
+
+        StringAssert.Contains(xaml, "SelectedValuePath=\"Key\"");
+        StringAssert.Contains(xaml, "SelectedRecordMapKey");
+        StringAssert.Contains(xaml, "SelectedRecordHolderKey");
+        StringAssert.Contains(xaml, "<StackPanel Grid.Row=\"2\">");
+        StringAssert.Contains(xaml, "<Border Grid.Row=\"3\" Style=\"{StaticResource CardStyle}\"");
+    }
+
+    [TestMethod]
+    public void Dashboard_ModeDetails_AreCompactAndCollapsedByDefault()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "DashboardView.xaml"));
+
+        StringAssert.Contains(xaml, "Header=\"DÉTAILS SOURCE\" IsExpanded=\"False\"");
+        StringAssert.Contains(xaml, "Text=\"{Binding ModeLabel}\" Style=\"{StaticResource EyebrowTextStyle}\"");
+    }
+
+    [TestMethod]
+    public void ServerView_IdentityAndPassword_AreProminentFullWidth()
+    {
+        var presentationRoot = FindPresentationSourceRoot();
+        var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "ServerView.xaml"));
+
+        StringAssert.Contains(xaml, "Grid.Row=\"2\" Style=\"{StaticResource CardStyle}\"");
+        StringAssert.Contains(xaml, "IDENTITÉ PUBLIQUE &amp; MOT DE PASSE");
+        StringAssert.Contains(xaml, "Autoriser l’envoi du mot de passe via RCON LAN pour cette session");
+        StringAssert.Contains(xaml, "x:Name=\"JoinPasswordBox\"");
     }
 
     [TestMethod]
@@ -572,6 +914,20 @@ public sealed class ViewModelTests
         CollectionAssert.AreEqual(expectedCodes, viewModel.MapOptions.Select(option => option.Key).ToArray());
         Assert.AreEqual(expectedCodes.Length, viewModel.MapOptions.Select(option => option.Key).Distinct().Count());
         Assert.IsTrue(viewModel.MapOptions.All(option => !string.IsNullOrWhiteSpace(option.Label)));
+    }
+
+    [TestMethod]
+    public void RealAdaptiveServer_DisablesSimulationOnlyServerActions()
+    {
+        var viewModel = new ServerViewModel(
+            new MutableSnapshotStore(SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy)),
+            new SimulationActionService(),
+            integrationProfile: ServerIntegrationProfile.Unknown,
+            allowSimulationActions: false);
+
+        Assert.IsFalse(viewModel.SimulateServerActionCommand.CanExecute(SimulationAction.ChangeMap));
+        StringAssert.Contains(viewModel.ServerActionModeTitle, "FAIL-CLOSED");
+        StringAssert.Contains(viewModel.ServerActionModeDescription, "aucune simulation");
     }
 
     [TestMethod]
@@ -832,6 +1188,12 @@ public sealed class ViewModelTests
             Task.FromResult(Current!);
 
         public void SetSnapshot(DashboardSnapshot value) => Current = value;
+    }
+
+    private sealed class AlwaysConfirmService : IOperatorConfirmationService
+    {
+        public Task<bool> ConfirmAsync(OperatorConfirmationRequest request, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 
     private sealed class CapturingSimulationService : ISimulationActionService

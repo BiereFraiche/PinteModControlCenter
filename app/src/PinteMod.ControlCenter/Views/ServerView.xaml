@@ -5,7 +5,13 @@
              xmlns:core="clr-namespace:PinteMod.ControlCenter.Core.Simulation;assembly=PinteMod.ControlCenter.Core">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="20">
-            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
             <controls:ResponsiveUniformGrid Grid.Row="0" MinItemWidth="180" MaxColumns="5" Margin="-4,-4,-4,12">
                 <Border Style="{StaticResource CardStyle}" Margin="4">
@@ -56,7 +62,76 @@
                 </StackPanel>
             </Border>
 
-            <controls:ResponsiveUniformGrid Grid.Row="2" MinItemWidth="430" MaxColumns="2" Margin="-4,-4,-4,12">
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    BorderBrush="{DynamicResource AccentBrush}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="IDENTITÉ PUBLIQUE &amp; MOT DE PASSE" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock Text="Nom public observé et protection des nouvelles connexions · bridge local PinteMod."
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding ServerIdentityText}" Foreground="{DynamicResource AccentBrightBrush}"
+                                       FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding JoinPasswordStatus}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="9" Margin="0,3,0,0" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+
+                    <controls:ResponsiveUniformGrid MinItemWidth="390" MaxColumns="2" Margin="-5,0,-5,0">
+                        <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="12" Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="NOM PUBLIC DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,6" />
+                                <TextBlock Text="{Binding ServerIdentitySourceSummary}" Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="9" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                <controls:BoiiiHostnameEditor EncodedText="{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                              Margin="0,0,0,8" />
+                                <WrapPanel>
+                                    <Button Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding SetHostnameCommand}" Margin="0,0,8,8"
+                                            ToolTip="Commande réelle fermée : ezzccsethostname" />
+                                    <Button Content="REPRENDRE LE NOM ACTUEL" Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding RestoreObservedHostnameCommand}" Margin="0,0,0,8"
+                                            ToolTip="Recharge le nom actuellement observé sans envoyer de commande." />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
+                                           FontSize="9" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="12" Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="MOT DE PASSE RÉSEAU BOIII" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,6" />
+                                <TextBlock Text="Valeur jamais lue, affichée, journalisée ou persistée par le Control Center."
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                <PasswordBox x:Name="JoinPasswordBox" MaxLength="32" Margin="0,0,0,8"
+                                             Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{DynamicResource AccentBrush}"
+                                             ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
+                                <WrapPanel>
+                                    <Button Content="DÉFINIR LE MOT DE PASSE" Style="{StaticResource SecondaryButtonStyle}"
+                                            IsEnabled="{Binding CanSetJoinPassword}" Click="SetJoinPassword_Click" Margin="0,0,8,8"
+                                            ToolTip="Loopback recommandé. Sur un LAN privé, activez explicitement l’autorisation temporaire ci-dessous." />
+                                    <Button Content="SUPPRIMER LE MOT DE PASSE" Style="{StaticResource DangerButtonStyle}"
+                                            Command="{Binding ClearJoinPasswordCommand}" Margin="0,0,0,8"
+                                            ToolTip="La valeur du mot de passe réseau BOIII n’est jamais lue ni affichée" />
+                                </WrapPanel>
+                                <CheckBox Content="Autoriser l’envoi du mot de passe via RCON LAN pour cette session"
+                                          IsChecked="{Binding AllowJoinPasswordOverLan, Mode=TwoWay}"
+                                          Visibility="{Binding IsJoinPasswordLanTransport, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                          Foreground="{StaticResource WarningBrush}" FontSize="9" Margin="0,0,0,6"
+                                          ToolTip="Opt-in temporaire : transport RCON non chiffré, choix non enregistré." />
+                                <TextBlock Text="{Binding SetJoinPasswordNotice}" Foreground="{StaticResource WarningBrush}"
+                                           FontSize="9" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </controls:ResponsiveUniformGrid>
+                </StackPanel>
+            </Border>
+
+            <controls:ResponsiveUniformGrid Grid.Row="3" MinItemWidth="430" MaxColumns="2" Margin="-4,-4,-4,12">
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>
                         <TextBlock Text="CARTE &amp; SESSION" Style="{StaticResource SectionTitleStyle}" />
@@ -64,7 +139,9 @@
                                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" />
                         <WrapPanel>
                             <ComboBox ItemsSource="{Binding MapOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedMap}" Width="230" Margin="0,0,10,10" />
-                            <Button Content="CHANGER · SIMULATION" Style="{StaticResource SimulationButtonStyle}" Command="{Binding SimulateServerActionCommand}" CommandParameter="{x:Static core:SimulationAction.ChangeMap}" />
+                            <Button Content="CHANGER DE CARTE" Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding ChangeMapCommand}"
+                                    ToolTip="Commande réelle fermée : ezzccmap &lt;request_id&gt; &lt;map_officielle&gt;" />
                         </WrapPanel>
                         <Button Content="REDÉMARRER LA CARTE ACTIVE" Style="{StaticResource DangerButtonStyle}"
                                 Command="{Binding RestartMapCommand}" HorizontalAlignment="Left"
@@ -76,48 +153,6 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardStyle}" Margin="4">
-                    <StackPanel>
-                        <TextBlock Text="IDENTITÉ PUBLIQUE · CONTRAT LOCAL" Style="{StaticResource SectionTitleStyle}" />
-                        <TextBlock Text="{Binding ServerIdentityText}" Foreground="{DynamicResource AccentBrightBrush}"
-                                   FontSize="12" FontWeight="SemiBold" Margin="0,7,0,0" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding JoinPasswordStatus}" Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="10" Margin="0,4,0,10" />
-                        <TextBlock Text="NOUVEAU NOM DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <controls:BoiiiHostnameEditor EncodedText="{Binding RequestedHostname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                          Margin="0,0,10,8" />
-                            <Button Grid.Column="1" Content="APPLIQUER LE NOM" Style="{StaticResource SecondaryButtonStyle}"
-                                    Command="{Binding SetHostnameCommand}" Margin="0,0,0,8" VerticalAlignment="Top"
-                                    ToolTip="Commande réelle fermée : ezzccsethostname" />
-                        </Grid>
-                        <TextBlock Text="Le bouton s’active lorsque le nom saisi diffère du nom actuellement observé."
-                                   Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,5"
-                                   TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding HostnamePersistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="9" Margin="0,0,0,10" TextWrapping="Wrap" />
-                        <TextBlock Text="NOUVEAU MOT DE PASSE RÉSEAU BOIII" Style="{StaticResource EyebrowTextStyle}" Margin="0,0,0,5" />
-                        <WrapPanel>
-                            <PasswordBox x:Name="JoinPasswordBox" Width="220" MaxLength="32" Margin="0,0,8,8"
-                                         Background="{StaticResource SurfaceHoverBrush}" BorderBrush="{DynamicResource AccentBrush}"
-                                         ToolTip="4 à 32 caractères autorisés · valeur jamais liée au ViewModel" />
-                            <Button Content="DÉFINIR LE MOT DE PASSE" Style="{StaticResource SecondaryButtonStyle}"
-                                    IsEnabled="{Binding CanSetJoinPassword}" Click="SetJoinPassword_Click" Margin="0,0,8,8"
-                                    ToolTip="Disponible uniquement avec RCON loopback sur la machine serveur" />
-                        </WrapPanel>
-                        <WrapPanel>
-                            <Button Content="SUPPRIMER LE MOT DE PASSE RÉSEAU" Style="{StaticResource DangerButtonStyle}"
-                                    Command="{Binding ClearJoinPasswordCommand}" Margin="0,0,8,8"
-                                    ToolTip="La valeur du mot de passe réseau BOIII n’est jamais lue ni affichée" />
-                        </WrapPanel>
-                        <TextBlock Text="{Binding SetJoinPasswordNotice}" Foreground="{StaticResource WarningBrush}"
-                                   FontSize="9" TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
 
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>
@@ -301,7 +336,7 @@
                 </Border>
             </controls:ResponsiveUniformGrid>
 
-            <StackPanel Grid.Row="3">
+            <StackPanel Grid.Row="4">
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                   <StackPanel>
                     <TextBlock Text="SERVICES LOCAUX · HEARTBEATS AUTORITAIRES" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />

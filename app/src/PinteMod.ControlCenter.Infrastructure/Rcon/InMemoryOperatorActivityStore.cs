@@ -113,6 +113,7 @@ public sealed class InMemoryOperatorActivityStore : IOperatorActivityStore
             ServerAdministrationAction.KillAllZombies => "Éliminer les zombies",
             ServerAdministrationAction.MakePowerUpsPermanent => "Rendre les power-ups permanents",
             ServerAdministrationAction.RestorePowerUpTimeout => "Restaurer le délai des power-ups",
+            ServerAdministrationAction.ChangeMap => $"Changer de carte vers {OfficialMapCatalog.ResolveName(result.Request.Option ?? "")}",
             ServerAdministrationAction.RestartMap => "Redémarrer la carte",
             ServerAdministrationAction.SpawnBoss => "Faire apparaître un boss",
             ServerAdministrationAction.SetHostname => "Modifier le nom public",
