@@ -1,8 +1,8 @@
 # Prompt de reprise Codex
 
 ```text
-Nous reprenons PinteMod Control Center v2.2 dans le workspace local :
-E:\Dev\PinteMod-ControlCenter
+Nous reprenons PinteMod Control Center dans le workspace local :
+<racine-du-dépôt>
 
 Commence par lire intégralement, dans cet ordre :
 1. AGENTS.md

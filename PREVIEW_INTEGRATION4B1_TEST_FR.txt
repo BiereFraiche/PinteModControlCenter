@@ -1,0 +1,54 @@
+PinteMod Control Center v2.4.0 — Integration Preview 4B1
+PROTOCOLE DE TEST HUMAIN
+
+OBJECTIF
+Valider la première couche de compatibilité adaptative sans modifier les GSC tiers.
+
+1. BUILD
+- Lancer BUILD_PREVIEW.bat.
+- Attendre 0 avertissement / 0 erreur.
+- Tests Debug puis Release : tous réussis.
+- Publish : un seul PinteMod.ControlCenter.exe.
+- L'en-tête doit afficher : INTEGRATION PREVIEW 4B1 BUILD.
+
+2. ICÔNE
+- Vérifier que PinteMod.ControlCenter.exe possède l'icône zombie + pinte.
+- Vérifier l'icône dans la barre des tâches pour le Manager et le Control Center.
+
+3. SERVEUR PINTEMOD EXISTANT
+- Analyser Server3 existant.
+- Type attendu : PINTEMOD / PinteMod + Bridge si le Bridge est présent.
+- Joueurs, Chat, Ranks, Records et commandes PinteMod doivent rester disponibles comme avant.
+- Démarrage/arrêt/Agent ne doivent pas régresser.
+
+4. BOIII VIDE (COPIE DE TEST UNIQUEMENT)
+- Utiliser une copie avec boiii/ mais aucun custom_scripts/*.gsc.
+- Type attendu : BOIII NATIF.
+- Démarrage serveur : disponible si un lanceur est configuré.
+- Informations serveur : limité/observé.
+- Joueurs, Chat, Records, commandes PinteMod : grisées.
+- Aucune commande PinteMod ne doit pouvoir partir.
+
+5. GSC TIERS (COPIE DE TEST UNIQUEMENT)
+- Ajouter un GSC tiers de test contenant par exemple :
+  addcommand("god", ::cmd_god);
+  et/ou level.players / writefile.
+- Relancer ANALYSER.
+- Type attendu : SCRIPTS TIERS.
+- Le Manager peut afficher des capacités comme OBSERVÉES/LIMITÉES et les familles de commandes détectées.
+- Les boutons correspondants dans le Control Center doivent rester grisées.
+- Aucun GSC tiers ne doit être modifié.
+- Aucun alias observé ne doit être envoyé automatiquement.
+
+6. FAIL-CLOSED
+- Renommer un alias inconnu dans le GSC de test.
+- L'analyse peut le cataloguer comme commande déclarée, mais ne doit pas inventer de famille/capacité exécutable.
+- Supprimer/rendre inaccessible le dossier : le provider doit revenir à inconnu/non disponible sans crash.
+
+7. RÉGRESSION
+- Vérifier Server3 PinteMod réel : Dashboard, Joueurs, Serveur, Records, Logs, Chat, Paramètres.
+- Vérifier DÉMARRER / ARRÊTER.
+- Vérifier synchronisation Agent distante.
+
+NOTE 4B1
+Cette Preview n'installe pas encore le Generic Bridge read-only sur les serveurs tiers. Elle établit le moteur de détection, l'audit GSC borné et le grisé capability-par-capability. La 4B2 ajoutera la normalisation runtime générique (serveur/carte/manche/joueurs/chat) via un Bridge first-party optionnel.

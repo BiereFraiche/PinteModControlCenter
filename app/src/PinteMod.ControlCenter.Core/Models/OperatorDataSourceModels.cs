@@ -86,8 +86,16 @@ public sealed record OperatorWorkspaceConfiguration(
     public const int MaximumProfileCount = 8;
     public const string PrimaryProfileId = "primary";
 
+    public bool AdvancedMode { get; init; } = false;
+
+    public bool KeepManagerOpenAfterControlCenter { get; init; } = false;
+
     public static OperatorWorkspaceConfiguration Default { get; } = new(
         CurrentSchemaVersion,
         [PrimaryProfileId],
-        PrimaryProfileId);
+        PrimaryProfileId)
+    {
+        AdvancedMode = false,
+        KeepManagerOpenAfterControlCenter = false
+    };
 }

@@ -21,6 +21,9 @@ public static partial class LogPrivacyFilter
         sanitized = Ipv6Address().Replace(sanitized, "[adresse masquée]");
         sanitized = IpAddress().Replace(sanitized, "[adresse masquée]");
         sanitized = CompleteXuid().Replace(sanitized, match => XuidValidator.Abbreviate(match.Value));
+        sanitized = PathKeyValue().Replace(sanitized, match => $"{match.Groups[1].Value}=[chemin masqué]");
+        sanitized = AddressKeyValue().Replace(sanitized, match => $"{match.Groups[1].Value}=[adresse masquée]");
+        sanitized = IdentifierKeyValue().Replace(sanitized, match => $"{match.Groups[1].Value}=[identifiant masqué]");
         sanitized = SensitiveKeyValue().Replace(sanitized, match => $"{match.Groups[1].Value}=[masqué]");
         sanitized = Whitespace().Replace(sanitized, " ").Trim();
 
@@ -30,6 +33,27 @@ public static partial class LogPrivacyFilter
         }
 
         return sanitized;
+    }
+
+    public static string SanitizeChatText(string? value, int maximumLength = 500)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var withoutCompleteXuids = CompleteXuid().Replace(value, "[identifiant masqué]");
+        withoutCompleteXuids = AbbreviatedXuid().Replace(withoutCompleteXuids, "[identifiant masqué]");
+        withoutCompleteXuids = ChatSensitiveKeyValue().Replace(
+            withoutCompleteXuids,
+            match => $"{match.Groups[1].Value}=[masqué]");
+        return SanitizeDisplayText(withoutCompleteXuids, maximumLength);
+    }
+
+    public static string SafeChatPlayerName(string? value)
+    {
+        var safe = SanitizeChatText(value, 48);
+        return string.IsNullOrWhiteSpace(safe) ? "Joueur" : safe;
     }
 
     public static string SafePlayerName(string? value)
@@ -62,7 +86,22 @@ public static partial class LogPrivacyFilter
     [GeneratedRegex(@"(?i)(?<![0-9a-f])[0-9a-f]{16}(?![0-9a-f])", RegexOptions.CultureInvariant)]
     private static partial Regex CompleteXuid();
 
-    [GeneratedRegex(@"(?i)\b(root|path|active_root|ip|address|guid|command|args?|reason|updated_by)\s*=\s*[^|;\r\n]*", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?i)(?<![0-9a-f])[0-9a-f]{4,8}\.{3}[0-9a-f]{4,8}(?![0-9a-f])", RegexOptions.CultureInvariant)]
+    private static partial Regex AbbreviatedXuid();
+
+    [GeneratedRegex(@"(?i)\b(password|passwd|rcon_password|rcon|secret|token|api_key)\s*=\s*[^|;\r\n\s]*", RegexOptions.CultureInvariant)]
+    private static partial Regex ChatSensitiveKeyValue();
+
+    [GeneratedRegex(@"(?i)\b(root|path|active_root)\s*=\s*[^|;\r\n]*?(?=\s+\b(?:root|path|active_root|ip|address|guid|command|args?|reason|updated_by|xuid)\s*=|$)", RegexOptions.CultureInvariant)]
+    private static partial Regex PathKeyValue();
+
+    [GeneratedRegex(@"(?i)\b(ip|address)\s*=\s*[^|;\r\n]*?(?=\s+\b(?:root|path|active_root|ip|address|guid|command|args?|reason|updated_by|xuid)\s*=|$)", RegexOptions.CultureInvariant)]
+    private static partial Regex AddressKeyValue();
+
+    [GeneratedRegex(@"(?i)\bguid\s*=\s*[^|;\r\n]*?(?=\s+\b(?:root|path|active_root|ip|address|guid|command|args?|reason|updated_by|xuid)\s*=|$)", RegexOptions.CultureInvariant)]
+    private static partial Regex IdentifierKeyValue();
+
+    [GeneratedRegex(@"(?i)\b(command|args?|reason|updated_by)\s*=\s*[^|;\r\n]*?(?=\s+\b(?:root|path|active_root|ip|address|guid|command|args?|reason|updated_by|xuid)\s*=|$)", RegexOptions.CultureInvariant)]
     private static partial Regex SensitiveKeyValue();
 
     [GeneratedRegex(@"\s+", RegexOptions.CultureInvariant)]

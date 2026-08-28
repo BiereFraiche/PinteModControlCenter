@@ -40,4 +40,5 @@ public sealed class LogPrivacyFilterTests
         StringAssert.Contains(safe, "[adresse masquée]");
         StringAssert.Contains(safe, "[chemin masqué]");
     }
+
 }

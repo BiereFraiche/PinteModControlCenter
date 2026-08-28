@@ -1,0 +1,9 @@
+PINTE MOD CONTROL CENTER v2.4.0 - ONBOARDING PREVIEW 4A2 FIX
+
+Correction ciblée de compilation de la Preview 4A.
+
+Cause : trois expressions switch de ServerManagerViewModel couvraient déjà tous les cas avec BoiiiRootDetected=false/true ; leur bras final `_` était donc inaccessible et provoquait CS8510.
+
+Correction : suppression uniquement des trois bras inaccessibles. Aucun changement fonctionnel du parcours Onboarding 4A.
+
+Compilation : lancer BUILD_PREVIEW.bat.

@@ -1,0 +1,20 @@
+PinteMod Control Center — Integration Preview 4B1 Fix12
+
+OBJECTIF
+- Réparer automatiquement un Agent local installé mais arrêté quand le Control Center est ouvert sur le PC serveur.
+- Ne plus déposer update.json si le statut distant est seulement un ancien fichier : exiger un heartbeat HMAC qui évolue réellement.
+- Ne plus laisser stop.request bloquer durablement l’Agent après une tentative d’upgrade locale.
+
+TEST DE RÉCUPÉRATION
+1. Compiler avec BUILD_PREVIEW.bat.
+2. Sur le PC serveur, lancer Fix12 une fois. Attendre 10 secondes.
+3. Sur l’autre PC, lancer Fix12 et ouvrir un profil réseau déjà appairé.
+4. SYNCHRONISER LES DEUX PC.
+5. Si l’Agent est vivant, la synchro doit consommer update.json puis confirmer version + SHA.
+6. Si l’Agent n’est pas vivant, la synchro doit refuser AVANT dépôt et afficher clairement que le heartbeat n’évolue pas.
+
+SÉCURITÉ
+- Aucun nouveau port.
+- Aucun shell distant.
+- HMAC + SHA-256 conservés.
+- Les commandes et profils tiers restent fail-closed.

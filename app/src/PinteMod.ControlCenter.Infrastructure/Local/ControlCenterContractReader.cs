@@ -368,8 +368,7 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
         RequireExact(root, "updated_at_utc", string.Empty);
         RequireExact(root, "time_authority", RuntimeJsonContract.TimeAuthority);
         var hostname = RequiredStringAllowEmpty(root, "public_hostname", 96);
-        if (hostname.Any(character =>
-                !char.IsAsciiLetterOrDigit(character) && character is not (' ' or '.' or '_' or '[' or ']' or '(' or ')' or '-')))
+        if (!IsValidObservedHostname(hostname))
         {
             throw RuntimeJsonContract.Invalid("Hostname public observé invalide.");
         }
@@ -393,6 +392,31 @@ public sealed class ControlCenterContractReader : IControlCenterContractReader, 
             state,
             RequiredBoolean(root, "join_password_enabled"),
             RequiredInteger(root, "revision", 1, MaximumTwelveDigitValue));
+    }
+
+    private static bool IsValidObservedHostname(string value)
+    {
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character == '^')
+            {
+                if (++index >= value.Length || value[index] is < '0' or > '9')
+                {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if (!char.IsAsciiLetterOrDigit(character) &&
+                character is not (' ' or '-' or '_' or '.' or '[' or ']' or '(' or ')' or '|'))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static void RequireSchema(JsonElement root) => RequireIntegerExact(root, "schema_version", 1);

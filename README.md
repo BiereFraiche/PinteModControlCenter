@@ -1,11 +1,15 @@
-# PinteMod Control Center v2.2
+# PinteMod Control Center
+
+> **Current development build: Integration Preview 4B1 Fix15 (`2.4.0-preview-integration.4b1.fix15`).** It adds adaptive BOIII/PinteMod/third-party GSC support, the multi-server Manager and the SMB Agent. First-party capabilities now require a reviewed SHA-256 fingerprint. The Preview builds and passes automated tests, but still requires human Server3 and multi-PC Agent validation. v2.2.0 remains the latest public stable release.
+
+See the [Fix15 status](docs/STATUS_PREVIEW4B1_FIX15.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX15_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-460%20passing-24C875)
+![Preview tests](https://img.shields.io/badge/Preview-586%20tests%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 [![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
@@ -58,6 +62,7 @@ This work is a phased roadmap, not a feature claim for v2.2.0. Security, explici
 The Control Center is deliberately local-first:
 
 - no web server, account system, cloud service or inbound port;
+- VM access may use an existing hypervisor console or RDP behind a secured VPN/gateway; the application itself does not expose remote-control functionality;
 - no network discovery or broadcast;
 - RCON only after an explicit operator action and only to numeric loopback/private/link-local addresses;
 - the RCON secret is protected with Windows DPAPI `CurrentUser` and is never displayed again;

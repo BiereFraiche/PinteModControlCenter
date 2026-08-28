@@ -1,0 +1,35 @@
+PINTE MOD CONTROL CENTER - MANAGER PREVIEW 3M
+================================================
+
+OBJECTIFS
+- bootstrap final manuel de l Agent auto-updatable ;
+- futures mises a jour Agent poussees via SMB + SHA-256 + HMAC ;
+- conserver pairing et aucun nouveau port ;
+- accepter le caractere | dans le hostname BOIII ferme ;
+- Bridge PinteMod v0.3.1.
+
+BUILD
+1. Lancer BUILD_PREVIEW.bat.
+2. Attendu : 0 avertissement / 0 erreur, tous les tests Debug et Release reussis.
+3. Attendu final : BUILD OK - TESTS OK - SINGLE EXE OK.
+
+BOOTSTRAP 3M - UNE DERNIERE FOIS
+1. Utiliser le nouvel EXE 3M sur le PC serveur.
+2. Ouvrir le Manager avec les profils locaux Server1/2/3.
+3. Cliquer ACTIVER / MAJ AGENT SUR CE PC.
+4. Sur le PC principal, utiliser le meme EXE 3M et ACTUALISER L AGENT.
+5. Attendu : Agent ONLINE en version 2.3.0-preview-manager.3m.
+
+AUTO-UPDATE A PARTIR DE 3M
+- Lors d une version future, remplacer uniquement l EXE du PC principal.
+- Sur un profil UNC paire, cliquer METTRE A JOUR L AGENT DISTANT.
+- L EXE est copie dans la file SMB, verifie SHA-256 + HMAC, puis l Agent se remplace et redemarre.
+- Le pairing est conserve.
+
+HOSTNAME |
+1. Arreter le serveur cible.
+2. Manager > INSTALLER / METTRE A JOUR LE BRIDGE (v0.3.1).
+3. Redemarrer BOIII.
+4. Dans Serveur > Identite, tester par exemple : ^7PinteMod | ^4DE
+5. Attendu : sauvegarde possible et hostname applique.
+6. ;, retours ligne, ^x et caracteres hors contrat restent refuses.

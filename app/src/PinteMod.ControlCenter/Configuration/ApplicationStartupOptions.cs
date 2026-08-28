@@ -10,7 +10,8 @@ public sealed record ApplicationStartupOptions(
 {
     public static ApplicationStartupOptions Resolve(
         IReadOnlyList<string> arguments,
-        OperatorConfiguration savedConfiguration)
+        OperatorConfiguration savedConfiguration,
+        bool forceSavedDataSource = false)
     {
         ArgumentNullException.ThrowIfNull(savedConfiguration);
         var parsed = Parse(arguments);
@@ -18,7 +19,7 @@ public sealed record ApplicationStartupOptions(
             argument.StartsWith("--data-mode=", StringComparison.OrdinalIgnoreCase) ||
             argument.StartsWith("--server-root=", StringComparison.OrdinalIgnoreCase));
         return !hasExplicitDataSelection &&
-               savedConfiguration.ActivateDataSourceOnStartup &&
+               (forceSavedDataSource || savedConfiguration.ActivateDataSourceOnStartup) &&
                !string.IsNullOrWhiteSpace(savedConfiguration.ServerRoot)
             ? parsed with
             {

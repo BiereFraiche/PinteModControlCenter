@@ -38,6 +38,9 @@ public sealed class ControlCenterContractSchemaTests
             1L,
             identity.RootElement.GetProperty("properties").GetProperty("revision").GetProperty("minimum").GetInt64());
         Assert.IsFalse(identity.RootElement.GetProperty("properties").GetProperty("revision").TryGetProperty("const", out _));
+        StringAssert.Contains(
+            identity.RootElement.GetProperty("properties").GetProperty("public_hostname").GetProperty("pattern").GetString() ?? string.Empty,
+            "\\^[0-9]");
     }
 
     private static JsonDocument Load(string fileName)

@@ -3920,3 +3920,38 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - baseline produit inchangée : Debug/Release, 0 avertissement, 0 erreur et 460/460 tests ;
 - aucun blocage rencontré ;
 - aucune validation terrain ou capture nécessaire.
+
+## 2026-08-28 — Integration Preview 4B1 Fix15 préparée
+
+### Objectif
+
+- reprendre le candidat Fix14, corriger les écarts fail-closed et préparer une Preview testable et publiable sans la promouvoir en stable.
+
+### Réalisé
+
+- branche locale `codex/integration-preview-4b1-fix15` issue de la dernière référence `origin/main` ;
+- import du candidat Fix14 sans toucher à `server-sandbox/` ;
+- détection PinteMod durcie par empreintes SHA-256 first-party connues ;
+- fichiers portant seulement un nom PinteMod classés comme tiers et maintenus sans transport de commandes ;
+- capacité lifecycle indisponible sans lanceur prouvé ;
+- version Fix15 et métadonnées Windows alignées ;
+- workflow de build étendu à un EXE unique, un dossier autonome et son ZIP ;
+- CI GitHub préparée pour les deux formats et leur audit ;
+- documentation VM fondée sur une console/RDP/VPN existante, sans listener ou port applicatif ;
+- chemins absolus de poste retirés des documents actifs concernés ;
+- aucune opération GitHub distante effectuée.
+
+### Validation automatisée
+
+- Restore réussi ;
+- builds Debug et Release : 0 avertissement, 0 erreur ;
+- tests Debug et Release : 586/586 réussis ;
+- EXE unique et dossier autonome publiés ;
+- audits des ZIP mono-EXE et dossier réussis ;
+- version fichier `2.4.0.15` et version produit Fix15 confirmées.
+
+### Validation restante
+
+- validation humaine Server3 ;
+- scénario Agent bidirectionnel entre deux PC ;
+- push, PR et prerelease uniquement sur ordre explicite.

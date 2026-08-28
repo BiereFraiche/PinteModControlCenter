@@ -925,3 +925,15 @@ Dernière mise à jour : 2026-08-12
 **Sécurité.** L’analyse GSC annoncée reste statique, bornée, confinée et read-only ; aucun candidat découvert ne devient exécutable automatiquement. Le futur Bridge ne pourra posséder que ses propres fichiers identifiables et ne modifiera jamais un GSC tiers. Aucun raw RCON, cloud, port entrant, découverte automatique ou faux succès n’est accepté dans la vision publique.
 
 **Développement.** Le travail fonctionnel v2.3 commencera uniquement sur une branche post-stable dédiée. La Phase 1 doit s’arrêter après le Capability Engine minimal, les providers internes, l’UI capability-aware ciblée, le prototype GSC read-only et la conception du Bridge, puis passer en revue avant toute phase suivante.
+
+## ADR-115 — Une preuve first-party exige une empreinte connue
+
+**Constat.** Fix14 reconnaissait PinteMod à partir des seuls noms `ezz_admin_01_main.gsc` et `ezz_admin_storage.gsc`. Des fichiers factices portant ces noms suffisaient donc à activer le provider et le transport fermé PinteMod, en contradiction avec la règle fail-closed.
+
+**Décision.** Fix15 exige que les fichiers cœur correspondent à des SHA-256 first-party revus. Le runtime et le Bridge PinteMod suivent la même politique. Un fichier inconnu conserve sa visibilité dans l’audit GSC tiers, mais ne débloque aucune mutation.
+
+**Lifecycle.** La racine `boiii/` ne suffit plus à annoncer un démarrage disponible. Au moins un lanceur `.bat`, `.cmd` ou `.exe` confiné à la racine doit être détecté ; les contrôles locaux et Agent conservent ensuite leurs validations propres.
+
+**VM.** Le Control Center peut s’exécuter dans une VM Windows et être affiché depuis un autre PC au moyen d’une console d’hyperviseur ou d’un RDP/VPN déjà administré. Cette capacité ne justifie aucun listener, port entrant, raw shell, découverte réseau ou contrôle distant ajouté au produit.
+
+**Distribution.** Une même construction produit un EXE unique et un dossier autonome. Les deux formats contiennent le même produit, sont audités séparément et restent des candidats Preview jusqu’aux tests humains Server3 et Agent multi-PC.

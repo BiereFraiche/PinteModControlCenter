@@ -133,6 +133,30 @@ public sealed class PlayerAdministrationViewModelTests
     }
 
     [TestMethod]
+    public async Task KnownStoppedServer_LocksPlayerActionsEvenWithFreshCachedPlayerSource()
+    {
+        var snapshot = HybridSnapshot(true);
+        snapshot = snapshot with
+        {
+            Server = snapshot.Server with
+            {
+                ServerRunning = false,
+                ServerRunningAvailable = true
+            }
+        };
+        var viewModel = CreatePlayers(
+            new SnapshotStore(snapshot, snapshot),
+            new CapturingPlayerAdministrationService(),
+            new OperatorMutationSafetyState(),
+            new OperatorRconOperationCoordinator());
+
+        await viewModel.InitializeAsync();
+
+        Assert.IsFalse(viewModel.PlayerActionCommand.CanExecute(SimulationAction.RefillAmmo));
+        StringAssert.Contains(viewModel.PlayerActionsNotice, "Actions verrouillées");
+    }
+
+    [TestMethod]
     public async Task FreshRuntimeSnapshot_AuthorizesXuidActionWhenLogPresenceIsUnavailable()
     {
         var snapshot = HybridSnapshot(true);

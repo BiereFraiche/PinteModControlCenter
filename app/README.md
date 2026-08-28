@@ -1,4 +1,6 @@
-# PinteMod Control Center v2.2
+# PinteMod Control Center — stable v2.2.0 / Preview 4B1 Fix15
+
+La branche Preview produit `2.4.0-preview-integration.4b1.fix15`. Elle reste non stable tant que Server3 et le scénario Agent multi-PC n’ont pas été validés humainement.
 
 Application Windows en C# / .NET 8 / WPF pour observer et administrer une session PinteMod depuis la machine serveur ou un poste du même LAN. Le mode simulé reste le comportement initial. Les données PinteMod sont lues en read-only ; les diagnostics et actions RCON autorisés sont exclusivement manuels et confirmés selon leur niveau de risque.
 
@@ -57,7 +59,21 @@ app\src\PinteMod.ControlCenter\bin\Release\net8.0-windows\PinteMod.ControlCenter
 
 Sans argument, l’application reste entièrement simulée.
 
-## Paquet portable Windows x64
+## Paquets Preview Windows x64
+
+Depuis la racine du dépôt, double-cliquer `BUILD_PREVIEW.bat`. Le workflow produit :
+
+```text
+app\artifacts\integration-preview4b1-fix15-win-x64\single-exe\PinteMod.ControlCenter.exe
+app\artifacts\integration-preview4b1-fix15-win-x64\folder\
+app\artifacts\integration-preview4b1-fix15-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
+app\artifacts\integration-preview4b1-fix15-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
+app\artifacts\integration-preview4b1-fix15-win-x64\SHA256SUMS.txt
+```
+
+L’EXE unique et le dossier sont tous deux autonomes pour Windows x64. Le dossier peut être recompressé ou envoyé tel quel, mais il doit rester complet sur la machine cible.
+
+## Paquet stable Windows x64
 
 La version stable autonome est disponible ici :
 

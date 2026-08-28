@@ -1,0 +1,122 @@
+PINTE MOD CONTROL CENTER - PREVIEW FIX9
+CHAT / DASHBOARD / RECORDS / IDENTITE / CHANGE MAP
+==================================================
+
+STATUT
+------
+Preview de test. Ne remplace pas encore la stable v2.2.0.
+Tester Server3 en premier.
+
+A. COMPILATION
+--------------
+Double-cliquer BUILD_PREVIEW.bat a la racine des sources.
+Resultat attendu :
+BUILD OK - TESTS OK - PUBLISH OK
+
+Le dossier publie est :
+app\artifacts\preview-fix9-win-x64
+
+B. INSTALLATION DU BRIDGE SUR SERVER3
+-------------------------------------
+1. Arreter Server3.
+2. Dans le dossier publie, ouvrir SERVER_PATCH_CONTROL_CENTER.
+3. Double-cliquer INSTALL_CONTROL_CENTER_SERVER_PREVIEW.bat.
+4. Donner le dossier racine de Server3 (celui qui contient boiii).
+5. Pour Change Map, declarer seulement les cartes officielles reellement
+   installees ET autorisees sur ce serveur.
+6. Redemarrer Server3.
+
+Console attendue :
+[PinteMod] Control Center Contracts Preview v0.2.0 loaded
+
+Le bridge cree automatiquement les contrats qui manquaient :
+- boiii\scriptdata\pintemod\diagnostics\control_center_capabilities.json
+- boiii\scriptdata\pintemod\runtime\server_identity.json
+- boiii\scriptdata\pintemod\remote\action_feedback.latest.json apres mutation
+
+C. PC CONTROL CENTER DISTANT SUR LE LAN
+---------------------------------------
+Garder la cible RCON LAN actuelle. Ne pas remplacer son adresse par 127.0.0.1.
+127.0.0.1 ne convient que lorsque le Control Center tourne sur la machine serveur.
+
+La lecture structurée doit continuer a utiliser la source de donnees LAN/read-only
+deja configuree pour ce profil afin que le PC distant puisse voir scriptdata PinteMod.
+
+D. TEST IDENTITE SERVEUR
+------------------------
+1. Serveur > Actualiser.
+2. Le nom public actuel doit apparaitre dans le champ de modification.
+3. Modifier une lettre ou un code couleur ^0..^9.
+4. Appliquer.
+5. Verifier la confirmation locale et le nom observe.
+6. Changer de map ou redemarrer ensuite pour verifier la restauration du nom.
+
+Le bridge utilise live_steam_server_name comme autorite publique et sv_hostname
+uniquement pour compatibilite. Aucun CFG n'est reecrit.
+
+E. MOT DE PASSE JOUEUR
+----------------------
+Le bridge observe uniquement si net_password est actif, jamais sa valeur.
+En loopback 127.0.0.1, SET reste disponible directement.
+Depuis un autre PC du LAN prive :
+1. garder l'adresse RCON 192.168.x.x actuelle ;
+2. cocher "Autoriser le mot de passe via RCON LAN pour cette session" ;
+3. saisir le nouveau mot de passe ;
+4. confirmer l'avertissement.
+
+L'opt-in LAN n'est jamais enregistre et disparait a la fermeture du Control Center.
+Attention : RCON BOIII n'est pas chiffre ; la valeur transite donc sur le LAN pendant l'envoi.
+Le Control Center ne lie pas le mot de passe au ViewModel, ne le journalise pas, ne le persiste
+pas et ne le reaffiche jamais. CLEAR ne transporte aucune valeur sensible.
+
+F. CHANGE MAP REEL
+------------------
+1. Choisir UNIQUEMENT une carte incluse dans l'allowlist lors de l'installation.
+2. Confirmer le changement.
+3. Verifier la console BOIII puis le chargement de la nouvelle carte.
+4. Tester ensuite une carte officielle volontairement NON incluse : elle doit etre refusee.
+
+Important : supported ne signifie pas installed.
+La carte doit passer deux controles cote serveur :
+- liste fermee des 14 cartes officielles ;
+- allowlist locale explicite de ce serveur.
+
+Les cartes custom sont refusees et l'auto-rotation n'est pas modifiee.
+
+G. UI A VERIFIER
+----------------
+- auto-scroll Live Console : le dernier evenement reste en bas ;
+- Dashboard : Chat joueurs present ;
+- Dashboard : Evenements en direct tout en bas et repliables ;
+- Records : filtres Type / Carte / Joueurs / Detenteur / Tri / Affichage ;
+- Records : 50 records rendus par defaut, option 50/100/200/Tous ;
+- Chat joueurs : aucun XUID affiche ou persiste.
+
+En cas d'echec, envoyer uniquement :
+- la fin du BUILD_PREVIEW.bat si la compilation/test echoue ;
+- ou les nouvelles lignes console BOIII autour de "Control Center Contracts Preview"
+  si le GSC ne charge pas.
+
+H. CORRECTIFS FIX8
+------------------
+- Records : la section PROFILS RANKS est maintenant en bas de l'onglet.
+- Records : les menus utilisent des cles SelectedValue stables au lieu de SelectedItem recree.
+- Records : les listes d'options et profils sont remplacees en bloc pour reduire les notifications WPF.
+- Dashboard : le mode hybride local est reduit a une barre discrete ; les details source sont replies par defaut.
+- Serveur : IDENTITE PUBLIQUE & MOT DE PASSE est maintenant un bloc pleine largeur visible avant les autres actions.
+- Mot de passe LAN : cocher l'autorisation temporaire de session puis saisir le mot de passe.
+
+
+FIX9 - finition visuelle menus Ranks & Records
+- bloc Source des donnees compact et replie par defaut ;
+- ComboBox filtres virtualisees/recyclees ;
+- liste des records virtualisee/recyclee pour limiter le rendu WPF ;
+- aucun changement fonctionnel sur les autres onglets.
+
+
+I. CORRECTIF FIX9 - MENUS RECORDS
+- Menus deroulants Records en theme sombre PinteMod.
+- Texte clair et contraste lisible.
+- Survol et selection visibles en bleu.
+- Template dedie conserve la virtualisation/recyclage de la FIX8.
+- Aucun changement serveur/GSC.

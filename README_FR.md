@@ -1,11 +1,15 @@
-# PinteMod Control Center v2.2
+# PinteMod Control Center
+
+> **Développement actuel : Integration Preview 4B1 Fix15 (`2.4.0-preview-integration.4b1.fix15`).** Elle ajoute l’adaptation BOIII/PinteMod/GSC tiers, le Manager multi-serveurs et l’Agent SMB. Les capacités first-party exigent désormais une empreinte SHA-256 connue. Cette Preview compile et passe les tests automatisés, mais reste en attente de validation humaine sur Server3 et du scénario Agent multi-PC. La v2.2.0 reste la dernière stable publique.
+
+Documents utiles : [état Fix15](docs/STATUS_PREVIEW4B1_FIX15.md) · [test Fix15](PREVIEW_INTEGRATION4B1_FIX15_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
 [English documentation](README.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-460%20réussis-24C875)
+![Tests Preview](https://img.shields.io/badge/Preview-586%20tests%20r%C3%A9ussis-24C875)
 [![Version](https://img.shields.io/badge/version-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
 PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WPF** destinée à observer et administrer un serveur dédié **Call of Duty: Black Ops III Zombies** utilisant [PinteMod](https://github.com/BiereFraiche/PinteMod) avec BOIII/Ezz.
@@ -55,6 +59,7 @@ Il s’agit d’une roadmap progressive, pas d’une promesse de fonctionnalité
 ## Garanties de sécurité
 
 - aucun serveur web, compte, cloud ou port entrant ;
+- contrôle en VM possible via une console d’hyperviseur ou RDP derrière un VPN/passerelle existante, sans fonction de contrôle distant ajoutée à l’application ;
 - aucune découverte réseau ;
 - RCON uniquement après action explicite vers une adresse numérique locale/privée autorisée ;
 - secret RCON protégé par DPAPI `CurrentUser`, jamais réaffiché ;

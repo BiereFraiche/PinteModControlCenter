@@ -1,0 +1,23 @@
+PinteMod Control Center — Integration Preview 4B1 Fix10
+
+OBJECTIF DU FIX
+- Mettre automatiquement à niveau l'Agent local installé lorsque son EXE n'a pas le même SHA-256 que le Control Center courant, même si la liste des profils n'a pas changé.
+- Ne plus masquer l'échec de découverte du catalogue distant.
+- ACTUALISER interroge toutes les liaisons UNC connues et affiche la raison exacte si aucun serveur n'est importé.
+
+TEST RECOMMANDÉ
+1. Sur le PC serveur, fermer les anciennes fenêtres Control Center puis lancer la Fix10 publiée.
+2. Attendre 5 à 10 secondes : si un Agent first-party est déjà installé, il doit être réaligné automatiquement sur la Fix10 et redémarré en arrière-plan.
+3. Vérifier que Server4 est toujours enregistré localement.
+4. Sur le portable, lancer la même Fix10.
+5. Dans le Manager, sélectionner n'importe quel profil puis ouvrir « Agent distant / réseau » et cliquer ACTUALISER.
+6. Résultat attendu :
+   - soit Server4 apparaît automatiquement ;
+   - soit le bas de la fenêtre indique explicitement le blocage : aucun profil UNC, aucun Agent appairé, catalogue absent/périmé/non authentifié, ou racine UNC sœur inaccessible.
+7. Si Server4 apparaît, son pairing reste explicite avant toute commande distante.
+
+SÉCURITÉ
+- Aucun scan réseau général.
+- Aucun chemin local du PC serveur n'est publié.
+- Catalogue HMAC + fraîcheur obligatoire.
+- Aucune commande tierce devinée.

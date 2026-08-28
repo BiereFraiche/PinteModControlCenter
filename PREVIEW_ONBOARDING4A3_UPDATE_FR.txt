@@ -1,0 +1,23 @@
+PINTE MOD CONTROL CENTER v2.4.0 - ONBOARDING PREVIEW 4A3
+=======================================================
+
+OBJECTIFS
+- Ne plus imposer de raccourci Bureau/Menu Demarrer pour le Control Center distant.
+- Memoriser le chemin exact du PinteMod.ControlCenter.exe utilise par l operateur sur chaque PC.
+- Synchroniser cet EXE en place avec la version de l Agent.
+- Verifier GitHub sans bloquer le demarrage et sans proposer de downgrade.
+
+MISE A JOUR DISTANTE
+1. Compiler la 4A3 sur le PC principal avec BUILD_PREVIEW.bat.
+2. Pousser la 4A3 avec METTRE A JOUR LE PC SERVEUR.
+3. Si l ancien Control Center du PC serveur est ouvert, l Agent detecte son chemin automatiquement.
+4. S il est ferme et que son chemin n etait pas encore connu, l ouvrir une fois. L Agent le detecte en arriere-plan.
+5. Fermer puis relancer ce MEME EXE : il doit etre en 4A3. Aucun nouveau raccourci n est necessaire.
+
+GITHUB
+- Verification automatique a l ouverture du Manager.
+- Bouton VERIFIER GITHUB pour relancer le check manuellement.
+- Depot : BiereFraiche/PinteMod.
+- Seules les Releases identifiees comme Control Center sont comparees.
+- Aucune installation automatique depuis Internet dans cette Preview.
+- Si GitHub n a pas encore de release Control Center compatible, afficher simplement qu aucune version publique compatible n est publiee.

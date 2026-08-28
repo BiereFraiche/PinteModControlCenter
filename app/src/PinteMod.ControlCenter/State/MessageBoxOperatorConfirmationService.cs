@@ -12,7 +12,7 @@ public sealed class MessageBoxOperatorConfirmationService : IOperatorConfirmatio
     {
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
-        var result = MessageBox.Show(
+        var result = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
             Application.Current?.MainWindow,
             request.Message,
             request.Title,

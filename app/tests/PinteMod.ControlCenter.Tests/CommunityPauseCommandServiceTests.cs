@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;

@@ -1,0 +1,40 @@
+PINTE MOD CONTROL CENTER - ONBOARDING PREVIEW 4A7
+==================================================
+
+OBJECTIF
+- Rendre l appairage entre le PC Control Center et le PC serveur visible au premier coup d oeil.
+- Ne plus afficher CONNECTER CE SERVEUR RESEAU lorsque le profil est deja appaire.
+- Ajouter TESTER LA LIAISON sans lancer ni arreter BOIII.
+
+TEST RAPIDE
+1. Compiler avec BUILD_PREVIEW.bat.
+2. Ouvrir la premiere fenetre du Control Center sur le PC principal.
+3. Selectionner un profil reseau deja appaire.
+4. Attendre l analyse/actualisation automatique.
+5. Verifier la carte LIAISON AVEC LE PC SERVEUR.
+
+ATTENDU SI TOUT EST OK
+- Pastille verte.
+- PC SERVEUR RELIE.
+- Nom du PC serveur visible.
+- Version Agent visible.
+- Texte indiquant que l appairage securise est actif.
+- Le bouton CONNECTER CE SERVEUR RESEAU n est plus affiche.
+- Le bouton TESTER LA LIAISON est disponible.
+
+TESTER LA LIAISON
+- Cliquer TESTER LA LIAISON.
+- Le statut doit rester PC SERVEUR RELIE si l Agent repond et que la signature est valide.
+- Cette action ne lance ni n arrete BOIII.
+
+CAS HORS LIGNE
+- Si l appairage existe mais que l Agent ne repond plus, le texte doit indiquer PC SERVEUR APPARIE - HORS LIGNE.
+- Le logiciel ne doit pas demander de refaire l appairage.
+
+CAS NON APPAIRE
+- Si un Agent est detecte mais pas encore appaire, le bouton CONNECTER CE SERVEUR RESEAU apparait.
+
+AUCUN CHANGEMENT
+- Démarrage/arrêt serveur : inchangés.
+- Worker/Supervisor/Ban/GeoIP/RecordHub : inchangés.
+- PinteMod/Bridge : inchangés.

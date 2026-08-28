@@ -322,10 +322,52 @@ public sealed class ControlCenterContractViewModelTests
         await viewModel.InitializeAsync();
 
         StringAssert.Contains(viewModel.ChangeMapContractNotice, "supported ne signifie pas installed");
-        StringAssert.Contains(viewModel.SetJoinPasswordNotice, "machine serveur");
+        StringAssert.Contains(viewModel.SetJoinPasswordNotice, "Disponible en loopback");
         Assert.IsTrue(viewModel.CanSetJoinPassword);
         Assert.IsTrue(viewModel.CanRestartMap);
         Assert.IsFalse(viewModel.SimulateServerActionCommand is null);
+    }
+
+
+    [TestMethod]
+    public async Task ObservedHostname_PrefillsEditorAndRefreshDoesNotOverwriteManualEdit()
+    {
+        var store = new DynamicSnapshotStore(Snapshot(identity: Identity("Nom Actuel", 7, false)), _ =>
+            Snapshot(identity: Identity("Nom Rafraîchi", 8, false)));
+        var viewModel = CreateViewModel(store, new CapturingService());
+        await viewModel.InitializeAsync();
+
+        Assert.AreEqual("Nom Actuel", viewModel.RequestedHostname);
+        viewModel.RequestedHostname = "Nom en cours de modification";
+        await store.RefreshAsync();
+        await viewModel.InitializeAsync();
+
+        Assert.AreEqual("Nom en cours de modification", viewModel.RequestedHostname);
+        viewModel.RestoreObservedHostnameCommand.Execute(null);
+        await WaitForCommandAsync(viewModel.RestoreObservedHostnameCommand);
+        Assert.AreEqual("Nom Rafraîchi", viewModel.RequestedHostname);
+    }
+
+    [TestMethod]
+    public async Task SetJoinPasswordNotice_PrivateLanRequiresExplicitSessionOptIn()
+    {
+        var viewModel = new ServerViewModel(
+            new DynamicSnapshotStore(Snapshot(), _ => Snapshot()),
+            new SimulationActionService(),
+            confirmationService: new AcceptConfirmationService(),
+            rconEndpointFactory: () => new RconEndpoint("192.168.1.20", 27018, TimeSpan.FromSeconds(3)),
+            serverAdministrationCommandService: new CapturingService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.IsFalse(viewModel.CanSetJoinPassword);
+        StringAssert.Contains(viewModel.SetJoinPasswordNotice, "Cochez l’autorisation LAN");
+        Assert.IsFalse(viewModel.SetJoinPasswordNotice.Contains("192.168.1.20", StringComparison.Ordinal));
+
+        viewModel.AllowJoinPasswordOverLan = true;
+
+        Assert.IsTrue(viewModel.CanSetJoinPassword);
+        StringAssert.Contains(viewModel.SetJoinPasswordNotice, "LAN autorisé pour cette session uniquement");
     }
 
     [TestMethod]

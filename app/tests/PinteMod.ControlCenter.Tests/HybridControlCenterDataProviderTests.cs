@@ -12,7 +12,7 @@ public sealed class HybridControlCenterDataProviderTests
     private static readonly DateTimeOffset Now = new(2026, 8, 2, 20, 0, 0, TimeSpan.Zero);
 
     [TestMethod]
-    public async Task HybridSnapshot_OverlaysOnlySessionAndFourServices()
+    public async Task HybridSnapshot_OverlaysSessionAndThreeBackgroundServices()
     {
         using var root = new TemporaryServerRoot();
         var simulatedProvider = new SimulatedControlCenterDataProvider();
@@ -40,7 +40,7 @@ public sealed class HybridControlCenterDataProviderTests
         CollectionAssert.AreEqual(simulated.Players.ToArray(), result.Players.ToArray());
         CollectionAssert.AreEqual(simulated.Events.ToArray(), result.Events.ToArray());
         CollectionAssert.AreEqual(simulated.Records.ToArray(), result.Records.ToArray());
-        Assert.AreEqual(5, result.Services.Count);
+        Assert.AreEqual(4, result.Services.Count);
         Assert.AreEqual(ServiceHealth.Unknown, result.Services.Single(service => service.Name == "PinteMod").Health);
         Assert.AreEqual("État inconnu — aucun heartbeat dédié", result.Services.Single(service => service.Name == "PinteMod").Description);
     }

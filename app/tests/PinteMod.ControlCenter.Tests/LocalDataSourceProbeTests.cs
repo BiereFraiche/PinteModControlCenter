@@ -8,11 +8,16 @@ namespace PinteMod.ControlCenter.Tests;
 public sealed class LocalDataSourceProbeTests
 {
     [TestMethod]
-    public async Task LocalRoot_WithFiveValidSources_IsReadyAndReadOnly()
+    public async Task LocalRoot_WithFourRequiredSources_IsReadyAndReadOnly()
     {
         using var root = new TemporaryServerRoot();
         var paths = new List<string> { root.WriteSession() };
-        paths.AddRange(Enum.GetValues<LocalServiceKind>()
+        paths.AddRange(new[]
+            {
+                LocalServiceKind.Supervisor,
+                LocalServiceKind.BanService,
+                LocalServiceKind.GeoIpBridge
+            }
             .Select(service => root.WriteHeartbeat(service, DateTimeOffset.UtcNow)));
         var before = paths.ToDictionary(path => path, TemporaryServerRoot.Fingerprint);
 
@@ -20,8 +25,8 @@ public sealed class LocalDataSourceProbeTests
             new LocalDataSourceProbeRequest(OperatorDataLocation.Local, root.Root));
 
         Assert.IsTrue(result.RootAccepted);
-        Assert.AreEqual(5, result.ReadableSourceCount);
-        Assert.AreEqual(5, result.TotalSourceCount);
+        Assert.AreEqual(4, result.ReadableSourceCount);
+        Assert.AreEqual(4, result.TotalSourceCount);
         foreach (var path in paths)
         {
             Assert.AreEqual(before[path], TemporaryServerRoot.Fingerprint(path));
@@ -38,7 +43,7 @@ public sealed class LocalDataSourceProbeTests
 
         Assert.IsTrue(result.RootAccepted);
         Assert.AreEqual(0, result.ReadableSourceCount);
-        Assert.AreEqual(5, result.TotalSourceCount);
+        Assert.AreEqual(4, result.TotalSourceCount);
         StringAssert.Contains(result.Message, "aucune source");
     }
 

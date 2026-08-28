@@ -36,6 +36,34 @@ public sealed class ControlCenterContractReaderTests
         }
     }
 
+
+    [TestMethod]
+    public async Task ColoredObservedHostname_IsAcceptedWhileInvalidCaretSequenceIsRejected()
+    {
+        using var root = new TemporaryServerRoot();
+        WriteContracts(root, Now.AddSeconds(-2));
+        var identityPath = root.Options.ResolvePath(LocalPinteModFile.ControlCenterServerIdentity);
+        var colored = JsonNode.Parse(await File.ReadAllTextAsync(identityPath))!.AsObject();
+        colored["public_hostname"] = "^7[^4FR^7] ^1PinteMod";
+        await File.WriteAllTextAsync(identityPath, colored.ToJsonString());
+        File.SetLastWriteTimeUtc(identityPath, Now.AddSeconds(-1).UtcDateTime);
+        using var reader = new ControlCenterContractReader(root.Options, new FakeClock(Now));
+
+        var valid = await reader.ReadAsync("session-local-001", "zm_tomb");
+
+        Assert.AreEqual(LocalReadStatus.Success, valid.ServerIdentity.Metadata.ReadStatus);
+        Assert.AreEqual("^7[^4FR^7] ^1PinteMod", valid.ServerIdentity.Value!.PublicHostname);
+
+        colored["public_hostname"] = "^xPinteMod";
+        await File.WriteAllTextAsync(identityPath, colored.ToJsonString());
+        File.SetLastWriteTimeUtc(identityPath, Now.AddMilliseconds(-500).UtcDateTime);
+
+        var invalid = await reader.ReadAsync("session-local-001", "zm_tomb");
+
+        Assert.AreEqual(LocalReadStatus.Invalid, invalid.ServerIdentity.Metadata.ReadStatus);
+        Assert.AreEqual(DataProvenance.MemoryCache, invalid.ServerIdentity.Metadata.Provenance);
+    }
+
     [TestMethod]
     public async Task CapabilitiesV014_IsAcceptedAndItsVersionIsPreserved()
     {

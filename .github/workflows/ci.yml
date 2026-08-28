@@ -2,7 +2,7 @@ name: build-and-test
 
 on:
   push:
-    branches: [main, "agent/**"]
+    branches: [main, "agent/**", "codex/**"]
   pull_request:
     branches: [main]
 
@@ -39,13 +39,27 @@ jobs:
         if: matrix.configuration == 'Release'
         run: dotnet restore .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -r win-x64 --configfile .\app\NuGet.Config
 
-      - name: Publish Windows x64
+      - name: Publish single EXE Windows x64
         if: matrix.configuration == 'Release'
-        run: dotnet publish .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Release -r win-x64 --self-contained true --no-restore -o .\app\artifacts\ci-publish
+        run: dotnet publish .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Release -r win-x64 --self-contained true --no-restore --no-build -o .\app\artifacts\ci-single-exe -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false
 
-      - name: Audit published package
+      - name: Publish portable folder Windows x64
+        if: matrix.configuration == 'Release'
+        run: dotnet publish .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Release -r win-x64 --self-contained true --no-restore --no-build -o .\app\artifacts\ci-folder -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false
+
+      - name: Package and audit both distributions
         if: matrix.configuration == 'Release'
         shell: pwsh
-        run: |
-          Compress-Archive -Path .\app\artifacts\ci-publish\* -DestinationPath .\app\artifacts\ci-package.zip
-          .\app\packaging\Test-PublishedPackage.ps1 -PackagePath .\app\artifacts\ci-package.zip -ForbiddenText $env:GITHUB_WORKSPACE
+        run: .\app\packaging\Build-PreviewPackages.ps1 -SingleDirectory .\app\artifacts\ci-single-exe -FolderDirectory .\app\artifacts\ci-folder -OutputRoot .\app\artifacts -RepositoryRoot $env:GITHUB_WORKSPACE
+
+      - name: Upload Preview packages
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PinteMod-ControlCenter-Fix15-win-x64
+          path: |
+            app/artifacts/ci-single-exe/PinteMod.ControlCenter.exe
+            app/artifacts/PinteMod.ControlCenter-single-exe-win-x64.zip
+            app/artifacts/PinteMod.ControlCenter-folder-win-x64.zip
+            app/artifacts/SHA256SUMS.txt
+          if-no-files-found: error

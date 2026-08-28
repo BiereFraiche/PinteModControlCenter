@@ -1,0 +1,15 @@
+PinteMod Control Center - Onboarding Preview 4A4 Fix4
+
+BUT
+- Corriger le cas où l EXE Control Center était mis à jour mais pas l Agent parce que Fix2/Fix3 partageaient le même numéro 4A4.
+- L Agent compare désormais version + SHA-256 du binaire.
+- Le build porte 2.4.0-preview-onboarding.4a4.fix4 pour forcer la première migration réelle.
+
+TEST
+1. BUILD_PREVIEW.bat -> 0 warning / 0 erreur / tests Debug + Release OK.
+2. Depuis le PC principal : METTRE A JOUR LE PC SERVEUR.
+3. Actualiser Agent : il doit afficher 2.4.0-preview-onboarding.4a4.fix4.
+4. Ouvrir le Control Center distant : footer Onboarding Preview 4A4 Fix4.
+5. Démarrer Server3 puis ARRÊTER CE SERVEUR.
+6. Attendu : boiii.exe du seul profil sélectionné se ferme, sans CLIXML ni erreur "terminateur".
+7. Les autres serveurs restent actifs.

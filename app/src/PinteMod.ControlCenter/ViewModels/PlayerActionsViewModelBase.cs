@@ -360,7 +360,9 @@ public abstract class PlayerActionsViewModelBase : PageViewModel
         var logPlayerSourceReady =
             snapshot.LocalObservation.Logs.Source.ReadStatus == LocalReadStatus.Success &&
             snapshot.LocalObservation.Logs.Source.Provenance == DataProvenance.LocalFile;
+        var serverRuntimeReady = snapshot.Server.ServerRunningAvailable && snapshot.Server.ServerRunning;
         _localPlayerSourceReady = _isHybridLocal &&
+                                  serverRuntimeReady &&
                                   snapshot.DataContext.SessionSource.ReadStatus == LocalReadStatus.Success &&
                                   snapshot.DataContext.SessionSource.Provenance == DataProvenance.LocalFile &&
                                   (runtimePlayerSourceReady || logPlayerSourceReady);

@@ -20,6 +20,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly MapCatalogState? _mapCatalogState;
     private readonly ITextClipboardService? _clipboardService;
     private readonly IControlCenterSnapshotStore? _snapshotStore;
+    private readonly bool _allowPinteModDiagnostics;
     private string _profileDisplayName;
     private AccentThemeOption _selectedAccentTheme = AccentThemeService.Resolve(OperatorAccentTheme.DefaultKey);
     private string _selectedOperatorMode;
@@ -63,7 +64,9 @@ public sealed class SettingsViewModel : PageViewModel
         IMapCatalogService? mapCatalogService = null,
         MapCatalogState? mapCatalogState = null,
         ITextClipboardService? clipboardService = null,
-        IControlCenterSnapshotStore? snapshotStore = null)
+        IControlCenterSnapshotStore? snapshotStore = null,
+        ServerIntegrationProfile? integrationProfile = null,
+        bool allowPinteModDiagnostics = true)
         : base("Paramètres", "Configuration opérateur locale ou LAN · diagnostics RCON manuels")
     {
         _localDataSourceProbe = localDataSourceProbe;
@@ -76,6 +79,7 @@ public sealed class SettingsViewModel : PageViewModel
         _mapCatalogState = mapCatalogState;
         _clipboardService = clipboardService;
         _snapshotStore = snapshotStore;
+        _allowPinteModDiagnostics = allowPinteModDiagnostics;
         var configuration = initialConfiguration ?? OperatorConfiguration.Default;
         _profileDisplayName = configuration.ProfileDisplayName;
         _selectedAccentTheme = AccentThemeService.Resolve(configuration.AccentColorKey);
@@ -92,17 +96,38 @@ public sealed class SettingsViewModel : PageViewModel
         AutomaticRefreshStatus = automaticRefreshInterval is null
             ? "À VENIR"
             : $"ACTIF · {automaticRefreshInterval.Value.TotalSeconds:0} S";
+        var adaptiveProfile = integrationProfile ?? ServerIntegrationProfile.Unknown;
         ActiveProviderName = activeProviderName;
         DataMode = dataMode == ControlCenterDataMode.HybridLocal ? "HYBRIDE LOCAL" : "SIMULATION";
-        ModeLabel = dataMode == ControlCenterDataMode.HybridLocal ? "MODE HYBRIDE LOCAL" : "MODE SIMULATION";
-        ModeShortLabel = dataMode == ControlCenterDataMode.HybridLocal ? "HYB" : "SIM";
-        ModeDescription = dataMode == ControlCenterDataMode.HybridLocal
-            ? "Lecture locale read-only · diagnostics RCON sur action explicite"
-            : "Données simulées · diagnostics RCON sur action explicite";
+        var hasExplicitAdaptiveProfile = adaptiveProfile.Kind is ManagedServerIntegrationKind.BoiiiNative or
+            ManagedServerIntegrationKind.ThirdPartyScripts or
+            ManagedServerIntegrationKind.ControlCenterBridge;
+        var adaptiveLimited = dataMode == ControlCenterDataMode.Simulation &&
+                              (hasExplicitAdaptiveProfile || !string.IsNullOrWhiteSpace(configuredRoot));
+        ModeLabel = adaptiveLimited
+            ? adaptiveProfile.Kind switch
+            {
+                ManagedServerIntegrationKind.BoiiiNative => "MODE BOIII NATIF LIMITÉ",
+                ManagedServerIntegrationKind.ThirdPartyScripts => "MODE ADAPTATIF LIMITÉ",
+                ManagedServerIntegrationKind.ControlCenterBridge => "MODE BRIDGE À VALIDER",
+                ManagedServerIntegrationKind.PinteMod => "MODE PINTE MOD NON OBSERVÉ",
+                _ => "MODE SERVEUR RÉEL NON DÉTECTÉ"
+            }
+            : dataMode == ControlCenterDataMode.HybridLocal ? "MODE HYBRIDE LOCAL" : "MODE SIMULATION";
+        ModeShortLabel = adaptiveLimited
+            ? "ADP"
+            : dataMode == ControlCenterDataMode.HybridLocal ? "HYB" : "SIM";
+        ModeDescription = adaptiveLimited
+            ? "Profil serveur réel · seules les capacités prouvées sont activées · aucune donnée de démonstration ni commande tierce devinée"
+            : dataMode == ControlCenterDataMode.HybridLocal
+                ? "Lecture locale read-only · diagnostics RCON sur action explicite"
+                : "Données simulées · diagnostics RCON sur action explicite";
         ServerRootDisplay = FormatServerRoot(serverRoot);
-        DataScope = dataMode == ControlCenterDataMode.HybridLocal
-            ? "Session et heartbeats, Ranks, records, Easter Eggs, logs structurés, diagnostics et métadonnées joueur locales"
-            : "Toutes les données sont simulées";
+        DataScope = adaptiveLimited
+            ? "Provider adaptatif : capacités détectées individuellement ; données non contractualisées laissées indisponibles"
+            : dataMode == ControlCenterDataMode.HybridLocal
+                ? "Session et heartbeats, Ranks, records, Easter Eggs, logs structurés, diagnostics et métadonnées joueur locales"
+                : "Toutes les données sont simulées";
 
         TestDataSourceCommand = new AsyncRelayCommand(
             TestDataSourceAsync,
@@ -444,6 +469,7 @@ public sealed class SettingsViewModel : PageViewModel
         OperatorAccentTheme.IsValid(SelectedAccentTheme.Key);
 
     public bool CanRunRconDiagnostic =>
+        _allowPinteModDiagnostics &&
         _rconDiagnosticService is not null &&
         CreateRconEndpoint() is not null;
 

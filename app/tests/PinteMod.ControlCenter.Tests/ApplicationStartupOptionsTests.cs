@@ -29,6 +29,21 @@ public sealed class ApplicationStartupOptionsTests
     }
 
     [TestMethod]
+    public void ManagerSelectedProfile_CanForceSavedSourceEvenWhenAutoActivationWasOff()
+    {
+        var saved = OperatorConfiguration.Default with
+        {
+            ActivateDataSourceOnStartup = false,
+            ServerRoot = @"C:\Server\Server3"
+        };
+
+        var options = ApplicationStartupOptions.Resolve([], saved, forceSavedDataSource: true);
+
+        Assert.AreEqual(ControlCenterDataMode.HybridLocal, options.DataMode);
+        Assert.AreEqual(saved.ServerRoot, options.ServerRoot);
+    }
+
+    [TestMethod]
     public void NoArguments_SelectsSimulationWithoutServerRoot()
     {
         var options = ApplicationStartupOptions.Parse([]);

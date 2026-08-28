@@ -1,6 +1,18 @@
 # TODO — PinteMod Control Center
 
-Dernière mise à jour : 2026-08-12
+Dernière mise à jour : 2026-08-28
+
+## Integration Preview 4B1 Fix15
+
+- **Terminé techniquement** — Importer Fix14 sur une branche issue de la dernière base publique Control Center.
+- **Terminé techniquement** — Exiger les SHA-256 first-party avant d’activer le provider et le transport PinteMod.
+- **Terminé techniquement** — Désactiver la capacité lifecycle sans lanceur prouvé.
+- **Terminé techniquement** — Préparer EXE unique, dossier autonome et ZIP du dossier.
+- **Terminé techniquement** — Documenter le fonctionnement dans une VM contrôlée par une infrastructure RDP/VPN existante, sans port Control Center.
+- **À valider humainement** — Interface et onboarding Fix15.
+- **À valider humainement** — Server3, puis seulement Server1/2.
+- **À valider humainement** — Synchronisation Agent bidirectionnelle, SHA différent, absence de downgrade et récupération automatique.
+- **À faire sur ordre explicite** — Push, PR et éventuelle prerelease GitHub.
 
 ## Interface graphique
 

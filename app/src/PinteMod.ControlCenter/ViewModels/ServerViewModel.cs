@@ -26,6 +26,8 @@ public sealed class ServerViewModel : PageViewModel
     private readonly PlayerSelectionState? _selectionState;
     private readonly TimeSpan _contractObservationInterval;
     private readonly int _contractObservationAttempts;
+    private readonly ServerIntegrationProfile _integrationProfile;
+    private readonly bool _allowSimulationActions;
     private ServerState? _server;
     private IReadOnlyList<PlayerState> _players = [];
     private SelectionOption? _selectedMap;
@@ -51,6 +53,9 @@ public sealed class ServerViewModel : PageViewModel
     private bool _mapSelectionInitialized;
     private SelectionOption? _selectedBossAlias;
     private string _requestedHostname = string.Empty;
+    private string _lastObservedHostname = string.Empty;
+    private bool _synchronizingHostname;
+    private bool _allowJoinPasswordOverLan;
 
     public ServerViewModel(
         IControlCenterSnapshotStore snapshotStore,
@@ -68,7 +73,9 @@ public sealed class ServerViewModel : PageViewModel
         ITextClipboardService? clipboardService = null,
         PlayerSelectionState? selectionState = null,
         TimeSpan? contractObservationInterval = null,
-        int contractObservationAttempts = 40)
+        int contractObservationAttempts = 40,
+        ServerIntegrationProfile? integrationProfile = null,
+        bool allowSimulationActions = true)
         : base("Serveur", "Administration locale — commandes réelles confirmées et strictement listées")
     {
         _snapshotStore = snapshotStore;
@@ -87,6 +94,12 @@ public sealed class ServerViewModel : PageViewModel
         _selectionState = selectionState;
         _contractObservationInterval = contractObservationInterval ?? TimeSpan.FromMilliseconds(250);
         _contractObservationAttempts = Math.Max(1, contractObservationAttempts);
+        _integrationProfile = ResolveIntegrationProfile(
+            integrationProfile,
+            pauseCommandService,
+            serverAdministrationCommandService,
+            rconDiagnosticService);
+        _allowSimulationActions = allowSimulationActions;
         _mutationSafety.Changed += (_, _) => NotifyAllMutationAuthorizationChanged();
         if (_selectionState is not null)
         {
@@ -102,7 +115,7 @@ public sealed class ServerViewModel : PageViewModel
         RoundOptions = [5, 10, 20, 30, 50, 75, 100];
         SimulateServerActionCommand = new AsyncRelayCommand<SimulationAction>(
             SimulateServerActionAsync,
-            null,
+            _ => _allowSimulationActions,
             ReportError);
         PauseServerCommand = new AsyncRelayCommand(
             () => _rconOperations.RunExclusiveAsync(
@@ -170,6 +183,12 @@ public sealed class ServerViewModel : PageViewModel
             () => new ServerAdministrationRequest(ServerAdministrationAction.MakePowerUpsPermanent));
         RestorePowerUpTimeoutCommand = CreateServerAdministrationCommand(
             () => new ServerAdministrationRequest(ServerAdministrationAction.RestorePowerUpTimeout));
+        ChangeMapCommand = CreateServerAdministrationCommand(
+            () => new ServerAdministrationRequest(
+                ServerAdministrationAction.ChangeMap,
+                RequestId: CreateRequestId(),
+                Option: SelectedMap?.Key),
+            () => CanChangeMap);
         RestartMapCommand = CreateServerAdministrationCommand(
             () => new ServerAdministrationRequest(
                 ServerAdministrationAction.RestartMap,
@@ -188,6 +207,10 @@ public sealed class ServerViewModel : PageViewModel
                 RequestId: CreateRequestId(),
                 Option: RequestedHostname),
             () => CanSetHostname);
+        RestoreObservedHostnameCommand = new AsyncRelayCommand(
+            RestoreObservedHostnameAsync,
+            () => CurrentIdentity is { PublicHostname.Length: > 0 } identity &&
+                  !string.Equals(RequestedHostname, identity.PublicHostname, StringComparison.Ordinal));
         ClearJoinPasswordCommand = CreateServerAdministrationCommand(
             () => new ServerAdministrationRequest(
                 ServerAdministrationAction.ClearJoinPassword,
@@ -197,6 +220,36 @@ public sealed class ServerViewModel : PageViewModel
             AcknowledgeServerAdministrationAsync,
             () => _serverAdministrationMutationBlocked,
             ReportError);
+    }
+
+    private static ServerIntegrationProfile ResolveIntegrationProfile(
+        ServerIntegrationProfile? integrationProfile,
+        ICommunityPauseCommandService? pauseCommandService,
+        IServerAdministrationCommandService? serverAdministrationCommandService,
+        IRconDiagnosticService? rconDiagnosticService)
+    {
+        if (integrationProfile is not null)
+        {
+            return integrationProfile;
+        }
+
+        // Compatibility path for pre-4B callers/tests that already prove the first-party
+        // PinteMod transport by injecting one of its closed services. Production 4B always
+        // supplies the analyzer-selected profile explicitly, so BOIII native / third-party
+        // profiles remain fail-closed and can never gain commands from this fallback.
+        if (pauseCommandService is not null ||
+            serverAdministrationCommandService is not null ||
+            rconDiagnosticService is not null)
+        {
+            return new ServerIntegrationProfile(
+                ManagedServerIntegrationKind.PinteMod,
+                "PinteMod · services first-party injectés",
+                IntegrationCommandTransport.PinteModClosedRconV1,
+                [],
+                ThirdPartyGscAudit.Empty);
+        }
+
+        return ServerIntegrationProfile.Unknown;
     }
 
     private ServerState? Server
@@ -248,7 +301,11 @@ public sealed class ServerViewModel : PageViewModel
     public string PinteModVersion => Server?.PinteModVersion ?? "—";
 
     public string ServerStatusSource => Server?.ServerRunningAvailable == true
-        ? "HEARTBEAT PINTE MOD LOCAL"
+        ? string.Equals(Server.RuntimeSource.SourceLabel, "Agent SMB", StringComparison.Ordinal)
+            ? "PROCESSUS BOIII DISTANT · AGENT SMB"
+            : _integrationProfile.Kind == ManagedServerIntegrationKind.PinteMod
+                ? "HEARTBEAT PINTE MOD LOCAL"
+                : "PROCESSUS BOIII LOCAL"
         : "AUCUNE SOURCE PROCESSUS — ÉTAT INCONNU";
 
     public string RoundSource => Server?.RuntimeValuesInferred == false &&
@@ -480,7 +537,10 @@ public sealed class ServerViewModel : PageViewModel
         private set => SetProperty(ref _serverAdministrationHealth, value);
     }
 
+    public bool SupportsPinteModClosedCommands => _integrationProfile.SupportsPinteModClosedCommands;
+
     public bool CanRunServerAdministration =>
+        SupportsPinteModClosedCommands &&
         _serverAdministrationCommandService is not null &&
         _confirmationService is not null &&
         _rconEndpointFactory?.Invoke() is not null &&
@@ -493,13 +553,29 @@ public sealed class ServerViewModel : PageViewModel
         _confirmationService is not null &&
         _rconEndpointFactory?.Invoke() is not null;
 
-    public string ServerActionModeTitle => IsServerAdministrationTransportConfigured
-        ? "COMMANDES SERVEUR · RCON EXPLICITE + SIMULATION LIMITÉE"
-        : "ACTIONS SERVEUR SIMULÉES · RCON NON CONFIGURÉ";
+    public string ServerActionModeTitle => !_allowSimulationActions
+        ? !SupportsPinteModClosedCommands
+            ? "ACTIONS INDISPONIBLES · PROVIDER ADAPTATIF FAIL-CLOSED"
+            : IsServerAdministrationTransportConfigured
+                ? "COMMANDES SERVEUR RÉELLES · RCON EXPLICITE"
+                : "COMMANDES PINTEMOD · RCON À CONFIGURER"
+        : !SupportsPinteModClosedCommands
+            ? "COMMANDES PINTEMOD INDISPONIBLES · PROVIDER ADAPTATIF"
+            : IsServerAdministrationTransportConfigured
+                ? "COMMANDES SERVEUR · RCON EXPLICITE + SIMULATION LIMITÉE"
+                : "ACTIONS SERVEUR SIMULÉES · RCON NON CONFIGURÉ";
 
-    public string ServerActionModeDescription => IsServerAdministrationTransportConfigured
-        ? "Les actions marquées réelles utilisent uniquement les commandes fermées et confirmées ; Carte, Événements et Power-up restent simulés."
-        : "Configurez explicitement RCON dans Paramètres pour les actions réelles autorisées ; les autres contrôles restent simulés.";
+    public string ServerActionModeDescription => !_allowSimulationActions
+        ? !SupportsPinteModClosedCommands
+            ? "Serveur réel détecté sans transport de commandes prouvé. Les actions non prouvées restent grisées et aucune simulation n’est présentée comme une action de ce serveur."
+            : IsServerAdministrationTransportConfigured
+                ? "Seules les commandes fermées PinteMod prouvées sont autorisées. Aucune action simulée n’est proposée pour ce serveur réel."
+                : "Configurez explicitement RCON dans Paramètres pour les commandes fermées PinteMod prouvées. Aucune simulation n’est injectée pour ce serveur réel."
+        : !SupportsPinteModClosedCommands
+            ? "Ce serveur n’annonce pas le transport fermé PinteMod. Les boutons PinteMod restent grisés ; aucune commande issue d’un GSC tiers n’est devinée ou exécutée."
+            : IsServerAdministrationTransportConfigured
+                ? "Les actions marquées réelles utilisent uniquement des commandes fermées et confirmées ; Change Map est réel pour les 14 cartes officielles, tandis que les Événements et Power-up non contractualisés restent simulés."
+                : "Configurez explicitement RCON dans Paramètres pour les actions réelles autorisées ; les autres contrôles restent simulés.";
 
     public string ServerAdministrationNotice
     {
@@ -531,6 +607,14 @@ public sealed class ServerViewModel : PageViewModel
         }
     }
 
+    public bool CanChangeMap =>
+        CanRunServerAdministration &&
+        CurrentCapabilities is { MapProfile: "operator_allowlist" } &&
+        CurrentIdentity is not null &&
+        SelectedMap is { Key: { Length: > 0 } mapCode } &&
+        OfficialMapCatalog.Contains(mapCode) &&
+        !string.Equals(mapCode, Server?.MapCode, StringComparison.OrdinalIgnoreCase);
+
     public bool CanRestartMap =>
         CanRunServerAdministration &&
         CurrentIdentity is not null &&
@@ -560,7 +644,24 @@ public sealed class ServerViewModel : PageViewModel
         CurrentCapabilities is { SetJoinPassword: true } &&
         CurrentIdentity is not null &&
         _rconEndpointFactory?.Invoke() is { } endpoint &&
-        RconEndpointValidator.IsLoopbackAddress(endpoint.Address);
+        IsJoinPasswordTransportAuthorized(endpoint);
+
+    public bool AllowJoinPasswordOverLan
+    {
+        get => _allowJoinPasswordOverLan;
+        set
+        {
+            if (SetProperty(ref _allowJoinPasswordOverLan, value))
+            {
+                NotifyContractAuthorizationChanged();
+            }
+        }
+    }
+
+    public bool IsJoinPasswordLanTransport =>
+        _rconEndpointFactory?.Invoke() is { } endpoint &&
+        RconEndpointValidator.IsAllowed(endpoint) &&
+        !RconEndpointValidator.IsLoopbackAddress(endpoint.Address);
 
     public bool CanClearJoinPassword =>
         CanRunServerAdministration &&
@@ -579,7 +680,27 @@ public sealed class ServerViewModel : PageViewModel
     }
 
     public string ChangeMapContractNotice =>
-        "Change Map indisponible · supported ne signifie pas installed · catalogue local informatif uniquement.";
+        "Change Map réel utilise ezzccmap sans paramètre console libre. Important : supported ne signifie pas installed. Le bouton n’est disponible qu’avec le bridge Preview et chaque carte doit aussi figurer dans l’allowlist locale explicitement approuvée sur le serveur. Les cartes custom restent exclues et la rotation automatique n’est pas modifiée.";
+
+    public string ServerIdentitySourceSummary
+    {
+        get
+        {
+            var source = LocalObservation.ControlCenterContracts.ServerIdentity.Metadata;
+            if (CurrentIdentity is not null)
+            {
+                return $"Identité locale valide · fraîcheur {DisplayText.Freshness(source.Freshness)} · âge {DisplayText.FormatAge(source.Age)}.";
+            }
+
+            var status = DisplayText.ReadStatus(source.ReadStatus);
+            var freshness = DisplayText.Freshness(source.Freshness);
+            var endpoint = _rconEndpointFactory?.Invoke();
+            var lanHint = endpoint is not null && !RconEndpointValidator.IsLoopbackAddress(endpoint.Address)
+                ? " RCON LAN détecté : gardez l’adresse LAN actuelle. Pour observer le nom/identité depuis ce PC distant, configurez dans Paramètres le mode opérateur LAN avec un partage UNC read-only vers les données PinteMod du serveur."
+                : string.Empty;
+            return $"Identité locale indisponible · lecture {status} · fraîcheur {freshness} · {source.Message} Fichier attendu : runtime/server_identity.json.{lanHint}";
+        }
+    }
 
     public string ServerIdentityText => CurrentIdentity switch
     {
@@ -598,13 +719,58 @@ public sealed class ServerViewModel : PageViewModel
     };
 
     public string HostnamePersistenceNotice =>
-        "Le nom public live_steam_server_name est persisté par PinteMod. Le titre de la fenêtre BOIII peut rester inchangé : l’identité locale et le navigateur de serveurs font foi.";
+        "Le nom observé est prérempli pour éviter de le retaper. Le bridge applique live_steam_server_name (et sv_hostname pour compatibilité) puis persiste uniquement ce nom public non sensible dans PinteMod ; aucun CFG n’est réécrit.";
 
-    public string SetJoinPasswordNotice => CanSetJoinPassword
-        ? "Disponible uniquement sur la machine serveur · valeur éphémère, jamais lue, affichée, journalisée ni enregistrée."
-        : CurrentCapabilities is { SetJoinPassword: true }
-            ? "Définir le mot de passe exige un Control Center lancé sur la machine serveur avec RCON sur 127.0.0.1."
-            : "Définir le mot de passe : indisponible dans le contrat PinteMod actif.";
+    public string SetJoinPasswordNotice
+    {
+        get
+        {
+            if (_serverAdministrationCommandService is null || _confirmationService is null)
+            {
+                return "Mot de passe verrouillé : transport d’administration serveur indisponible.";
+            }
+
+            var endpoint = _rconEndpointFactory?.Invoke();
+            if (endpoint is null)
+            {
+                return "Mot de passe verrouillé : configurez d’abord une cible RCON valide dans Paramètres.";
+            }
+
+            if (!RconEndpointValidator.IsAllowed(endpoint))
+            {
+                return "Mot de passe verrouillé : la cible RCON actuelle n’est pas une adresse locale/LAN privée autorisée.";
+            }
+
+            if (!RconEndpointValidator.IsLoopbackAddress(endpoint.Address) && !AllowJoinPasswordOverLan)
+            {
+                return "Mot de passe verrouillé sur le LAN : RCON n’est pas chiffré. Cochez l’autorisation LAN ci-dessous pour cette session si vous acceptez que la valeur transite sur votre réseau privé. Ce choix n’est jamais mémorisé.";
+            }
+
+            if (CurrentCapabilities is null)
+            {
+                return "Mot de passe verrouillé : capabilities Control Center absentes ou périmées.";
+            }
+
+            if (!CurrentCapabilities.SetJoinPassword)
+            {
+                return "Mot de passe verrouillé : le contrat PinteMod actif ne publie pas set_join_password.";
+            }
+
+            if (CurrentIdentity is null)
+            {
+                return "Mot de passe verrouillé : identité serveur locale absente ou périmée.";
+            }
+
+            if (!CanRunServerAdministration)
+            {
+                return "Mot de passe verrouillé : une mutation opérateur attend encore une vérification manuelle.";
+            }
+
+            return RconEndpointValidator.IsLoopbackAddress(endpoint.Address)
+                ? "Disponible en loopback · valeur éphémère, jamais lue, affichée, journalisée ni enregistrée."
+                : "LAN autorisé pour cette session uniquement · RCON n’est pas chiffré. La valeur reste éphémère et n’est jamais enregistrée ni réaffichée par le Control Center.";
+        }
+    }
 
     public string BossTargetText
     {
@@ -646,6 +812,11 @@ public sealed class ServerViewModel : PageViewModel
         {
             if (SetProperty(ref _requestedHostname, value))
             {
+                if (!_synchronizingHostname)
+                {
+                    RestoreObservedHostnameCommand?.NotifyCanExecuteChanged();
+                }
+
                 NotifyContractAuthorizationChanged();
             }
         }
@@ -674,6 +845,7 @@ public sealed class ServerViewModel : PageViewModel
     }
 
     private bool PauseCommandInfrastructureAvailable =>
+        SupportsPinteModClosedCommands &&
         _pauseCommandService is not null &&
         _confirmationService is not null &&
         _rconEndpointFactory?.Invoke() is not null;
@@ -723,7 +895,14 @@ public sealed class ServerViewModel : PageViewModel
     public SelectionOption? SelectedMap
     {
         get => _selectedMap;
-        set => SetProperty(ref _selectedMap, value);
+        set
+        {
+            if (SetProperty(ref _selectedMap, value))
+            {
+                OnPropertyChanged(nameof(CanChangeMap));
+                ChangeMapCommand?.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     public int SelectedRound
@@ -788,11 +967,15 @@ public sealed class ServerViewModel : PageViewModel
 
     public AsyncRelayCommand RestorePowerUpTimeoutCommand { get; }
 
+    public AsyncRelayCommand ChangeMapCommand { get; }
+
     public AsyncRelayCommand RestartMapCommand { get; }
 
     public AsyncRelayCommand SpawnBossCommand { get; }
 
     public AsyncRelayCommand SetHostnameCommand { get; }
+
+    public AsyncRelayCommand RestoreObservedHostnameCommand { get; }
 
     public AsyncRelayCommand ClearJoinPasswordCommand { get; }
 
@@ -861,12 +1044,54 @@ public sealed class ServerViewModel : PageViewModel
         SelectedBossAlias = BossAliasOptions.FirstOrDefault(option =>
                                 string.Equals(option.Key, previous, StringComparison.Ordinal))
                             ?? BossAliasOptions.FirstOrDefault();
-        if (RequestedHostname.Length == 0 && CurrentIdentity is { PublicHostname.Length: > 0 } identity)
+        SynchronizeObservedHostname();
+        NotifyContractAuthorizationChanged();
+    }
+
+    private Task RestoreObservedHostnameAsync()
+    {
+        if (CurrentIdentity is { PublicHostname.Length: > 0 } identity)
         {
-            RequestedHostname = identity.PublicHostname;
+            SetRequestedHostnameFromObservation(identity.PublicHostname);
         }
 
-        NotifyContractAuthorizationChanged();
+        return Task.CompletedTask;
+    }
+
+    private void SynchronizeObservedHostname()
+    {
+        if (CurrentIdentity is not { PublicHostname.Length: > 0 } identity)
+        {
+            return;
+        }
+
+        var current = identity.PublicHostname;
+        var editorStillTracksPreviousObservation = RequestedHostname.Length == 0 ||
+            string.Equals(RequestedHostname, _lastObservedHostname, StringComparison.Ordinal);
+        if (editorStillTracksPreviousObservation &&
+            !string.Equals(RequestedHostname, current, StringComparison.Ordinal))
+        {
+            SetRequestedHostnameFromObservation(current);
+        }
+
+        _lastObservedHostname = current;
+        RestoreObservedHostnameCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SetRequestedHostnameFromObservation(string hostname)
+    {
+        _synchronizingHostname = true;
+        try
+        {
+            RequestedHostname = hostname;
+        }
+        finally
+        {
+            _synchronizingHostname = false;
+        }
+
+        _lastObservedHostname = hostname;
+        RestoreObservedHostnameCommand.NotifyCanExecuteChanged();
     }
 
     private void NotifyContractAuthorizationChanged()
@@ -876,16 +1101,24 @@ public sealed class ServerViewModel : PageViewModel
         OnPropertyChanged(nameof(CanSetHostname));
         OnPropertyChanged(nameof(CanSetJoinPassword));
         OnPropertyChanged(nameof(CanClearJoinPassword));
+        OnPropertyChanged(nameof(IsJoinPasswordLanTransport));
         OnPropertyChanged(nameof(ContractSourceSummary));
         OnPropertyChanged(nameof(ServerIdentityText));
+        OnPropertyChanged(nameof(ServerIdentitySourceSummary));
         OnPropertyChanged(nameof(JoinPasswordStatus));
+        OnPropertyChanged(nameof(SetJoinPasswordNotice));
         OnPropertyChanged(nameof(BossTargetText));
         OnPropertyChanged(nameof(BossCapacityText));
         RestartMapCommand?.NotifyCanExecuteChanged();
         SpawnBossCommand?.NotifyCanExecuteChanged();
         SetHostnameCommand?.NotifyCanExecuteChanged();
+        RestoreObservedHostnameCommand?.NotifyCanExecuteChanged();
         ClearJoinPasswordCommand?.NotifyCanExecuteChanged();
     }
+
+    private bool IsJoinPasswordTransportAuthorized(RconEndpoint endpoint) =>
+        RconEndpointValidator.IsAllowed(endpoint) &&
+        (RconEndpointValidator.IsLoopbackAddress(endpoint.Address) || AllowJoinPasswordOverLan);
 
     private static bool IsFreshLocal<T>(LocalReadResult<T> result) where T : class =>
         result.Value is not null &&
@@ -1196,7 +1429,7 @@ public sealed class ServerViewModel : PageViewModel
         RconDiagnosticCommand command,
         string failureMessage) => new(
         () => _rconOperations.RunExclusiveAsync(_ => ExecuteServerDiagnosticCoreAsync(command)),
-        null,
+        () => SupportsPinteModClosedCommands && _rconDiagnosticService is not null && _rconEndpointFactory?.Invoke() is not null,
         _ => SetServerDiagnosticFailure(failureMessage));
 
     private async Task ExecuteServerDiagnosticCoreAsync(RconDiagnosticCommand command)
@@ -1305,8 +1538,8 @@ public sealed class ServerViewModel : PageViewModel
         if (!CanSetJoinPassword)
         {
             SetServerAdministrationResult(
-                "LOOPBACK REQUIS",
-                "Cette action confidentielle est disponible uniquement sur la machine serveur avec RCON sur 127.0.0.1.",
+                "AUTORISATION REQUISE",
+                "Vérifiez le contrat local et, si vous utilisez un RCON LAN privé, cochez l’autorisation LAN de cette session avant l’envoi.",
                 false,
                 ServiceHealth.Warning,
                 blockMutations: false);
@@ -1615,7 +1848,7 @@ public sealed class ServerViewModel : PageViewModel
                 request.Option is null &&
                 request.TargetXuid is null &&
                 request.TargetRound is null &&
-                RconEndpointValidator.IsLoopbackAddress(endpoint.Address),
+                IsJoinPasswordTransportAuthorized(endpoint),
             ServerAdministrationAction.ClearJoinPassword =>
                 capabilities.ClearJoinPassword && identity.JoinPasswordEnabled,
             _ => false
@@ -1736,6 +1969,9 @@ public sealed class ServerViewModel : PageViewModel
             ServerAdministrationAction.RestorePowerUpTimeout => new(
                 "Confirmer le délai normal",
                 "Restaurer le délai normal des futurs power-ups créés par PinteMod ?\n\nLes power-ups déjà actifs ne sont pas modifiés."),
+            ServerAdministrationAction.ChangeMap => new(
+                "Confirmer le changement de carte",
+                $"Charger réellement « {OfficialMapCatalog.ResolveName(request.Option ?? string.Empty)} » ({request.Option}) ?\n\nLa session en cours sera interrompue. Le bridge serveur revalide la carte contre la liste officielle ET l’allowlist locale approuvée par l’opérateur. supported ne signifie pas installed. La rotation automatique n’est pas modifiée."),
             ServerAdministrationAction.RestartMap => new(
                 "Confirmer le redémarrage de la carte",
                 "Redémarrer réellement la carte active ?\n\nSeule la carte runtime officielle actuelle sera redémarrée. La session en cours sera interrompue."),
@@ -1744,10 +1980,10 @@ public sealed class ServerViewModel : PageViewModel
                 $"Faire apparaître réellement le boss « {request.Option} » près du joueur ciblé par BOIII_XUID abrégé ?\n\nLa cible et la capability seront revérifiées après cette confirmation."),
             ServerAdministrationAction.SetHostname => new(
                 "Confirmer le nouveau nom du serveur",
-                $"Appliquer et mémoriser réellement le hostname « {request.Option} » côté PinteMod ?\n\nLe titre de fenêtre BOIII peut ne pas se rafraîchir. Aucune commande libre ne sera construite."),
+                $"Appliquer réellement le hostname « {request.Option} » et mémoriser uniquement ce nom public non sensible côté PinteMod ?\n\nLe titre de fenêtre BOIII peut ne pas se rafraîchir. Aucun CFG ni commande libre n’est utilisé."),
             ServerAdministrationAction.SetJoinPassword => new(
                 "Confirmer le nouveau mot de passe réseau BOIII",
-                "Définir réellement un nouveau mot de passe d’accès pour la session en cours ?\n\nCette action est limitée à 127.0.0.1. La valeur ne sera jamais affichée, journalisée ni enregistrée par le Control Center."),
+                "Définir réellement un nouveau mot de passe d’accès pour la session en cours ?\n\nEn RCON LAN, la valeur transite sur un transport non chiffré et nécessite l’opt-in explicite de cette session. Le Control Center ne l’affiche, ne la journalise et ne l’enregistre jamais."),
             ServerAdministrationAction.ClearJoinPassword => new(
                 "Confirmer la suppression du mot de passe réseau BOIII",
                 "Désactiver réellement le mot de passe d’accès des joueurs ?\n\nLa valeur actuelle ne sera jamais lue ni affichée. Cette action n’est pas annulable automatiquement."),
@@ -1797,6 +2033,8 @@ public sealed class ServerViewModel : PageViewModel
         KillAllZombiesCommand.NotifyCanExecuteChanged();
         MakePowerUpsPermanentCommand.NotifyCanExecuteChanged();
         RestorePowerUpTimeoutCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanChangeMap));
+        ChangeMapCommand.NotifyCanExecuteChanged();
         NotifyContractAuthorizationChanged();
         AcknowledgeServerAdministrationCommand.NotifyCanExecuteChanged();
     }
