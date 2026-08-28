@@ -83,7 +83,7 @@ ONBOARDING PREVIEW 4A4
 - DÉMARRER grise si BOIII est online et ARRÊTER grise si BOIII est offline ;
 - arrêt local/distant ferme : BOIII + Worker/services first-party du profil sélectionné uniquement, avec confirmation opérateur.
 
-INTEGRATION PREVIEW 4B1 FIX15
+INTEGRATION PREVIEW 4B1 FIX16
 ----------------------------
 - provider adaptatif PinteMod / BOIII natif / GSC tiers ;
 - aucune simulation réinjectée dans un profil serveur réel ;
@@ -92,4 +92,6 @@ INTEGRATION PREVIEW 4B1 FIX15
 - lifecycle indisponible sans lanceur prouvé ;
 - Agent de récupération Windows conservé, sans nouveau port ;
 - deux distributions autonomes : EXE unique et dossier Windows x64 ;
-- VM contrôlable via console/RDP/VPN existant, jamais via un serveur ajouté au Control Center.
+- VM contrôlable via console/RDP/VPN existant, jamais via un serveur ajouté au Control Center ;
+- auto-diagnostic Fix16 sans profil, secret, réseau ni commande serveur ;
+- rapport anonymisé SELF-TEST.txt exigé avant création des archives.

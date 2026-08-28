@@ -26,6 +26,13 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (SelfTestStartupOptions.IsRequested(e.Args))
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            await RunSelfTestModeAsync(e.Args);
+            return;
+        }
+
         try
         {
             var preferredUiUpdateIndex = Array.FindIndex(e.Args, argument => string.Equals(argument, "--preferred-ui-apply-update", StringComparison.OrdinalIgnoreCase));
@@ -180,6 +187,34 @@ public partial class App : Application
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(-1);
+        }
+    }
+
+    private async Task RunSelfTestModeAsync(IReadOnlyList<string> arguments)
+    {
+        var reportPath = SelfTestStartupOptions.DefaultReportPath;
+        try
+        {
+            var options = SelfTestStartupOptions.Parse(arguments);
+            reportPath = options.ReportPath;
+            var report = await new ControlCenterSelfTestService()
+                .RunAsync(_applicationLifetime.Token);
+            SelfTestReportFileWriter.Write(reportPath, report.ToDisplayText());
+            Shutdown(report.Success ? 0 : 8);
+        }
+        catch
+        {
+            try
+            {
+                SelfTestReportFileWriter.Write(
+                    reportPath,
+                    ControlCenterSelfTestReport.CreateStartupFailure().ToDisplayText());
+            }
+            catch
+            {
+            }
+
+            Shutdown(8);
         }
     }
 

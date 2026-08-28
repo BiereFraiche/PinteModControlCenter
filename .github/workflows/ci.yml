@@ -47,19 +47,34 @@ jobs:
         if: matrix.configuration == 'Release'
         run: dotnet publish .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Release -r win-x64 --self-contained true --no-restore --no-build -o .\app\artifacts\ci-folder -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false
 
+      - name: Run packaged self-test without server
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: |
+          $folderReport = Join-Path $env:GITHUB_WORKSPACE 'app\artifacts\SELF-TEST-FOLDER.tmp.txt'
+          $folderProcess = Start-Process -FilePath .\app\artifacts\ci-folder\PinteMod.ControlCenter.exe -ArgumentList @('--self-test', "--self-test-report=$folderReport") -Wait -PassThru
+          if ($folderProcess.ExitCode -ne 0) { throw "Le self-test dossier a retourné $($folderProcess.ExitCode)." }
+          if (-not (Select-String -LiteralPath $folderReport -Pattern '^RESULTAT=PASS$' -Quiet)) { throw 'Le rapport self-test dossier ne contient pas RESULTAT=PASS.' }
+          $report = Join-Path $env:GITHUB_WORKSPACE 'app\artifacts\SELF-TEST.txt'
+          $singleProcess = Start-Process -FilePath .\app\artifacts\ci-single-exe\PinteMod.ControlCenter.exe -ArgumentList @('--self-test', "--self-test-report=$report") -Wait -PassThru
+          if ($singleProcess.ExitCode -ne 0) { throw "Le self-test mono-EXE a retourné $($singleProcess.ExitCode)." }
+          if (-not (Select-String -LiteralPath $report -Pattern '^RESULTAT=PASS$' -Quiet)) { throw 'Le rapport self-test mono-EXE ne contient pas RESULTAT=PASS.' }
+          Remove-Item -LiteralPath $folderReport -Force
+
       - name: Package and audit both distributions
         if: matrix.configuration == 'Release'
         shell: pwsh
-        run: .\app\packaging\Build-PreviewPackages.ps1 -SingleDirectory .\app\artifacts\ci-single-exe -FolderDirectory .\app\artifacts\ci-folder -OutputRoot .\app\artifacts -RepositoryRoot $env:GITHUB_WORKSPACE
+        run: .\app\packaging\Build-PreviewPackages.ps1 -SingleDirectory .\app\artifacts\ci-single-exe -FolderDirectory .\app\artifacts\ci-folder -OutputRoot .\app\artifacts -RepositoryRoot $env:GITHUB_WORKSPACE -SelfTestReport .\app\artifacts\SELF-TEST.txt
 
       - name: Upload Preview packages
         if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: PinteMod-ControlCenter-Fix15-win-x64
+          name: PinteMod-ControlCenter-Fix16-win-x64
           path: |
             app/artifacts/ci-single-exe/PinteMod.ControlCenter.exe
             app/artifacts/PinteMod.ControlCenter-single-exe-win-x64.zip
             app/artifacts/PinteMod.ControlCenter-folder-win-x64.zip
             app/artifacts/SHA256SUMS.txt
+            app/artifacts/SELF-TEST.txt
           if-no-files-found: error

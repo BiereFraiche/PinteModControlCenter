@@ -183,4 +183,12 @@ public sealed class GitHubUpdateCheckServiceTests
             "2.4.0-preview-integration.4b1.fix14") > 0);
     }
 
+    [TestMethod]
+    public void CompareVersions_IntegrationFix16IsNewerThanFix15()
+    {
+        Assert.IsTrue(GitHubUpdateCheckService.CompareVersions(
+            "2.4.0-preview-integration.4b1.fix16",
+            "2.4.0-preview-integration.4b1.fix15") > 0);
+    }
+
 }

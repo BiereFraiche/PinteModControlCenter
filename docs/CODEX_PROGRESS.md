@@ -3970,3 +3970,42 @@ Corriger l’unique blocage de revue : poursuivre l’observation des contrats l
 - cause : les fichiers `.gsc` n’avaient pas de règle de fin de ligne explicite, ce qui permettait un checkout CRLF et modifiait leur SHA-256 ;
 - correction : `*.gsc text eol=lf` dans `.gitattributes`, afin que l’empreinte first-party soit identique sur chaque checkout ;
 - la politique fail-closed reste inchangée et n’accepte aucune empreinte de contenu transformé.
+
+## 2026-08-28 — Integration Preview 4B1 Fix16, validation sans serveur
+
+### Objectif
+
+- permettre une validation efficace du produit et des deux distributions sans disposer immédiatement d’une VM ou d’un serveur BOIII de test.
+
+### Réalisé
+
+- ajout du mode isolé `--self-test` avant toute initialisation Manager/serveur ;
+- rapport texte anonymisé avec code de sortie déterministe ;
+- contrôle de la version, des trois assemblages produit, des six vues WPF et du thème ;
+- installation temporaire des payloads PinteMod/Bridge et vérification par l’analyseur first-party SHA-256 ;
+- suppression bornée de la racine temporaire ;
+- panneau Auto-diagnostic ajouté à Paramètres avec copie du rapport ;
+- build local et CI étendus pour exiger `RESULTAT=PASS` avant packaging ;
+- `SELF-TEST.txt` ajouté aux empreintes de livraison ;
+- versions produit et Windows alignées sur Fix16 ;
+- documentation opérateur, statut, test rapide et notes de Preview synchronisés.
+
+### Validation automatisée finale
+
+- Build Debug : 0 avertissement, 0 erreur ;
+- Tests Debug : 596/596 réussis ;
+- Build Release : 0 avertissement, 0 erreur ;
+- Tests Release : 596/596 réussis ;
+- tests ciblés auto-diagnostic et Paramètres : 23/23 réussis ;
+- auto-diagnostic du dossier autonome : PASS ;
+- auto-diagnostic du mono-EXE : PASS ;
+- audits ZIP : PASS pour 1 et 465 entrées ;
+- aucune commande BOIII/RCON et aucun accès à un profil ou secret serveur.
+
+### GitHub
+
+- Fix15 publié comme prerelease sur le tag `v2.4.0-preview-integration.4b1.fix15` ;
+- tag vérifié sur le commit fusionné `c0c0c660d28fc373cdff4f6cc1196929815a96c5` ;
+- quatre assets vérifiés côté GitHub, avec digests identiques aux fichiers locaux ;
+- branche Fix16, PR et CI à publier après commit ;
+- tests terrain Server3 et Agent multi-PC conservés comme validations humaines reportées.

@@ -11,7 +11,7 @@ Développer une application Windows WPF/.NET 8 locale pour observer puis adminis
 ## Source de vérité
 - `reference/PinteMod_v2.1.1.zip`
 - `HANDOFF_PinteMod_ControlCenter_v2.2.md`
-- `docs/STATUS_PREVIEW4B1_FIX15.md`
+- `docs/STATUS_PREVIEW4B1_FIX16.md`
 - Les fichiers de `server-sandbox/` sont uniquement une copie locale de test.
 - Ne jamais considérer des données runtime comme faisant partie du produit public.
 
@@ -27,7 +27,7 @@ Développer une application Windows WPF/.NET 8 locale pour observer puis adminis
 - Ne jamais modifier GitHub sans ordre explicite.
 
 ## Phase actuelle
-Integration Preview 4B1 Fix15. La stable publique reste v2.2.0 et la base humaine de repli 4A7 Fix2.
+Integration Preview 4B1 Fix16. La stable publique reste v2.2.0 et la base humaine de repli 4A7 Fix2.
 
 ## Livraison Preview attendue
 1. Builds Debug et Release sans avertissement.
@@ -36,6 +36,7 @@ Integration Preview 4B1 Fix15. La stable publique reste v2.2.0 et la base humain
 4. Capabilities fail-closed avec preuve first-party par SHA-256.
 5. Aucun secret, chemin privé ou donnée runtime dans les paquets.
 6. Validation humaine sur Server3 avant Server1/2.
+7. Auto-diagnostic sans serveur avec rapport anonymisé et code de sortie CI.
 
 ## Architecture
 Séparer :

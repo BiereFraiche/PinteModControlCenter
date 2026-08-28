@@ -1,4 +1,4 @@
-PinteMod Control Center — Integration Preview 4B1 Fix15
+PinteMod Control Center — Integration Preview 4B1 Fix16
 
 Cette Preview inaugure le moteur adaptatif :
 - PinteMod détecté -> provider PinteMod complet ;
@@ -17,10 +17,12 @@ L'EXE et les fenêtres utilisent désormais l'icône PinteMod zombie + pinte + t
 BUILD
 Double-cliquer BUILD_PREVIEW.bat.
 Sorties attendues :
-- app\artifacts\integration-preview4b1-fix15-win-x64\single-exe\PinteMod.ControlCenter.exe
-- app\artifacts\integration-preview4b1-fix15-win-x64\folder\
-- app\artifacts\integration-preview4b1-fix15-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
-- app\artifacts\integration-preview4b1-fix15-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
-- app\artifacts\integration-preview4b1-fix15-win-x64\SHA256SUMS.txt
+- app\artifacts\integration-preview4b1-fix16-win-x64\single-exe\PinteMod.ControlCenter.exe
+- app\artifacts\integration-preview4b1-fix16-win-x64\folder\
+- app\artifacts\integration-preview4b1-fix16-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
+- app\artifacts\integration-preview4b1-fix16-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
+- app\artifacts\integration-preview4b1-fix16-win-x64\SHA256SUMS.txt
+- app\artifacts\integration-preview4b1-fix16-win-x64\SELF-TEST.txt
 
-Après build, suivre PREVIEW_INTEGRATION4B1_FIX15_TEST_FR.txt.
+Le build exécute l’auto-diagnostic sans serveur. RESULTAT=PASS doit être présent dans SELF-TEST.txt.
+Après build, suivre PREVIEW_INTEGRATION4B1_FIX16_TEST_FR.txt.

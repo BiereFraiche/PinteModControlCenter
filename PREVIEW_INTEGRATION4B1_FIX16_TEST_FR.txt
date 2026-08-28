@@ -1,0 +1,38 @@
+PINTE MOD CONTROL CENTER — VALIDATION RAPIDE FIX16
+==================================================
+
+OBJECTIF
+Valider efficacement la Preview sans serveur BOIII et sans VM dédiée.
+
+VALIDATION AUTOMATIQUE RECOMMANDÉE
+1. Double-cliquer BUILD_PREVIEW.bat.
+2. Attendre le message BUILD OK - TESTS OK - DEUX FORMATS OK.
+3. Ouvrir :
+   app\artifacts\integration-preview4b1-fix16-win-x64\SELF-TEST.txt
+4. Vérifier : RESULTAT=PASS.
+
+Cette passe compile Debug et Release, exécute 596 tests dans chaque configuration,
+construit l’EXE unique et le dossier autonome, lance le paquet sans serveur, puis
+audite les ZIP, les chemins privés et les empreintes SHA-256.
+
+AUTO-DIAGNOSTIC SEUL
+Depuis le dossier contenant l’EXE :
+
+  PinteMod.ControlCenter.exe --self-test --self-test-report="C:\Temp\PinteMod-self-test.txt"
+
+Attendu : code de sortie 0 et RESULTAT=PASS dans le rapport.
+Le mode ne lit aucun profil serveur, secret DPAPI, réseau ou transport RCON.
+
+VÉRIFICATION VISUELLE FACULTATIVE
+1. Lancer l’EXE unique ou celui du dossier.
+2. Ouvrir PARAMÈTRES.
+3. Cliquer LANCER L’AUTO-DIAGNOSTIC.
+4. Vérifier RÉUSSI et, si utile, COPIER LE RAPPORT.
+
+CE QUE CELA NE VALIDE PAS
+- démarrage ou arrêt d’un vrai serveur ;
+- commandes RCON réelles ;
+- synchronisation Agent SMB entre deux PC ;
+- rendu final dans toutes les tailles de fenêtre.
+
+Ces contrôles terrain restent reportés jusqu’à disponibilité d’un environnement sûr.

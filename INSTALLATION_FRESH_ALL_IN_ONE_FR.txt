@@ -1,5 +1,5 @@
 PINTE MOD + CONTROL CENTER - INSTALLATION FRESH ALL-IN-ONE
-Integration Preview 4B1 Fix15 - 2026-08-28
+Integration Preview 4B1 Fix16 - 2026-08-28
 =========================================================
 
 RESULTAT FINAL
@@ -25,11 +25,14 @@ Ce meme EXE sert a :
 Double-cliquer BUILD_PREVIEW.bat.
 Attendu : BUILD OK - TESTS OK - DEUX FORMATS OK.
 Sorties :
-  app\artifacts\integration-preview4b1-fix15-win-x64\single-exe\PinteMod.ControlCenter.exe
-  app\artifacts\integration-preview4b1-fix15-win-x64\folder\
-  app\artifacts\integration-preview4b1-fix15-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
-  app\artifacts\integration-preview4b1-fix15-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
-  app\artifacts\integration-preview4b1-fix15-win-x64\SHA256SUMS.txt
+  app\artifacts\integration-preview4b1-fix16-win-x64\single-exe\PinteMod.ControlCenter.exe
+  app\artifacts\integration-preview4b1-fix16-win-x64\folder\
+  app\artifacts\integration-preview4b1-fix16-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
+  app\artifacts\integration-preview4b1-fix16-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
+  app\artifacts\integration-preview4b1-fix16-win-x64\SHA256SUMS.txt
+  app\artifacts\integration-preview4b1-fix16-win-x64\SELF-TEST.txt
+
+Le fichier SELF-TEST.txt doit indiquer RESULTAT=PASS. Ce contrôle ne charge aucun profil serveur, secret DPAPI, réseau ou transport RCON.
 
 2. FRESH INSTALL BOIII / PINTEMOD
 ---------------------------------

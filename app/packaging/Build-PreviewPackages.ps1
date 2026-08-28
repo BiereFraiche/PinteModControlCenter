@@ -10,7 +10,10 @@ param(
     [string] $OutputRoot,
 
     [Parameter(Mandatory = $true)]
-    [string] $RepositoryRoot
+    [string] $RepositoryRoot,
+
+    [Parameter(Mandatory = $true)]
+    [string] $SelfTestReport
 )
 
 $ErrorActionPreference = 'Stop'
@@ -55,6 +58,18 @@ if ($folderFiles.Count -le 1 -or -not (Test-Path -LiteralPath (Join-Path $folder
     throw 'Le format dossier autonome est incomplet.'
 }
 
+$selfTest = [IO.Path]::GetFullPath($SelfTestReport)
+if (-not $selfTest.StartsWith($outputPrefix, [StringComparison]::OrdinalIgnoreCase) -or
+    -not (Test-Path -LiteralPath $selfTest -PathType Leaf)) {
+    throw 'Le rapport self-test doit être un fichier situé dans la racine de sortie.'
+}
+
+$selfTestText = [IO.File]::ReadAllText($selfTest)
+if ($selfTestText -notmatch '(?m)^RESULTAT=PASS\r?$' -or
+    $selfTestText -match '(?i)[A-Z]:\\(?:Users|Dev|agent)\\') {
+    throw 'Le rapport self-test est en échec ou contient un chemin privé.'
+}
+
 $singleZip = Join-Path $output 'PinteMod.ControlCenter-single-exe-win-x64.zip'
 $folderZip = Join-Path $output 'PinteMod.ControlCenter-folder-win-x64.zip'
 foreach ($archive in @($singleZip, $folderZip)) {
@@ -76,6 +91,7 @@ $hashLines = @(
     "$(Get-Sha256Hex -Path $singleZip) *PinteMod.ControlCenter-single-exe-win-x64.zip",
     "$(Get-Sha256Hex -Path $folderZip) *PinteMod.ControlCenter-folder-win-x64.zip"
 )
+$hashLines += "$(Get-Sha256Hex -Path $selfTest) *SELF-TEST.txt"
 [IO.File]::WriteAllText(
     (Join-Path $output 'SHA256SUMS.txt'),
     ($hashLines -join "`r`n") + "`r`n",

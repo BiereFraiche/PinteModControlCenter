@@ -1,17 +1,18 @@
 # PinteMod Control Center
 
-> **Current development build: Integration Preview 4B1 Fix15 (`2.4.0-preview-integration.4b1.fix15`).** It adds adaptive BOIII/PinteMod/third-party GSC support, the multi-server Manager and the SMB Agent. First-party capabilities now require a reviewed SHA-256 fingerprint. The Preview builds and passes automated tests, but still requires human Server3 and multi-PC Agent validation. v2.2.0 remains the latest public stable release.
+> **Current development build: Integration Preview 4B1 Fix16 (`2.4.0-preview-integration.4b1.fix16`).** It adds a server-free local self-test and anonymized report to the adaptive BOIII/PinteMod Manager introduced by Fix15. The Preview builds and passes automated tests, but still requires human Server3 and multi-PC Agent validation. v2.2.0 remains the latest public stable release.
 
-See the [Fix15 status](docs/STATUS_PREVIEW4B1_FIX15.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX15_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [Fix16 status](docs/STATUS_PREVIEW4B1_FIX16.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX16_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Preview tests](https://img.shields.io/badge/Preview-586%20tests%20passing-24C875)
+![Preview tests](https://img.shields.io/badge/Preview-596%20tests%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 [![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
+[![Preview](https://img.shields.io/badge/prerelease-Fix15-F5A623)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0-preview-integration.4b1.fix15)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
@@ -23,19 +24,19 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 
 [Download v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
-## Integration Preview 4B1 Fix15
+## Integration Preview 4B1 Fix16
 
 This branch prepares the next Control Center generation without replacing stable v2.2.0:
 
-| Item | Fix15 status |
+| Item | Fix16 status |
 |---|---|
-| Product version | `2.4.0-preview-integration.4b1.fix15` |
+| Product version | `2.4.0-preview-integration.4b1.fix16` |
 | Build | Debug and Release, 0 warnings, 0 errors |
-| Automated tests | 586/586 passing in both configurations |
-| Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 |
+| Automated tests | 596/596 passing in both configurations |
+| Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |
 | Field validation | Server3, multi-PC Agent and VM UI checks still require a human operator |
 
-The Preview adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. A first-party PinteMod capability is enabled only when its scripts match reviewed SHA-256 fingerprints; an unrelated script using the same filename stays restricted and receives no command transport.
+The Preview adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. Fix16 also validates the packaged application without a server: product metadata, assemblies, all six WPF views and embedded payload fingerprints are checked without loading a server profile, DPAPI secret, network endpoint or RCON transport.
 
 Build and audit every deliverable in one pass on Windows:
 
@@ -166,7 +167,15 @@ To build, test, publish and audit both Preview formats automatically:
 .\BUILD_PREVIEW.bat
 ```
 
-Outputs are written to `app/artifacts/integration-preview4b1-fix15-win-x64/`: standalone EXE, self-contained folder, both ZIP files and `SHA256SUMS.txt`.
+Outputs are written to `app/artifacts/integration-preview4b1-fix16-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
+
+The same offline check can be run from either distribution:
+
+```powershell
+.\PinteMod.ControlCenter.exe --self-test --self-test-report="C:\Temp\PinteMod-self-test.txt"
+```
+
+Exit code `0` and `RESULTAT=PASS` mean that the local package passed. The report contains no server profile, secret, machine name, user name or private path.
 
 The `dotnet` build and test commands do not launch a BOIII server, BAT file or external tool. The Preview script only invokes local build, test, compression and audit tooling.
 
@@ -192,15 +201,16 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-Integration Preview 4B1 Fix15 automated validation:
+Integration Preview 4B1 Fix16 automated validation:
 
 ```text
 Debug build       PASS — 0 warnings, 0 errors
 Release build     PASS — 0 warnings, 0 errors
-Debug tests       PASS — 586/586
-Release tests     PASS — 586/586
+Debug tests       PASS — 596/596
+Release tests     PASS — 596/596
+Packaged self-test PASS — RESULTAT=PASS, no server or network
 Single-EXE audit  PASS — one self-contained EXE, privacy audit passed
-Folder audit      PASS — 465 files, archive and privacy audit passed
+Folder audit      PASS — archive and privacy audit passed
 Field validation  PENDING — Server3, multi-PC Agent and VM interface
 ```
 

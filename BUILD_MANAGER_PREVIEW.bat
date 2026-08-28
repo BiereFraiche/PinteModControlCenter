@@ -8,12 +8,14 @@ set "ROOT=%~dp0"
 set "APP=%ROOT%app"
 set "SLN=%APP%\PinteMod.ControlCenter.sln"
 set "PROJECT=%APP%\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj"
-set "OUTROOT=%APP%\artifacts\integration-preview4b1-fix15-win-x64"
+set "OUTROOT=%APP%\artifacts\integration-preview4b1-fix16-win-x64"
 set "OUT_SINGLE=%OUTROOT%\single-exe"
 set "OUT_FOLDER=%OUTROOT%\folder"
 set "OUT_SINGLE_ZIP=%OUTROOT%\PinteMod.ControlCenter-single-exe-win-x64.zip"
 set "OUT_FOLDER_ZIP=%OUTROOT%\PinteMod.ControlCenter-folder-win-x64.zip"
 set "OUT_HASHES=%OUTROOT%\SHA256SUMS.txt"
+set "OUT_SELFTEST=%OUTROOT%\SELF-TEST.txt"
+set "OUT_SELFTEST_FOLDER_TEMP=%OUTROOT%\SELF-TEST-FOLDER.tmp.txt"
 set "PACKAGER=%APP%\packaging\Build-PreviewPackages.ps1"
 
 echo ============================================================
@@ -26,32 +28,32 @@ if errorlevel 1 goto :nodotnet
 pushd "%APP%"
 if errorlevel 1 goto :badpath
 
-echo [1/7] Restore...
+echo [1/8] Restore...
 dotnet restore "%SLN%"
 if errorlevel 1 goto :fail
 
 echo.
-echo [2/7] Build Debug...
+echo [2/8] Build Debug...
 dotnet build "%SLN%" -c Debug --no-restore
 if errorlevel 1 goto :fail
 
 echo.
-echo [3/7] Tests Debug...
+echo [3/8] Tests Debug...
 dotnet test "%SLN%" -c Debug --no-build --no-restore
 if errorlevel 1 goto :fail
 
 echo.
-echo [4/7] Build Release...
+echo [4/8] Build Release...
 dotnet build "%SLN%" -c Release --no-restore
 if errorlevel 1 goto :fail
 
 echo.
-echo [5/7] Tests Release...
+echo [5/8] Tests Release...
 dotnet test "%SLN%" -c Release --no-build --no-restore
 if errorlevel 1 goto :fail
 
 echo.
-echo [6/7] Publish SINGLE EXE win-x64...
+echo [6/8] Publish SINGLE EXE win-x64...
 if exist "%OUTROOT%" rmdir /s /q "%OUTROOT%"
 echo Assemblage single EXE self-contained SANS compression...
 dotnet publish "%PROJECT%" -c Release -r win-x64 --self-contained true --no-restore --no-build -o "%OUT_SINGLE%" -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -v:minimal
@@ -62,7 +64,7 @@ for /f %%N in ('dir /b /a-d "%OUT_SINGLE%" ^| find /c /v ""') do set "FILECOUNT=
 if not "%FILECOUNT%"=="1" goto :singlefail
 
 echo.
-echo [7/7] Publish DOSSIER PORTABLE win-x64...
+echo [7/8] Publish DOSSIER PORTABLE win-x64...
 dotnet publish "%PROJECT%" -c Release -r win-x64 --self-contained true --no-restore --no-build -o "%OUT_FOLDER%" -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -v:minimal
 if errorlevel 1 goto :fail
 if not exist "%OUT_FOLDER%\PinteMod.ControlCenter.exe" goto :folderfail
@@ -70,12 +72,23 @@ for /f %%N in ('dir /b /a-d "%OUT_FOLDER%" ^| find /c /v ""') do set "FOLDERFILE
 if "%FOLDERFILECOUNT%"=="0" goto :folderfail
 if "%FOLDERFILECOUNT%"=="1" goto :folderfail
 
-echo Compression et audit des deux formats...
-powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%PACKAGER%" -SingleDirectory "%OUT_SINGLE%" -FolderDirectory "%OUT_FOLDER%" -OutputRoot "%OUTROOT%" -RepositoryRoot "%ROOT%"
+echo.
+echo [8/8] Auto-diagnostic, compression et audit...
+"%OUT_FOLDER%\PinteMod.ControlCenter.exe" --self-test --self-test-report="%OUT_SELFTEST_FOLDER_TEMP%"
+if errorlevel 1 goto :selftestfail
+findstr /x /c:"RESULTAT=PASS" "%OUT_SELFTEST_FOLDER_TEMP%" >nul
+if errorlevel 1 goto :selftestfail
+"%OUT_SINGLE%\PinteMod.ControlCenter.exe" --self-test --self-test-report="%OUT_SELFTEST%"
+if errorlevel 1 goto :selftestfail
+findstr /x /c:"RESULTAT=PASS" "%OUT_SELFTEST%" >nul
+if errorlevel 1 goto :selftestfail
+del /q "%OUT_SELFTEST_FOLDER_TEMP%"
+powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%PACKAGER%" -SingleDirectory "%OUT_SINGLE%" -FolderDirectory "%OUT_FOLDER%" -OutputRoot "%OUTROOT%" -RepositoryRoot "%ROOT%" -SelfTestReport "%OUT_SELFTEST%"
 if errorlevel 1 goto :fail
 if not exist "%OUT_SINGLE_ZIP%" goto :folderfail
 if not exist "%OUT_FOLDER_ZIP%" goto :folderfail
 if not exist "%OUT_HASHES%" goto :folderfail
+if not exist "%OUT_SELFTEST%" goto :selftestfail
 
 echo.
 echo ============================================================
@@ -94,8 +107,9 @@ echo.
 echo ZIP mono-EXE et empreintes :
 echo   %OUT_SINGLE_ZIP%
 echo   %OUT_HASHES%
+echo   %OUT_SELFTEST%
 echo.
-echo Preview 4B1 Fix15 : detection first-party par SHA + Agent auto-recuperable.
+echo Preview 4B1 Fix16 : auto-diagnostic sans serveur + detection first-party par SHA.
 echo Le meme EXE peut aussi fonctionner en Agent distant SMB sur le PC serveur.
 echo.
 popd
@@ -116,6 +130,13 @@ echo.
 echo [ERREUR] Le publish dossier n'a pas produit un dossier portable complet.
 echo Contenu de %OUT_FOLDER% :
 dir /b "%OUT_FOLDER%"
+goto :fail_after_pop
+
+:selftestfail
+echo.
+echo [ERREUR] L'auto-diagnostic local d'un des deux formats n'a pas produit RESULTAT=PASS.
+if exist "%OUT_SELFTEST%" type "%OUT_SELFTEST%"
+if exist "%OUT_SELFTEST_FOLDER_TEMP%" type "%OUT_SELFTEST_FOLDER_TEMP%"
 goto :fail_after_pop
 
 :nodotnet
