@@ -260,6 +260,11 @@ internal sealed class RemoteLaunchClientService
             {
                 return new ServerLaunchResult(false, "La mise à jour Agent doit être lancée depuis le PinteMod.ControlCenter.exe publié.");
             }
+            sourceExe = RemoteAgentExecutableSourceResolver.Resolve(sourceExe);
+            if (!File.Exists(sourceExe))
+            {
+                return new ServerLaunchResult(false, "Le package Agent autonome est introuvable à côté du Control Center.");
+            }
 
             RemoteAgentProtocolService.EnsureQueueDirectories(serverRoot);
             progress?.Report(new RemoteAgentUpdateProgress(35, "Calcul de l’empreinte SHA-256…"));

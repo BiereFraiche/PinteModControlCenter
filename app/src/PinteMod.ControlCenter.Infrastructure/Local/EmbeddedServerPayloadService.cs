@@ -16,6 +16,8 @@ public sealed class EmbeddedServerPayloadService
 
     private const string PinteModResourceSuffix = ".Payloads.PinteMod_CURRENT_20260819.zip";
     private const string BridgeResourceSuffix = ".Payloads.ezz_admin_control_center_contracts_v0.3.1.gsc";
+    private const string InstallationVerifierRelativePath = "boiii/tools/Verify_PinteMod_Installation.ps1";
+    internal const string LegacyInstallationVerifierSha256 = "02DF5C769D6B3E38B6053989078D2BC1A28810BB32D21584DD39502A4B11BE3B";
     private readonly Assembly _assembly;
 
     public EmbeddedServerPayloadService(Assembly? assembly = null)
@@ -32,7 +34,7 @@ public sealed class EmbeddedServerPayloadService
         var skipped = new List<string>();
         await using var resource = OpenResource(PinteModResourceSuffix);
         using var archive = new ZipArchive(resource, ZipArchiveMode.Read, leaveOpen: false);
-        var operations = new List<(ZipArchiveEntry Entry, string Target)>();
+        var operations = new List<(ZipArchiveEntry Entry, string Target, bool ReplaceKnownLegacyFile)>();
 
         foreach (var entry in archive.Entries)
         {
@@ -54,6 +56,12 @@ public sealed class EmbeddedServerPayloadService
                     continue;
                 }
 
+                if (CanReplaceKnownLegacyFile(entry.FullName, existingHash))
+                {
+                    operations.Add((entry, target, true));
+                    continue;
+                }
+
                 return new ServerDeploymentResult(
                     false,
                     $"Installation refusée : le fichier « {Relative(root, target)} » existe déjà avec un contenu différent. Aucun fichier existant n’a été écrasé.",
@@ -61,12 +69,12 @@ public sealed class EmbeddedServerPayloadService
                     skipped);
             }
 
-            operations.Add((entry, target));
+            operations.Add((entry, target, false));
         }
 
         try
         {
-            foreach (var operation in operations)
+            foreach (var operation in operations.OrderBy(operation => operation.ReplaceKnownLegacyFile))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Directory.CreateDirectory(Path.GetDirectoryName(operation.Target)!);
@@ -84,13 +92,20 @@ public sealed class EmbeddedServerPayloadService
                     await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
 
-                File.Move(temp, operation.Target);
+                if (operation.ReplaceKnownLegacyFile)
+                {
+                    File.Replace(temp, operation.Target, destinationBackupFileName: null, ignoreMetadataErrors: true);
+                }
+                else
+                {
+                    File.Move(temp, operation.Target);
+                }
                 created.Add(Relative(root, operation.Target));
             }
 
             return new ServerDeploymentResult(
                 true,
-                $"PinteMod {CurrentPinteModPayloadLabel} installé/vérifié sans écraser de fichier existant. Installez ensuite le Bridge Control Center.",
+                $"PinteMod {CurrentPinteModPayloadLabel} installé/vérifié sans écraser de fichier existant. Le vérificateur v2.1.1 stock connu peut être mis à niveau. Installez ensuite le Bridge Control Center.",
                 created,
                 skipped);
         }
@@ -114,6 +129,10 @@ public sealed class EmbeddedServerPayloadService
             throw;
         }
     }
+
+    private static bool CanReplaceKnownLegacyFile(string entryPath, string existingHash) =>
+        entryPath.Replace('\\', '/').Equals(InstallationVerifierRelativePath, StringComparison.OrdinalIgnoreCase) &&
+        existingHash.Equals(LegacyInstallationVerifierSha256, StringComparison.OrdinalIgnoreCase);
 
     public async Task<ServerDeploymentResult> InstallOrUpdateBridgeAsync(
         string serverRoot,

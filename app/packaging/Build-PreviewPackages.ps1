@@ -58,6 +58,13 @@ if ($folderFiles.Count -le 1 -or -not (Test-Path -LiteralPath (Join-Path $folder
     throw 'Le format dossier autonome est incomplet.'
 }
 
+$folderAgent = Join-Path $folder 'PinteMod.ControlCenter.Agent.exe'
+$singleAgent = Join-Path $single 'PinteMod.ControlCenter.exe'
+if (-not (Test-Path -LiteralPath $folderAgent) -or
+    -not [string]::Equals((Get-Sha256Hex -Path $folderAgent), (Get-Sha256Hex -Path $singleAgent), [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Le dossier portable doit inclure le package Agent autonome identique au mono-EXE.'
+}
+
 $selfTest = [IO.Path]::GetFullPath($SelfTestReport)
 if (-not $selfTest.StartsWith($outputPrefix, [StringComparison]::OrdinalIgnoreCase) -or
     -not (Test-Path -LiteralPath $selfTest -PathType Leaf)) {

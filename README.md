@@ -1,15 +1,15 @@
 # PinteMod Control Center
 
-> **Current development build: Integration Preview 4B1 Fix16 (`2.4.0-preview-integration.4b1.fix16`).** It adds a server-free local self-test and anonymized report to the adaptive BOIII/PinteMod Manager introduced by Fix15. The Preview builds and passes automated tests, but still requires human Server3 and multi-PC Agent validation. v2.2.0 remains the latest public stable release.
+> **Current development build: Integration Preview 4B1 Fix24 (`2.4.0-preview-integration.4b1.fix24`).** It adds WPF software rendering for remote-control sessions, hardens the SMB Agent lifecycle, makes the portable-folder format compatible with its standalone Agent and treats the confirmed absence of `hotfix.gsc` as expected. Server3 and the fixed-PC/laptop Agent link have been human-validated. v2.2.0 remains the latest public stable release.
 
-See the [Fix16 status](docs/STATUS_PREVIEW4B1_FIX16.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX16_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [Fix24 status](docs/STATUS_PREVIEW4B1_FIX24.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Preview tests](https://img.shields.io/badge/Preview-596%20tests%20passing-24C875)
+![Preview tests](https://img.shields.io/badge/Preview-611%20tests%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 [![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 [![Preview](https://img.shields.io/badge/prerelease-Fix15-F5A623)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0-preview-integration.4b1.fix15)
@@ -19,24 +19,24 @@ PinteMod Control Center is a local Windows operator application for observing an
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
 > **Current stable release:** v2.2.0.
-> Debug and Release builds complete with **0 warnings, 0 errors and 460/460 tests passing**.
+> Preview Fix24 completes Debug and Release with **0 warnings, 0 errors and 611/611 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
 [Download v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
 
-## Integration Preview 4B1 Fix16
+## Integration Preview 4B1 Fix24
 
 This branch prepares the next Control Center generation without replacing stable v2.2.0:
 
-| Item | Fix16 status |
+| Item | Fix24 status |
 |---|---|
-| Product version | `2.4.0-preview-integration.4b1.fix16` |
+| Product version | `2.4.0-preview-integration.4b1.fix24` |
 | Build | Debug and Release, 0 warnings, 0 errors |
-| Automated tests | 596/596 passing in both configurations |
+| Automated tests | 611/611 passing in both configurations |
 | Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |
-| Field validation | Server3, multi-PC Agent and VM UI checks still require a human operator |
+| Field validation | Server3 and fixed-PC/laptop Agent validated; GitHub publication remains to be decided |
 
-The Preview adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. Fix16 also validates the packaged application without a server: product metadata, assemblies, all six WPF views and embedded payload fingerprints are checked without loading a server profile, DPAPI secret, network endpoint or RCON transport.
+The Preview adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. Fix22 adds software-rendering startup for incompatible GPUs/remote-control sessions and includes a standalone Agent beside the portable-folder application, so Agent activation no longer depends on the folder's DLLs.
 
 Build and audit every deliverable in one pass on Windows:
 
@@ -167,7 +167,7 @@ To build, test, publish and audit both Preview formats automatically:
 .\BUILD_PREVIEW.bat
 ```
 
-Outputs are written to `app/artifacts/integration-preview4b1-fix16-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
+Outputs are written to `app/artifacts/integration-preview4b1-fix24-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
 
 The same offline check can be run from either distribution:
 
@@ -201,17 +201,17 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-Integration Preview 4B1 Fix16 automated validation:
+Integration Preview 4B1 Fix24 automated validation:
 
 ```text
 Debug build       PASS — 0 warnings, 0 errors
 Release build     PASS — 0 warnings, 0 errors
-Debug tests       PASS — 596/596
-Release tests     PASS — 596/596
+Debug tests       PASS — 611/611
+Release tests     PASS — 611/611
 Packaged self-test PASS — RESULTAT=PASS, no server or network
 Single-EXE audit  PASS — one self-contained EXE, privacy audit passed
 Folder audit      PASS — archive and privacy audit passed
-Field validation  PENDING — Server3, multi-PC Agent and VM interface
+Field validation  PASS — Server3 and fixed-PC/laptop Agent link
 ```
 
 Public stable v2.2.0:

@@ -55,6 +55,22 @@ public sealed class ManagedServerRemoteAgentTests
         Assert.IsTrue(profile.ServerRunning);
         Assert.IsFalse(profile.CanLaunchSelected);
     }
+
+    [TestMethod]
+    public void ManagedProfile_ExistingPinteMod_OffersOnlyTheSafeFirstPartyRepair()
+    {
+        var profile = new ServerManagerProfileViewModel(
+            "server3",
+            OperatorConfiguration.Default with { ServerRoot = @"C:\Server3" },
+            ManagedServerProfileConfiguration.Default);
+        profile.ApplyAnalysis(new ManagedServerAnalysis(
+            true, true, true, true, true, false, false, 35, ["Server.bat"],
+            ManagedServerIntegrationKind.PinteMod, "PinteMod"));
+
+        Assert.IsTrue(profile.CanRepairPinteModSafely);
+        Assert.IsTrue(profile.CanInstallPinteMod);
+        Assert.AreEqual("VÉRIFIER / RÉPARER PINTE MOD", profile.PinteModInstallActionLabel);
+    }
     [TestMethod]
     public void ManagedProfile_RemotePairing_IsVisuallyExplicitWhenOnline()
     {

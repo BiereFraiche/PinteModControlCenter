@@ -221,7 +221,7 @@ public sealed class RconDiagnosticServiceTests
     }
 
     [TestMethod]
-    public async Task PauseResponse_RequiresCommunityPauseV03Markers()
+    public async Task PauseResponse_RequiresEveryStableMarker()
     {
         var service = new RconDiagnosticService(
             new CapturingRconClient("PINTEMOD COMMUNITY PAUSE\nModule: EXPERIMENTAL v0.3\nActive: 0"),
@@ -231,6 +231,20 @@ public sealed class RconDiagnosticServiceTests
         var result = await service.ExecuteAsync(RconDiagnosticCommand.PauseStatus, Endpoint);
 
         Assert.AreEqual(RconExecutionStatus.UnexpectedResponse, result.Status);
+    }
+
+    [TestMethod]
+    public async Task PauseResponse_AcceptsCommunityPauseV04WithStableMarkers()
+    {
+        var service = new RconDiagnosticService(
+            new CapturingRconClient(
+                "===== PINTEMOD COMMUNITY PAUSE =====\nModule: EXPERIMENTAL v0.4\nActive: 0\nSuccessful pauses: 0/2"),
+            new MemorySecretStore("safe-secret"),
+            new FakeClock(DateTimeOffset.UtcNow));
+
+        var result = await service.ExecuteAsync(RconDiagnosticCommand.PauseStatus, Endpoint);
+
+        Assert.AreEqual(RconExecutionStatus.Success, result.Status);
     }
 
     [TestMethod]

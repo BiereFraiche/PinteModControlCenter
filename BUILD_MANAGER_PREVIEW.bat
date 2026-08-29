@@ -8,7 +8,7 @@ set "ROOT=%~dp0"
 set "APP=%ROOT%app"
 set "SLN=%APP%\PinteMod.ControlCenter.sln"
 set "PROJECT=%APP%\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj"
-set "OUTROOT=%APP%\artifacts\integration-preview4b1-fix16-win-x64"
+set "OUTROOT=%APP%\artifacts\integration-preview4b1-fix24-win-x64"
 set "OUT_SINGLE=%OUTROOT%\single-exe"
 set "OUT_FOLDER=%OUTROOT%\folder"
 set "OUT_SINGLE_ZIP=%OUTROOT%\PinteMod.ControlCenter-single-exe-win-x64.zip"
@@ -68,6 +68,8 @@ echo [7/8] Publish DOSSIER PORTABLE win-x64...
 dotnet publish "%PROJECT%" -c Release -r win-x64 --self-contained true --no-restore --no-build -o "%OUT_FOLDER%" -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -v:minimal
 if errorlevel 1 goto :fail
 if not exist "%OUT_FOLDER%\PinteMod.ControlCenter.exe" goto :folderfail
+copy /y "%OUT_SINGLE%\PinteMod.ControlCenter.exe" "%OUT_FOLDER%\PinteMod.ControlCenter.Agent.exe" >nul
+if not exist "%OUT_FOLDER%\PinteMod.ControlCenter.Agent.exe" goto :folderfail
 for /f %%N in ('dir /b /a-d "%OUT_FOLDER%" ^| find /c /v ""') do set "FOLDERFILECOUNT=%%N"
 if "%FOLDERFILECOUNT%"=="0" goto :folderfail
 if "%FOLDERFILECOUNT%"=="1" goto :folderfail
@@ -109,7 +111,7 @@ echo   %OUT_SINGLE_ZIP%
 echo   %OUT_HASHES%
 echo   %OUT_SELFTEST%
 echo.
-echo Preview 4B1 Fix16 : auto-diagnostic sans serveur + detection first-party par SHA.
+echo Preview 4B1 Fix24 : hotfix.gsc Ezz BOIII reconnu comme absence attendue.
 echo Le meme EXE peut aussi fonctionner en Agent distant SMB sur le PC serveur.
 echo.
 popd

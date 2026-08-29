@@ -171,6 +171,7 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
                 OnPropertyChanged(nameof(IntegrationLabel));
                 OnPropertyChanged(nameof(AnalysisDetails));
                 OnPropertyChanged(nameof(CanInstallPinteMod));
+                OnPropertyChanged(nameof(PinteModInstallActionLabel));
                 OnPropertyChanged(nameof(CanInstallBridge));
                 OnPropertyChanged(nameof(CanLaunchLocally));
                 OnPropertyChanged(nameof(CanEnableRemoteAgentLocal));
@@ -478,7 +479,20 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
           $"Bridge={(Analysis.ControlCenterBridgeDetected || Analysis.GenericBridgeDetected ? "OUI" : "NON")} · " +
           $"GSC={Analysis.GscFileCount} · Tiers={Analysis.ThirdPartyGscCount}";
 
-    public bool CanInstallPinteMod => CanInstallPinteModSafely;
+    public bool CanRepairPinteModSafely => Analysis is
+    {
+        CanDeployFirstPartyFiles: true,
+        PinteModDetected: true
+    };
+
+    // A deployed PinteMod can need a narrowly-scoped first-party repair: for
+    // example the stock v2.1.1 verifier predates the supported 35-module
+    // inventory. The payload service still refuses every unknown collision.
+    public bool CanInstallPinteMod => CanInstallPinteModSafely || CanRepairPinteModSafely;
+
+    public string PinteModInstallActionLabel => Analysis?.PinteModDetected == true
+        ? "VÉRIFIER / RÉPARER PINTE MOD"
+        : "INSTALLER PINTE MOD";
 
     public bool CanInstallBridge => Analysis is { CanDeployFirstPartyFiles: true, PinteModDetected: true };
 
@@ -1390,14 +1404,31 @@ public sealed class ServerManagerViewModel : ObservableObject
 
     public async Task<ServerDeploymentResult> EnableRemoteAgentAsync(CancellationToken cancellationToken = default)
     {
-        if (SelectedProfile is not null)
+        try
         {
-            await SaveSelectedCoreAsync(refreshInstalledAgent: false, cancellationToken: cancellationToken);
+            if (SelectedProfile is not null)
+            {
+                await SaveSelectedCoreAsync(refreshInstalledAgent: false, cancellationToken: cancellationToken);
+            }
+            var definitions = await GetAllLocalAgentDefinitionsAsync(cancellationToken);
+            var result = await _remoteAgentInstaller.InstallOrUpdateAsync(definitions, cancellationToken);
+            StatusMessage = result.Message;
+            return result;
         }
-        var definitions = await GetAllLocalAgentDefinitionsAsync(cancellationToken);
-        var result = await _remoteAgentInstaller.InstallOrUpdateAsync(definitions, cancellationToken);
-        StatusMessage = result.Message;
-        return result;
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            var result = new ServerDeploymentResult(
+                false,
+                RemoteAgentActivationDiagnostic.Describe(exception),
+                Array.Empty<string>(),
+                Array.Empty<string>());
+            StatusMessage = result.Message;
+            return result;
+        }
     }
 
     public async Task<ServerLaunchResult> UpdateSelectedRemoteAgentAsync(

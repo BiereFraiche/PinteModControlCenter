@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using PinteMod.ControlCenter.Composition;
 using PinteMod.ControlCenter.Configuration;
 using PinteMod.ControlCenter.Core.Contracts;
@@ -26,6 +28,11 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (GraphicsCompatibilityStartupOptions.IsRequested(e.Args))
+        {
+            RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+        }
+
         if (SelfTestStartupOptions.IsRequested(e.Args))
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -59,10 +66,15 @@ public partial class App : Application
                 return;
             }
 
-            if (e.Args.Any(argument => string.Equals(argument, "--remote-agent", StringComparison.OrdinalIgnoreCase)))
+            if (RemoteAgentStartupOptions.IsAgentRequested(e.Args))
             {
                 ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                if (RemoteAgentRecoveryTaskService.ShouldSuppressAgentStartForUpdate())
+                // Only the local installer may request this repair launch. A
+                // stale update marker must never block an operator who has
+                // explicitly restarted the Agent; scheduled recovery keeps its
+                // normal update-marker protection because it uses no repair flag.
+                if (!RemoteAgentStartupOptions.IsManualRepairRequested(e.Args) &&
+                    RemoteAgentRecoveryTaskService.ShouldSuppressAgentStartForUpdate())
                 {
                     Shutdown(0);
                     return;

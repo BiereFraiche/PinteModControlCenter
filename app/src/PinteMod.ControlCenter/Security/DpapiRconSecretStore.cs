@@ -8,17 +8,24 @@ namespace PinteMod.ControlCenter.Security;
 public sealed class DpapiRconSecretStore : IRconSecretStore
 {
     private const int MaximumEncryptedBytes = 16 * 1024;
-    private static readonly byte[] OptionalEntropy = Encoding.UTF8.GetBytes("PinteMod.ControlCenter.RCON.v1");
     private readonly string _secretPath;
+    private readonly ICurrentUserDataProtector _protector;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     public DpapiRconSecretStore(string? secretPath = null)
+        : this(secretPath, new CurrentUserDpapiProtector())
     {
+    }
+
+    internal DpapiRconSecretStore(string? secretPath, ICurrentUserDataProtector protector)
+    {
+        ArgumentNullException.ThrowIfNull(protector);
         _secretPath = secretPath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "PinteMod",
             "ControlCenter",
             "rcon.secret.dpapi");
+        _protector = protector;
     }
 
     public Task<bool> HasSecretAsync(CancellationToken cancellationToken = default)
@@ -44,7 +51,7 @@ public sealed class DpapiRconSecretStore : IRconSecretStore
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            protectedBytes = ProtectedData.Protect(plainBytes, OptionalEntropy, DataProtectionScope.CurrentUser);
+            protectedBytes = _protector.Protect(plainBytes);
             Directory.CreateDirectory(Path.GetDirectoryName(_secretPath)!);
             await File.WriteAllBytesAsync(temporaryPath, protectedBytes, cancellationToken).ConfigureAwait(false);
             File.Move(temporaryPath, _secretPath, overwrite: true);
@@ -85,7 +92,7 @@ public sealed class DpapiRconSecretStore : IRconSecretStore
             }
 
             protectedBytes = await File.ReadAllBytesAsync(_secretPath, cancellationToken).ConfigureAwait(false);
-            plainBytes = ProtectedData.Unprotect(protectedBytes, OptionalEntropy, DataProtectionScope.CurrentUser);
+            plainBytes = _protector.Unprotect(protectedBytes);
             var secret = Encoding.UTF8.GetString(plainBytes);
             ValidateSecret(secret);
             return secret;
@@ -118,4 +125,22 @@ public sealed class DpapiRconSecretStore : IRconSecretStore
             throw new ArgumentException("Le secret RCON ne doit contenir ni espace, ni guillemet, ni retour à la ligne.", nameof(secret));
         }
     }
+}
+
+internal interface ICurrentUserDataProtector
+{
+    byte[] Protect(byte[] plainBytes);
+
+    byte[] Unprotect(byte[] protectedBytes);
+}
+
+internal sealed class CurrentUserDpapiProtector : ICurrentUserDataProtector
+{
+    private static readonly byte[] OptionalEntropy = Encoding.UTF8.GetBytes("PinteMod.ControlCenter.RCON.v1");
+
+    public byte[] Protect(byte[] plainBytes) =>
+        ProtectedData.Protect(plainBytes, OptionalEntropy, DataProtectionScope.CurrentUser);
+
+    public byte[] Unprotect(byte[] protectedBytes) =>
+        ProtectedData.Unprotect(protectedBytes, OptionalEntropy, DataProtectionScope.CurrentUser);
 }

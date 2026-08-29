@@ -276,9 +276,12 @@ public partial class ServerManagerWindow : Window
 
     private async Task ConfirmAndInstallPinteModAsync()
     {
+        var repair = ViewModel.SelectedProfile?.Analysis?.PinteModDetected == true;
         var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
-            "Installer PinteMod sur ce serveur ?\n\nLe serveur doit être arrêté. Les scripts et données existants ne sont jamais écrasés silencieusement : toute collision inconnue bloque l’installation.",
-            "Installer PinteMod",
+            repair
+                ? "Vérifier et réparer les fichiers first-party PinteMod sur ce serveur ?\n\nLe serveur doit être arrêté. Seul le vérificateur v2.1.1 stock connu peut être mis à niveau ; toute autre collision bloque l’opération sans écrasement."
+                : "Installer PinteMod sur ce serveur ?\n\nLe serveur doit être arrêté. Les scripts et données existants ne sont jamais écrasés silencieusement : toute collision inconnue bloque l’installation.",
+            repair ? "Réparer PinteMod" : "Installer PinteMod",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (answer != MessageBoxResult.Yes)

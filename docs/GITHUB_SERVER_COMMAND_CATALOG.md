@@ -40,7 +40,7 @@ Le transport de diagnostic manuel et les mutations autorisées utilisent des lis
 Une réponse UDP non vide n’est pas suffisante pour déclarer un diagnostic réussi. Le Control Center valide désormais les marqueurs stables publiés par le commit audité :
 
 - `ezzhealth full` : `[PinteMod Health]`, `PASS=`, `WARNING=` et `ERROR=` doivent tous être présents ;
-- `ezzpausestatus` : `PINTEMOD COMMUNITY PAUSE`, `EXPERIMENTAL v0.3`, `Active:` et `Successful pauses:` doivent tous être présents.
+- `ezzpausestatus` : `PINTEMOD COMMUNITY PAUSE`, `Module:`, `Active:` et `Successful pauses:` doivent tous être présents. Les formats Community Pause v0.3 et v0.4 sont acceptés.
 - `ezzmap` : bannière Map Info, carte, déclencheurs Pack-a-Punch et profils courant/PaP ;
 - `ezzpowerstatus` : profil et état explicite du courant ;
 - `ezzpapstatus` : bannière Pack-a-Punch, carte, profil d’accès, déclencheurs et machines alimentées ;

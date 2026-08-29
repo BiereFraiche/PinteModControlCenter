@@ -28,6 +28,7 @@ internal sealed class RemoteLaunchAgentHost
         using var mutex = new Mutex(initiallyOwned: true, "PinteMod.ControlCenter.RemoteAgent.CurrentUser", out var ownsMutex);
         if (!ownsMutex) return 0;
 
+        var startedAtUtc = DateTimeOffset.UtcNow;
         Log("Agent starting");
         var managedAgentExecutable = RemoteAgentConfigurationStore.GetExecutablePath();
         if (File.Exists(managedAgentExecutable))
@@ -46,11 +47,13 @@ internal sealed class RemoteLaunchAgentHost
         {
             try
             {
-                if (File.Exists(RemoteAgentConfigurationStore.GetStopRequestPath()))
+                var stopRequestPath = RemoteAgentConfigurationStore.GetStopRequestPath();
+                if (ShouldHonorStopRequest(stopRequestPath, startedAtUtc))
                 {
                     Log("Stop request detected");
                     break;
                 }
+                TryDeleteStaleStopRequest(stopRequestPath, startedAtUtc);
 
                 if (DateTimeOffset.UtcNow - _lastPreferredUiSync >= TimeSpan.FromSeconds(5))
                 {
@@ -111,6 +114,40 @@ internal sealed class RemoteLaunchAgentHost
 
         Log("Agent stopped");
         return 0;
+    }
+
+    internal static bool ShouldHonorStopRequest(string path, DateTimeOffset agentStartedAtUtc)
+    {
+        try
+        {
+            if (!File.Exists(path)) return false;
+            var text = File.ReadAllText(path).Trim();
+            return DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out var requestedAtUtc) &&
+                requestedAtUtc.ToUniversalTime() >= agentStartedAtUtc.ToUniversalTime();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // A request that cannot be inspected must not stop a newly started
+            // Agent; the next recovery tick can retry after the file is released.
+            return false;
+        }
+    }
+
+    private static void TryDeleteStaleStopRequest(string path, DateTimeOffset agentStartedAtUtc)
+    {
+        try
+        {
+            if (!File.Exists(path) || ShouldHonorStopRequest(path, agentStartedAtUtc)) return;
+            File.Delete(path);
+            Log("Stale stop request removed");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 
     private static async Task<bool> TryStartSelfUpdateAsync(

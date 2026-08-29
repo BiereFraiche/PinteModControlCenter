@@ -49,6 +49,7 @@ try {
 
     $firstPartyNames = @(
         'PinteMod.ControlCenter.exe',
+        'PinteMod.ControlCenter.Agent.exe',
         'PinteMod.ControlCenter.dll',
         'PinteMod.ControlCenter.Core.dll',
         'PinteMod.ControlCenter.Infrastructure.dll'

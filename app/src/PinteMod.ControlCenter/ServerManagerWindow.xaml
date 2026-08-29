@@ -332,7 +332,7 @@
                                         </StackPanel>
                                     </Border>
                                     <WrapPanel Margin="0,12,0,0">
-                                        <Button Content="INSTALLER PINTE MOD" Style="{StaticResource SecondaryButtonStyle}"
+                                        <Button Content="{Binding SelectedProfile.PinteModInstallActionLabel}" Style="{StaticResource SecondaryButtonStyle}"
                                                 IsEnabled="{Binding SelectedProfile.CanInstallPinteMod}" Padding="11,7" Margin="0,0,8,8" Click="InstallPinteMod_Click" />
                                         <Button Content="INSTALLER / METTRE À JOUR LE MODULE DE COMPATIBILITÉ" Style="{StaticResource SecondaryButtonStyle}"
                                                 IsEnabled="{Binding SelectedProfile.CanInstallBridge}" Padding="11,7" Margin="0,0,8,8" Click="InstallBridge_Click" />

@@ -15,7 +15,7 @@ internal static class RconDiagnosticResponseValidator
     private static readonly string[] PauseMarkers =
     [
         "PINTEMOD COMMUNITY PAUSE",
-        "EXPERIMENTAL v0.3",
+        "Module:",
         "Active:",
         "Successful pauses:"
     ];

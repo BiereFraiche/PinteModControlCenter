@@ -9,17 +9,17 @@ namespace PinteMod.ControlCenter.Tests;
 public sealed class DpapiRconSecretStoreTests
 {
     [TestMethod]
-    public async Task SavedSecret_IsDpapiProtectedAndCanBeReadByCurrentUser()
+    public void SavedSecret_IsDpapiProtectedAndCanBeReadByCurrentUser()
     {
         using var secretFile = new TemporarySecretFile();
-        var store = new DpapiRconSecretStore(secretFile.Path);
+        var store = new DpapiRconSecretStore(secretFile.Path, new ReversibleTestProtector());
         const string secret = "TestRcon-42";
 
-        await store.SaveAsync(secret);
-        var encrypted = await File.ReadAllBytesAsync(secretFile.Path);
-        var restored = await store.ReadAsync();
+        store.SaveAsync(secret).GetAwaiter().GetResult();
+        var encrypted = File.ReadAllBytes(secretFile.Path);
+        var restored = store.ReadAsync().GetAwaiter().GetResult();
 
-        Assert.IsTrue(await store.HasSecretAsync());
+        Assert.IsTrue(store.HasSecretAsync().GetAwaiter().GetResult());
         Assert.AreEqual(secret, restored);
         Assert.IsFalse(Encoding.UTF8.GetString(encrypted).Contains(secret, StringComparison.Ordinal));
         Assert.IsFalse(File.Exists(secretFile.Path + ".tmp"));
@@ -64,5 +64,12 @@ public sealed class DpapiRconSecretStoreTests
                 Directory.Delete(_root, recursive: true);
             }
         }
+    }
+
+    private sealed class ReversibleTestProtector : ICurrentUserDataProtector
+    {
+        public byte[] Protect(byte[] plainBytes) => plainBytes.Select(value => (byte)(value ^ 0xA5)).ToArray();
+
+        public byte[] Unprotect(byte[] protectedBytes) => protectedBytes.Select(value => (byte)(value ^ 0xA5)).ToArray();
     }
 }

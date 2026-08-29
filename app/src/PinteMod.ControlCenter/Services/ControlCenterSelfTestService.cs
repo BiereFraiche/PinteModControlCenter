@@ -58,7 +58,7 @@ public sealed record ControlCenterSelfTestReport(
 
 public sealed class ControlCenterSelfTestService : IControlCenterSelfTestService
 {
-    internal const string ExpectedProductVersion = "2.4.0-preview-integration.4b1.fix16";
+    internal const string ExpectedProductVersion = "2.4.0-preview-integration.4b1.fix24";
 
     private readonly Func<ControlCenterSelfTestCheck> _userInterfaceProbe;
 
@@ -112,7 +112,7 @@ public sealed class ControlCenterSelfTestService : IControlCenterSelfTestService
             : new ControlCenterSelfTestCheck(
                 "Version",
                 false,
-                "Les métadonnées produit ne correspondent pas à la Preview Fix16 attendue.");
+                "Les métadonnées produit ne correspondent pas à la Preview Fix24 attendue.");
     }
 
     private static ControlCenterSelfTestCheck CheckAssemblies()

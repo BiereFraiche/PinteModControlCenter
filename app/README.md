@@ -1,6 +1,6 @@
-# PinteMod Control Center — stable v2.2.0 / Preview 4B1 Fix16
+# PinteMod Control Center — stable v2.2.0 / Preview 4B1 Fix24
 
-La branche Preview produit `2.4.0-preview-integration.4b1.fix16`. Elle reste non stable tant que Server3 et le scénario Agent multi-PC n’ont pas été validés humainement.
+La branche Preview produit `2.4.0-preview-integration.4b1.fix24`. Server3 et la liaison Agent fixe/portable sont validés humainement ; la publication GitHub est préparée.
 
 Application Windows en C# / .NET 8 / WPF pour observer et administrer une session PinteMod depuis la machine serveur ou un poste du même LAN. Le mode simulé reste le comportement initial. Les données PinteMod sont lues en read-only ; les diagnostics et actions RCON autorisés sont exclusivement manuels et confirmés selon leur niveau de risque.
 
@@ -64,12 +64,12 @@ Sans argument, l’application reste entièrement simulée.
 Depuis la racine du dépôt, double-cliquer `BUILD_PREVIEW.bat`. Le workflow produit :
 
 ```text
-app\artifacts\integration-preview4b1-fix16-win-x64\single-exe\PinteMod.ControlCenter.exe
-app\artifacts\integration-preview4b1-fix16-win-x64\folder\
-app\artifacts\integration-preview4b1-fix16-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
-app\artifacts\integration-preview4b1-fix16-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
-app\artifacts\integration-preview4b1-fix16-win-x64\SHA256SUMS.txt
-app\artifacts\integration-preview4b1-fix16-win-x64\SELF-TEST.txt
+app\artifacts\integration-preview4b1-fix24-win-x64\single-exe\PinteMod.ControlCenter.exe
+app\artifacts\integration-preview4b1-fix24-win-x64\folder\
+app\artifacts\integration-preview4b1-fix24-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
+app\artifacts\integration-preview4b1-fix24-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
+app\artifacts\integration-preview4b1-fix24-win-x64\SHA256SUMS.txt
+app\artifacts\integration-preview4b1-fix24-win-x64\SELF-TEST.txt
 ```
 
 L’EXE unique et le dossier sont tous deux autonomes pour Windows x64. Le dossier peut être recompressé ou envoyé tel quel, mais il doit rester complet sur la machine cible.
@@ -131,7 +131,7 @@ Le mode hybride lit uniquement :
 - `boiii/scriptdata/pintemod/bans/service_status.json` ;
 - `boiii/scriptdata/pintemod/identity/roles.json` ;
 - `boiii/scriptdata/pintemod/localization/manual/*.json` et `localization/auto/*.json` ;
-- `boiii/scriptdata/pintemod/remote/feedback.latest.txt` pour l’état Community Pause v0.3 ;
+- `boiii/scriptdata/pintemod/remote/feedback.latest.txt` pour l’état Community Pause v0.3 ou v0.4 ;
 - `boiii/scriptdata/pintemod/logs/pause.log` pour les nouveaux événements de pause ;
 - dans le dossier de la session active seulement : `connections.log`, `community.log`, `ranks.log`, `easter_eggs.log`, `identity.log`, `moderation.log`, `localization.log`, `storage.log` et `validation.log`.
 
@@ -170,7 +170,7 @@ Dix diagnostics seulement sont autorisés :
 
 Les diagnostics sont manuels, read-only, sérialisés avec les autres opérations RCON et leur réponse est neutralisée avant affichage. Si BOIII ne transporte aucun texte, Carte, Courant, Pack-a-Punch de la carte, Manche et Joueurs peuvent afficher le snapshot runtime uniquement lorsqu’il est local, frais et cohérent avec la session et la carte. L’interface indique explicitement qu’il ne s’agit pas de la sortie console. Health peut montrer un résumé des services locaux, mais ne reconstitue jamais les 51 contrôles. Audit carte, événements et power-ups restent non observables sans futur contrat structuré. La sortie stable de `ezzplayers` ne fournit pas de BOIII_XUID et reste informative ; le ciblage réel utilise exclusivement le BOIII_XUID du snapshot local revalidé après confirmation.
 
-Le module Community Soft Pause v0.3 écrit lui-même son retour dans `feedback.latest.txt` et ajoute un événement `STATUS` à `pause.log` lorsque `ezzpausestatus` est demandé. Le Control Center ne crée ni ne modifie ces fichiers : il les ouvre uniquement en lecture. Les diagnostics ont été validés humainement avec `PASS=51 | WARNING=0 | ERROR=0` et un statut Pause v0.3 cohérent.
+Le module Community Soft Pause écrit lui-même son retour dans `feedback.latest.txt` et ajoute un événement `STATUS` à `pause.log` lorsque `ezzpausestatus` est demandé. Le Control Center accepte les formats v0.3 et v0.4 en s’appuyant sur les marqueurs stables (bannière, module, état actif et compteur), sans créer ni modifier ces fichiers. L’absence de `hotfix.gsc` dans les distributions Ezz BOIII actuelles est attendue : PinteMod ne le distribue pas.
 
 `ezzpauseforce` et `ezzresume` restent les seules mutations disposant d’une confirmation locale automatique. Chaque clic exige une confirmation Oui/Non, puis le statut local est relu et revalidé juste avant l’envoi. Une seule lecture `ezzpausestatus` suit la mutation. Dès que l’appel UDP de mutation commence, toute erreur de transport est considérée comme une livraison potentielle : l’ancien snapshot ne peut jamais autoriser une répétition. L’interface ne confirme la réussite que si un feedback local plus récent expose l’état attendu. Une source locale périmée, un vote actif, une configuration incomplète ou un résultat incertain maintient les contrôles verrouillés jusqu’à l’observation d’un statut local nouveau et frais ; aucun retry automatique n’existe.
 

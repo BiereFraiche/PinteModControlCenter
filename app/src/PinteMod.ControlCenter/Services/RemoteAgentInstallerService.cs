@@ -154,6 +154,11 @@ internal sealed class RemoteAgentInstallerService
         {
             return new ServerDeploymentResult(false, "L’Agent doit être installé depuis le PinteMod.ControlCenter.exe publié.", [], []);
         }
+        var agentSourceExe = RemoteAgentExecutableSourceResolver.Resolve(sourceExe);
+        if (!File.Exists(agentSourceExe))
+        {
+            return new ServerDeploymentResult(false, "Le package Agent autonome est introuvable à côté du Control Center.", [], []);
+        }
 
         // This explicit local Agent activation is the authoritative moment to
         // remember the exact Control Center EXE chosen by the operator.
@@ -302,7 +307,7 @@ internal sealed class RemoteAgentInstallerService
         {
             if (!string.Equals(Path.GetFullPath(sourceExe), Path.GetFullPath(targetExe), StringComparison.OrdinalIgnoreCase))
             {
-                File.Copy(sourceExe, targetExe, overwrite: true);
+                File.Copy(agentSourceExe, targetExe, overwrite: true);
             }
             created.Add(targetExe);
         }
@@ -317,7 +322,7 @@ internal sealed class RemoteAgentInstallerService
                 skipped);
         }
 
-        if (await ManagedControlCenterInstallationService.InstallOrStageAsync(sourceExe, cancellationToken).ConfigureAwait(false))
+        if (await ManagedControlCenterInstallationService.InstallOrStageAsync(agentSourceExe, cancellationToken).ConfigureAwait(false))
         {
             created.Add(ManagedControlCenterInstallationService.GetExecutablePath());
         }
@@ -332,6 +337,7 @@ internal sealed class RemoteAgentInstallerService
         }
 
         TryDeleteStopRequest();
+        RemoteAgentRecoveryTaskService.ClearUpdateInProgress();
 
         if (!RemoteAgentRecoveryTaskService.EnsureInstalled(targetExe, out var recoveryDiagnostic))
         {
@@ -412,7 +418,7 @@ internal sealed class RemoteAgentInstallerService
             return Process.Start(new ProcessStartInfo
             {
                 FileName = targetExe,
-                Arguments = "--remote-agent",
+                Arguments = "--remote-agent --agent-manual-repair",
                 WorkingDirectory = RemoteAgentConfigurationStore.GetAgentHome(),
                 UseShellExecute = false,
                 CreateNoWindow = true,

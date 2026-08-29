@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Infrastructure.Local;
@@ -21,6 +22,47 @@ public sealed class EmbeddedServerPayloadServiceTests
         Assert.IsTrue(result.Success, result.Message);
         Assert.IsTrue(File.Exists(Path.Combine(directory.CustomScripts, "ezz_admin_01_main.gsc")));
         Assert.AreEqual("OWNER-CONTENT", await File.ReadAllTextAsync(thirdParty));
+    }
+
+    [TestMethod]
+    public async Task InstallStable_ProvidesVerifierCompatibleWithCurrentModuleInventory()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.CreateBoiii();
+
+        var result = await new EmbeddedServerPayloadService().InstallPinteModStableAsync(directory.Root);
+
+        Assert.IsTrue(result.Success, result.Message);
+        var verifier = Path.Combine(directory.Root, "boiii", "tools", "Verify_PinteMod_Installation.ps1");
+        var content = await File.ReadAllTextAsync(verifier);
+        StringAssert.Contains(content, "$gsc.Count -in @(28,35)");
+        StringAssert.Contains(content, "Not provided by current Ezz BOIII distributions");
+        Assert.IsFalse(content.Contains("Add-Result WARNING 'BOIII hotfix.gsc'", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task InstallStable_UpgradesOnlyTheKnownLegacyInstallationVerifier()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.CreateBoiii();
+        var verifier = Path.Combine(directory.Root, "boiii", "tools", "Verify_PinteMod_Installation.ps1");
+        Directory.CreateDirectory(Path.GetDirectoryName(verifier)!);
+
+        using (var archive = ZipFile.OpenRead(FindRepositoryFile("reference", "PinteMod_v2.1.1.zip")))
+        {
+            var legacy = archive.GetEntry("boiii/tools/Verify_PinteMod_Installation.ps1");
+            Assert.IsNotNull(legacy);
+            await using var source = legacy.Open();
+            await using var destination = new FileStream(verifier, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            await source.CopyToAsync(destination);
+        }
+
+        var result = await new EmbeddedServerPayloadService().InstallPinteModStableAsync(directory.Root);
+
+        Assert.IsTrue(result.Success, result.Message);
+        Assert.IsTrue(result.CreatedFiles.Any(path =>
+            path.Replace('\\', '/').Equals("boiii/tools/Verify_PinteMod_Installation.ps1", StringComparison.OrdinalIgnoreCase)));
+        StringAssert.Contains(await File.ReadAllTextAsync(verifier), "$gsc.Count -in @(28,35)");
     }
 
     [TestMethod]
@@ -147,5 +189,19 @@ public sealed class EmbeddedServerPayloadServiceTests
         {
             if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
         }
+    }
+
+    private static string FindRepositoryFile(params string[] segments)
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var candidate = Path.Combine([directory.FullName, .. segments]);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new FileNotFoundException("Fichier de référence PinteMod introuvable pour le test.");
     }
 }

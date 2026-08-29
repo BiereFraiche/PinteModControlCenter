@@ -363,7 +363,7 @@
                 <StackPanel>
                     <TextBlock Text="À PROPOS" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="PinteMod Control Center" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,0" />
-                    <TextBlock Text="Version 2.4.0 · Preview 4B1 Fix16 · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
+                    <TextBlock Text="Version 2.4.0 · Preview 4B1 Fix24 · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
                     <TextBlock Text="Base serveur : PinteMod v2.1.1 stable" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,14,0,0" />
                     <TextBlock Text="Application Windows locale, sans compte, serveur web ni port entrant."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,8,0,0" />
