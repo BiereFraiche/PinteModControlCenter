@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Infrastructure.Local;
 
@@ -40,6 +41,31 @@ public sealed class BoiiiRconBootstrapServiceTests
         Assert.IsFalse(config.Contains("NewRcon-2026", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public async Task InitializeAsync_PinteModServer_CreatesNativeLocalSetup()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\nset GamePort=27019\r\n");
+        directory.AddPinteModFiles();
+
+        var service = new BoiiiRconBootstrapService(async (path, _, cancellationToken) =>
+        {
+            await File.WriteAllTextAsync(path, "test-dpapi", cancellationToken);
+            return true;
+        });
+        var result = await service.InitializeAsync(directory.Root, "SafeRcon-2026");
+
+        Assert.IsTrue(result.Success, result.Message);
+        var serverConfig = await File.ReadAllTextAsync(directory.ConfigPath);
+        StringAssert.Contains(serverConfig, "exec \"pintemod_server_secrets.cfg\"");
+        var privateConfig = Path.Combine(directory.Root, "zone", "pintemod_server_secrets.cfg");
+        Assert.IsTrue(File.Exists(privateConfig));
+        Assert.IsTrue(File.Exists(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt")));
+        var bridgeJson = await File.ReadAllTextAsync(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.local.json"));
+        using var bridge = JsonDocument.Parse(bridgeJson);
+        Assert.AreEqual(27019, bridge.RootElement.GetProperty("server_port").GetInt32());
+    }
+
     private sealed class TemporaryServerDirectory : IDisposable
     {
         public TemporaryServerDirectory()
@@ -58,6 +84,16 @@ public sealed class BoiiiRconBootstrapServiceTests
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
             File.WriteAllText(Path.Combine(Root, "Server.bat"), launcher);
             File.WriteAllText(ConfigPath, config);
+        }
+
+        public void AddPinteModFiles()
+        {
+            var tools = Path.Combine(Root, "boiii", "tools");
+            Directory.CreateDirectory(tools);
+            File.WriteAllText(Path.Combine(tools, "PinteMod_Server_Launcher.ps1"), "# test");
+            File.WriteAllText(
+                Path.Combine(tools, "PinteMod_GeoIP_Bridge.example.json"),
+                "{\"server_address\":\"127.0.0.1\",\"server_port\":27017}");
         }
 
         public void Dispose()
