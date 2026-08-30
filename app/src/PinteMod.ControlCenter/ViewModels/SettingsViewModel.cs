@@ -14,6 +14,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly IOperatorConfigurationStore? _configurationStore;
     private readonly IRconDiagnosticService? _rconDiagnosticService;
     private readonly IRconSecretStore? _rconSecretStore;
+    private readonly IBoiiiRconBootstrapService? _rconBootstrapService;
     private readonly IOperatorActivityStore? _operatorActivityStore;
     private readonly IOperatorRconOperationCoordinator _rconOperations;
     private readonly IMapCatalogService? _mapCatalogService;
@@ -72,13 +73,15 @@ public sealed class SettingsViewModel : PageViewModel
         IControlCenterSnapshotStore? snapshotStore = null,
         ServerIntegrationProfile? integrationProfile = null,
         bool allowPinteModDiagnostics = true,
-        IControlCenterSelfTestService? selfTestService = null)
+        IControlCenterSelfTestService? selfTestService = null,
+        IBoiiiRconBootstrapService? rconBootstrapService = null)
         : base("Paramètres", "Configuration opérateur locale ou LAN · diagnostics RCON manuels")
     {
         _localDataSourceProbe = localDataSourceProbe;
         _configurationStore = configurationStore;
         _rconDiagnosticService = rconDiagnosticService;
         _rconSecretStore = rconSecretStore;
+        _rconBootstrapService = rconBootstrapService;
         _operatorActivityStore = operatorActivityStore;
         _rconOperations = rconOperations ?? new OperatorRconOperationCoordinator();
         _mapCatalogService = mapCatalogService;
@@ -752,6 +755,29 @@ public sealed class SettingsViewModel : PageViewModel
             RconSecretStatus = "ERREUR DPAPI";
             RconResponse = "Le secret n’a pas pu être protégé localement.";
         }
+    }
+
+    public async Task InitializeFirstRconSecretAsync(string secret, CancellationToken cancellationToken = default)
+    {
+        if (_rconSecretStore is null || _rconBootstrapService is null)
+        {
+            RconSecretStatus = "INITIALISATION INDISPONIBLE";
+            RconResponse = "Cette installation ne peut pas initialiser RCON depuis le Control Center.";
+            return;
+        }
+
+        var result = await _rconBootstrapService.InitializeAsync(OperatorServerRoot, secret, cancellationToken);
+        if (!result.Success)
+        {
+            RconSecretStatus = "RCON NON INITIALISÉ";
+            RconResponse = result.Message;
+            return;
+        }
+
+        await _rconSecretStore.SaveAsync(secret, cancellationToken);
+        _rconSecretStateInitialized = true;
+        RconSecretStatus = "RCON INITIALISÉ · SECRET DPAPI ENREGISTRÉ";
+        RconResponse = result.Message + " Le secret est aussi protégé pour ce compte Windows et ne sera pas réaffiché.";
     }
 
     private async Task TestDataSourceAsync()

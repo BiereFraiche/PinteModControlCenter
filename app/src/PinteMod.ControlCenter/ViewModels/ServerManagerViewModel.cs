@@ -3,6 +3,7 @@ using System.Net;
 using System.Collections.ObjectModel;
 using PinteMod.ControlCenter.Core.Models;
 using PinteMod.ControlCenter.Infrastructure.Local;
+using PinteMod.ControlCenter.Security;
 using PinteMod.ControlCenter.Services;
 
 namespace PinteMod.ControlCenter.ViewModels;
@@ -1289,12 +1290,40 @@ public sealed class ServerManagerViewModel : ObservableObject
         }
         else if (analysis.PinteModDetected && analysis.CanLaunchLocally)
         {
-            var selected = BuildLaunchDefinition(profile);
-            var hubServers = await GetAllLocalPinteModDefinitionsAsync(cancellationToken);
-            result = await _orchestratorService.LaunchAsync(
-                [selected],
-                hubServers,
-                cancellationToken);
+            var workerSecretReady = _orchestratorService.IsRconSecretPrepared(profile.ProfileId);
+            if (!workerSecretReady)
+            {
+                var secret = await new DpapiRconSecretStore(
+                    OperatorProfileStoragePaths.GetRconSecretPath(profile.ProfileId)).ReadAsync(cancellationToken);
+                if (!string.IsNullOrWhiteSpace(secret))
+                {
+                    workerSecretReady = await _orchestratorService.PrepareRconSecretAsync(
+                        profile.ProfileId,
+                        secret,
+                        cancellationToken);
+                }
+            }
+
+            if (!workerSecretReady)
+            {
+                result = await _launchService.LaunchAsync(profile.ServerRoot, profile.LauncherRelativePath, cancellationToken);
+                if (result.Success)
+                {
+                    result = result with
+                    {
+                        Message = "Premier lancement BOIII démarré avec Server.bat. Le Worker PinteMod sera utilisé automatiquement après l’initialisation ou l’enregistrement du secret RCON."
+                    };
+                }
+            }
+            else
+            {
+                var selected = BuildLaunchDefinition(profile);
+                var hubServers = await GetAllLocalPinteModDefinitionsAsync(cancellationToken);
+                result = await _orchestratorService.LaunchAsync(
+                    [selected],
+                    hubServers,
+                    cancellationToken);
+            }
         }
         else
         {

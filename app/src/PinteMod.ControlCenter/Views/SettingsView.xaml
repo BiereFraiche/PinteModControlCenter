@@ -7,7 +7,7 @@
             <Border Style="{StaticResource CardStyle}" Margin="4">
                 <StackPanel>
                     <TextBlock Text="CONNEXION OPÉRATEUR" Style="{StaticResource SectionTitleStyle}" />
-                    <TextBlock Text="Cette carte attend uniquement les données PinteMod (PinteModData), pas le dossier complet Server.bat/BOIII. Pour ajouter ou relire un serveur complet, revenez au Gestionnaire de serveurs."
+                    <TextBlock Text="Indiquez soit la racine BOIII complète (dossier contenant boiii), soit un partage PinteModData. INCOMPLET signifie que le serveur n’a pas encore écrit session et heartbeats : cela n’empêche pas le premier démarrage depuis le Gestionnaire."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,14" TextWrapping="Wrap" />
 
                     <TextBlock Text="NOM DE L’ONGLET SERVEUR" Style="{StaticResource EyebrowTextStyle}" />
@@ -231,6 +231,11 @@
                     </Grid>
                     <TextBlock Text="{Binding RconSecretStatus}" Foreground="{DynamicResource AccentBrightBrush}"
                                FontSize="9" FontWeight="Bold" Margin="0,6,0,0" />
+                    <Button Content="UTILISER CE SECRET COMME PREMIER RCON DU SERVEUR" Click="InitializeFirstRcon_Click"
+                            Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0"
+                            ToolTip="Serveur arrêté requis. Écrit rcon_password une seule fois dans le .cfg explicitement déclaré par Server.bat, puis protège le même secret localement." />
+                    <TextBlock Text="À utiliser uniquement sur un serveur vierge : aucun mot de passe RCON existant n’est remplacé."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
 
                     <TextBlock Text="3 · LANCER UN TEST MANUEL" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
                     <TextBlock Text="Le serveur doit déjà être lancé par vous. Ces boutons demandent seulement son état et ne modifient pas la partie."
@@ -363,7 +368,7 @@
                 <StackPanel>
                     <TextBlock Text="À PROPOS" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="PinteMod Control Center" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,0" />
-                    <TextBlock Text="Version 2.4.1 · Stable · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
+                    <TextBlock Text="Version 2.4.2 · Stable · .NET 8 · WPF" Foreground="{DynamicResource AccentBrightBrush}" Margin="0,5,0,0" />
                     <TextBlock Text="Base serveur : PinteMod v2.1.1 stable" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,14,0,0" />
                     <TextBlock Text="Application Windows locale, sans compte, serveur web ni port entrant."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,8,0,0" />

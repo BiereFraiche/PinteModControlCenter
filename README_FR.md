@@ -1,8 +1,8 @@
 # PinteMod Control Center
 
-> **Version stable actuelle : v2.4.1.** Elle ajoute l’actualisation sans pairage des serveurs déjà connus, détecte le port BOIII/RCON depuis `Server.bat` et explique clairement la différence entre racine BOIII et source PinteModData.
+> **Version stable actuelle : v2.4.2.** Le premier démarrage passe directement par `Server.bat`, même sans RCON, puis le premier secret peut initialiser RCON sur confirmation avant de basculer vers le Worker PinteMod.
 
-Documents utiles : [état v2.4.1](docs/STATUS_V2.4.1.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
+Documents utiles : [état v2.4.2](docs/STATUS_V2.4.2.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
 Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod avec le Control Center, voir [Démarrer avec un serveur BOIII vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). Le dépôt ne redistribue pas de serveur BOIII ni d’archive de jeu.
 
@@ -12,27 +12,27 @@ Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod ave
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-614%20r%C3%A9ussis-24C875)
-[![Version](https://img.shields.io/badge/version-v2.4.1-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.1)
+[![Version](https://img.shields.io/badge/version-v2.4.2-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.2)
 
 PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WPF** destinée à observer et administrer un serveur dédié **Call of Duty: Black Ops III Zombies** utilisant [PinteMod](https://github.com/BiereFraiche/PinteMod) avec BOIII/Ezz.
 
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
 
-> **Version stable actuelle :** v2.4.1.
-> **0 avertissement, 0 erreur et 614/614 tests réussis** en Debug et Release.
+> **Version stable actuelle :** v2.4.2.
+> **0 avertissement, 0 erreur et 616/616 tests réussis** en Debug et Release.
 > Sans configuration explicite, l’application démarre toujours en simulation complète.
 
-[Télécharger v2.4.1](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.1)
+[Télécharger v2.4.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.2)
 
-## v2.4.1 — stable
+## v2.4.2 — stable
 
 Cette version consolide la génération 4B1 après validation des flux Agent, RCON et réparation PinteMod :
 
-| Élément | État v2.4.1 |
+| Élément | État v2.4.2 |
 |---|---|
-| Version produit | `2.4.1` |
+| Version produit | `2.4.2` |
 | Compilation | Debug et Release, 0 avertissement, 0 erreur |
-| Tests automatisés | 614/614 réussis dans les deux configurations |
+| Tests automatisés | 616/616 réussis dans les deux configurations |
 | Distribution | EXE autonome + dossier portable + ZIP + SHA-256 + rapport anonymisé |
 | Validation terrain | Server3 et Agent fixe/portable validés ; réparation sans écrasement de modules personnalisés couverte par test |
 
@@ -160,7 +160,7 @@ Pour compiler, tester, publier et auditer automatiquement les deux formats Previ
 .\BUILD_MANAGER_PREVIEW.bat
 ```
 
-Les sorties sont placées dans `app/artifacts/release-v2.4.1-win-x64/` : EXE unique, dossier autonome, deux ZIP, `SHA256SUMS.txt` et `SELF-TEST.txt`.
+Les sorties sont placées dans `app/artifacts/release-v2.4.2-win-x64/` : EXE unique, dossier autonome, deux ZIP, `SHA256SUMS.txt` et `SELF-TEST.txt`.
 
 Le même contrôle hors ligne peut être lancé depuis les deux formats :
 
@@ -194,13 +194,13 @@ Les builds, paquets portables, configurations locales, secrets DPAPI, copies ser
 
 ## État de validation
 
-v2.4.1 automatisée :
+v2.4.2 automatisée :
 
 ```text
 Compilation Debug     PASS — 0 avertissement, 0 erreur
 Compilation Release   PASS — 0 avertissement, 0 erreur
-Tests Debug           PASS — 614/614
-Tests Release         PASS — 614/614
+Tests Debug           PASS — 616/616
+Tests Release         PASS — 616/616
 Auto-diagnostic       PASS — RESULTAT=PASS, sans serveur ni réseau
 Paquet mono-EXE       PASS — 1 EXE autonome, audit confidentialité réussi
 Paquet dossier        PASS — archive et audit réussis

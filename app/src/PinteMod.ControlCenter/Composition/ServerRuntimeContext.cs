@@ -278,7 +278,8 @@ public sealed class ServerRuntimeContext : IDisposable
             integrationProfile,
             allowPinteModDiagnostics: string.IsNullOrWhiteSpace(integrationRoot) ||
                                      integrationProfile.SupportsPinteModClosedCommands,
-            selfTestService: new ControlCenterSelfTestService());
+            selfTestService: new ControlCenterSelfTestService(),
+            rconBootstrapService: new BoiiiRconBootstrapService());
         var managedRuntimeProbe = new ManagedServerRuntimeProbe();
         bool ProbeManagedServerRunning()
         {

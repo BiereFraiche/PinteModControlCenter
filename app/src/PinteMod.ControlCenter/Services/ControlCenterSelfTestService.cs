@@ -58,7 +58,7 @@ public sealed record ControlCenterSelfTestReport(
 
 public sealed class ControlCenterSelfTestService : IControlCenterSelfTestService
 {
-    internal const string ExpectedProductVersion = "2.4.1";
+    internal const string ExpectedProductVersion = "2.4.2";
 
     private readonly Func<ControlCenterSelfTestCheck> _userInterfaceProbe;
 
@@ -112,7 +112,7 @@ public sealed class ControlCenterSelfTestService : IControlCenterSelfTestService
             : new ControlCenterSelfTestCheck(
                 "Version",
                 false,
-                "Les métadonnées produit ne correspondent pas à la version stable 2.4.1 attendue.");
+                "Les métadonnées produit ne correspondent pas à la version stable 2.4.2 attendue.");
     }
 
     private static ControlCenterSelfTestCheck CheckAssemblies()

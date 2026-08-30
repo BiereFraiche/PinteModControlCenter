@@ -1,5 +1,11 @@
 # Journal des changements
 
+## 2.4.2 — stable publique
+
+- le premier démarrage d’un serveur PinteMod local utilise directement `Server.bat` tant qu’aucun secret Worker n’existe ; il ne dépend plus d’un RCON déjà configuré ;
+- ajoute l’initialisation RCON explicitement confirmée : le premier secret saisi peut être ajouté une seule fois au `.cfg` déclaré par `Server.bat`, puis protégé avec DPAPI ;
+- refuse de remplacer une ligne `rcon_password` déjà existante et exige que le serveur soit arrêté avant l’action.
+
 ## 2.4.1 — stable publique
 
 - ajoute **Actualiser les serveurs connus** : relit toutes les racines locales ou réseau déjà enregistrées, sans appairage, commande RCON ni action de cycle de vie ;
