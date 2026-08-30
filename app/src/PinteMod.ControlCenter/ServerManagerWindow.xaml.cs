@@ -257,8 +257,8 @@ public partial class ServerManagerWindow : Window
     private async Task ConfirmAndPreparePinteModAsync()
     {
         var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
-            "Préparer automatiquement ce serveur avec PinteMod ?\n\nLe Control Center installe les fichiers first-party, met le module de compatibilité à jour et, sur ce PC, prépare l’Agent de gestion. Les scripts tiers et les données joueurs ne sont jamais écrasés. Change Map reste fermé par défaut tant qu’aucune carte n’est autorisée.",
-            "Préparation automatique PinteMod",
+            "Préparer puis démarrer automatiquement ce serveur avec PinteMod ?\n\nLe Control Center installe les fichiers first-party, met le module de compatibilité à jour, prépare l’Agent de gestion puis démarre BOIII. Les scripts tiers et les données joueurs ne sont jamais écrasés. Le premier RCON peut être défini plus tard dans Paramètres.",
+            "Préparer et démarrer",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (answer != MessageBoxResult.Yes)
@@ -269,8 +269,24 @@ public partial class ServerManagerWindow : Window
         await RunAsync(async () =>
         {
             var result = await ViewModel.PreparePinteModOneClickAsync(_lifetime.Token);
-            PinteMod.ControlCenter.Services.PinteModMessageBox.Show(result.Message, "PinteMod Control Center", MessageBoxButton.OK,
-                result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            if (!result.Success)
+            {
+                PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+                    result.Message,
+                    "Préparation du serveur",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var launch = await ViewModel.LaunchSelectedAsync(_lifetime.Token);
+            PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+                launch.Success
+                    ? result.Message + "\n\n" + launch.Message + "\n\nVous pourrez définir le RCON plus tard dans Paramètres, sans empêcher ce premier lancement."
+                    : result.Message + "\n\nLa préparation est terminée, mais le démarrage doit être vérifié : " + launch.Message,
+                "Serveur prêt",
+                MessageBoxButton.OK,
+                launch.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         });
     }
 

@@ -134,7 +134,7 @@
                             <Grid>
                                 <StackPanel>
                                     <TextBlock Text="CONFIGURATION GUIDÉE" Style="{StaticResource SectionTitleStyle}" />
-                                    <TextBlock Text="Pas besoin de connaître GSC, RCON ou les composants internes pour commencer."
+                                    <TextBlock Text="Choisissez le dossier, puis le bouton principal prépare et démarre le serveur."
                                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,4,0,0" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding SelectedProfile.IntegrationLabel}" HorizontalAlignment="Right" VerticalAlignment="Top"

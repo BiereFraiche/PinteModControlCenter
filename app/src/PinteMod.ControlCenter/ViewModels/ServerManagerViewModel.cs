@@ -431,7 +431,7 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
         { PinteModDetected: true } => "PinteMod est déjà présent. Le Control Center l’utilisera sans réinstaller vos données ni vos profils.",
         { ControlCenterBridgeDetected: true } or { GenericBridgeDetected: true } => "Un module de compatibilité connu est présent. Seules les fonctions annoncées comme disponibles seront activées.",
         { ThirdPartyGscDetected: true } analysis => $"{analysis.ThirdPartyGscCount} script(s) personnalisé(s) détecté(s). Aucun script tiers ne sera modifié ; les fonctions non prouvées resteront grisées.",
-        { BoiiiRootDetected: true } => "BOIII est prêt mais PinteMod n’est pas installé. Une installation sûre peut être proposée."
+        { BoiiiRootDetected: true } => "BOIII est prêt. Le bouton principal installe PinteMod, prépare la gestion locale et lance le premier démarrage."
     };
 
     public string RecommendedActionLabel => Analysis switch
@@ -442,7 +442,7 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
         { PinteModDetected: true } => "UTILISER CE SERVEUR",
         { ControlCenterBridgeDetected: true } or { GenericBridgeDetected: true } => "UTILISER CE SERVEUR",
         { ThirdPartyGscDetected: true } => "ENREGISTRER EN MODE LIMITÉ",
-        { BoiiiRootDetected: true } => "INSTALLER ET PRÉPARER PINTE MOD"
+        { BoiiiRootDetected: true } => "PRÉPARER ET DÉMARRER"
     };
 
     public bool HasThirdPartyScripts => Analysis?.ThirdPartyGscDetected == true;
@@ -1294,7 +1294,10 @@ public sealed class ServerManagerViewModel : ObservableObject
 
             if (!workerSecretReady)
             {
-                result = await _launchService.LaunchAsync(profile.ServerRoot, profile.LauncherRelativePath, cancellationToken);
+                result = await _launchService.LaunchAsync(
+                    profile.ServerRoot,
+                    GetBootstrapLauncherRelativePath(profile),
+                    cancellationToken);
                 if (result.Success)
                 {
                     result = result with
@@ -1412,7 +1415,7 @@ public sealed class ServerManagerViewModel : ObservableObject
         {
             var bootstrap = await _launchService.LaunchAsync(
                 definition.ServerRoot,
-                definition.LauncherRelativePath,
+                GetBootstrapLauncherRelativePath(definition.ServerRoot, definition.LauncherRelativePath),
                 cancellationToken);
             messages.Add($"{definition.DisplayName}: " + (bootstrap.Success
                 ? "premier lancement BOIII démarré avec Server.bat ; le Worker sera utilisé après la configuration RCON."
@@ -1538,6 +1541,18 @@ public sealed class ServerManagerViewModel : ObservableObject
             profile.ServerRoot,
             profile.LauncherRelativePath,
             port);
+    }
+
+    private static string GetBootstrapLauncherRelativePath(ServerManagerProfileViewModel profile)
+        => GetBootstrapLauncherRelativePath(profile.ServerRoot, profile.LauncherRelativePath);
+
+    private static string GetBootstrapLauncherRelativePath(string serverRoot, string selected)
+    {
+        var selectedName = Path.GetFileName(selected);
+        var directServerBat = Path.Combine(serverRoot, "Server.bat");
+        return selectedName.StartsWith("Launch_PinteMod_", StringComparison.OrdinalIgnoreCase) && File.Exists(directServerBat)
+            ? "Server.bat"
+            : selected;
     }
 
     public async Task<ServerDeploymentResult> EnableRemoteAgentAsync(CancellationToken cancellationToken = default)
