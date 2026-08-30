@@ -66,6 +66,24 @@ public sealed class BoiiiRconBootstrapServiceTests
         Assert.AreEqual(27019, bridge.RootElement.GetProperty("server_port").GetInt32());
     }
 
+    [TestMethod]
+    public async Task InitializeAsync_PinteModServer_WhenWindowsCannotProtectSecret_LeavesNoSetupBehind()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n");
+        directory.AddPinteModFiles();
+        var initialConfig = await File.ReadAllTextAsync(directory.ConfigPath);
+        var service = new BoiiiRconBootstrapService((_, _, _) => Task.FromResult(false));
+
+        var result = await service.InitializeAsync(directory.Root, "SafeRcon-2026");
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(initialConfig, await File.ReadAllTextAsync(directory.ConfigPath));
+        Assert.IsFalse(File.Exists(Path.Combine(directory.Root, "zone", "pintemod_server_secrets.cfg")));
+        Assert.IsFalse(File.Exists(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt")));
+        Assert.IsFalse(File.Exists(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.local.json")));
+    }
+
     private sealed class TemporaryServerDirectory : IDisposable
     {
         public TemporaryServerDirectory()

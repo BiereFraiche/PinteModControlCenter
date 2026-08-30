@@ -145,10 +145,11 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
             return new BoiiiRconBootstrapResult(false, "Des secrets PinteMod existent déjà : ils n’ont pas été remplacés.");
         }
 
+        var bridgeConfigExisted = File.Exists(bridgeConfigPath);
         string bridgeSource;
         try
         {
-            bridgeSource = File.Exists(bridgeConfigPath)
+            bridgeSource = bridgeConfigExisted
                 ? await File.ReadAllTextAsync(bridgeConfigPath, cancellationToken).ConfigureAwait(false)
                 : await File.ReadAllTextAsync(bridgeExamplePath, cancellationToken).ConfigureAwait(false);
         }
@@ -174,6 +175,9 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
         var localSecretsTemporary = localSecretsPath + ".pintemod-controlcenter.tmp";
         var bridgeSecretTemporary = bridgeSecretPath + ".pintemod-controlcenter.tmp";
         var bridgeConfigTemporary = bridgeConfigPath + ".pintemod-controlcenter.tmp";
+        var localSecretsCreated = false;
+        var bridgeSecretCreated = false;
+        var bridgeConfigWritten = false;
         try
         {
             var managedBlock = "// BEGIN PINTEMOD LOCAL SECRETS\r\n" +
@@ -197,14 +201,38 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
             }
 
             File.Move(localSecretsTemporary, localSecretsPath, overwrite: false);
+            localSecretsCreated = true;
             File.Move(bridgeSecretTemporary, bridgeSecretPath, overwrite: false);
+            bridgeSecretCreated = true;
             File.Move(bridgeConfigTemporary, bridgeConfigPath, overwrite: true);
+            bridgeConfigWritten = true;
             File.Move(serverConfigTemporary, serverConfigPath, overwrite: true);
             return new BoiiiRconBootstrapResult(true, "Premier secret RCON PinteMod enregistré localement et synchronisé au bridge GeoIP. Redémarrez le serveur pour l’utiliser.");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            return new BoiiiRconBootstrapResult(false, "Initialisation RCON impossible : les fichiers PinteMod n’ont pas tous pu être finalisés.");
+            if (localSecretsCreated) TryDelete(localSecretsPath);
+            if (bridgeSecretCreated) TryDelete(bridgeSecretPath);
+            if (bridgeConfigWritten)
+            {
+                try
+                {
+                    if (bridgeConfigExisted)
+                    {
+                        File.WriteAllText(bridgeConfigPath, bridgeSource, new UTF8Encoding(false));
+                    }
+                    else
+                    {
+                        TryDelete(bridgeConfigPath);
+                    }
+                }
+                catch (Exception rollbackException) when (rollbackException is IOException or UnauthorizedAccessException)
+                {
+                    return new BoiiiRconBootstrapResult(false, "Initialisation RCON interrompue : vérifiez les permissions du dossier PinteMod avant de recommencer.");
+                }
+            }
+
+            return new BoiiiRconBootstrapResult(false, "Initialisation RCON impossible : les fichiers temporaires ont été retirés, aucun secret n’a été remplacé.");
         }
         finally
         {
@@ -240,9 +268,7 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
                 FileName = "powershell.exe",
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                RedirectStandardInput = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
+                RedirectStandardInput = true
             }
         };
         process.StartInfo.ArgumentList.Add("-NoLogo");
