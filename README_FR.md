@@ -2,7 +2,7 @@
 
 > **Version stable actuelle : v2.4.4.** Le sélecteur 🇫🇷/🇬🇧 est mémorisé dans la barre de titre ; **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable.
 
-Documents utiles : [état v2.4.4](docs/STATUS_V2.4.4.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
+Documents utiles : [état v2.4.4](docs/STATUS_V2.4.4.md) · [recette finale](docs/RECETTE_FINALE_FR.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
 Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod avec le Control Center, voir [Démarrer avec un serveur BOIII vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). Le dépôt ne redistribue pas de serveur BOIII ni d’archive de jeu.
 

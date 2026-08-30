@@ -1,5 +1,10 @@
 # Journal des changements
 
+## À valider en recette finale
+
+- le bouton principal d’un serveur BOIII vierge est désormais **PRÉPARER ET DÉMARRER** : il installe PinteMod, le Bridge, l’Agent local puis amorce BOIII avec `Server.bat` si le lanceur PinteMod requiert encore un RCON ;
+- le guide de recette terrain couvre serveur vierge, RCON, contrôle entre deux PC, VM et sélecteur de langue.
+
 ## 2.4.4 — stable publique
 
 - ajoute un sélecteur compact de langue dans la barre de titre, avec 🇫🇷 Français et 🇬🇧 English ; le choix est mémorisé dans l’espace de travail local ;
