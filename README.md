@@ -2,7 +2,7 @@
 
 > **Current stable release: v2.4.3.** Both **Start** and **Start all** can launch a first local PinteMod server without preconfigured RCON; local PinteMod health remains visible if BOIII does not return an RCON packet.
 
-See the [v2.4.3 status](docs/STATUS_V2.4.3.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [v2.4.4 status](docs/STATUS_V2.4.4.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
 
@@ -46,6 +46,10 @@ Build and audit every deliverable in one pass on Windows:
 ```
 
 The Control Center can run in a Windows VM and be viewed from another PC through the hypervisor console or RDP behind a secured VPN/gateway. It adds no web server or remote-control port. See the [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+
+### BOIII elevation prompt
+
+The Control Center never requests administrator elevation. If Windows shows a UAC prompt for `boiii.exe`, it comes from BOIII or its Windows compatibility settings. For unattended local or remote starts, open **Properties → Compatibility** on `boiii.exe` once and clear **Run this program as an administrator**, including the all-users setting if present. Keep the server outside `Program Files`, for example under `E:\Games`.
 
 ![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
 

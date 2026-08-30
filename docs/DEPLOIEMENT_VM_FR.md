@@ -14,6 +14,10 @@ Le Control Center n’héberge aucun serveur de contrôle distant, n’écoute s
 
 Les deux formats sont autonomes et ne nécessitent pas l’installation de .NET sur la VM.
 
+## Éviter une confirmation UAC au démarrage BOIII
+
+Le Control Center ne demande pas les droits administrateur. Si `boiii.exe` affiche une confirmation UAC, ouvrez une fois ses **Propriétés**, puis l’onglet **Compatibilité**, et décochez **Exécuter ce programme en tant qu’administrateur**. Répétez dans **Modifier les paramètres pour tous les utilisateurs** si nécessaire. Ce réglage évite qu’un démarrage demandé depuis le Control Center reste bloqué sur l’écran de la VM.
+
 ## Accès depuis un PC extérieur au réseau local
 
 Utiliser l’une des solutions déjà administrées suivantes :

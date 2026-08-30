@@ -46,6 +46,10 @@ Pour reconstruire tous les livrables en une passe sous Windows :
 
 Le Control Center peut être installé dans une VM Windows et affiché depuis un autre PC au moyen de la console de l’hyperviseur ou de RDP derrière un VPN/passerelle sécurisée. Il n’ajoute aucun serveur web ni port de contrôle distant. Voir le [guide de déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
+### BOIII et demande administrateur
+
+Le Control Center ne demande pas de droits administrateur. Si Windows affiche une demande UAC pour `boiii.exe`, elle vient de BOIII ou de sa configuration Windows. Pour un lancement local ou distant sans intervention, ouvrez une fois **Propriétés → Compatibilité** sur `boiii.exe` et décochez **Exécuter ce programme en tant qu’administrateur** (également dans les paramètres de tous les utilisateurs, si l’option est présente). Installez le serveur hors de `Program Files`, par exemple sous `E:\Games`.
+
 ![Direction graphique validée de PinteMod Control Center](design/pintemod-control-center-reference.png)
 
 ## Fonctionnalités principales
