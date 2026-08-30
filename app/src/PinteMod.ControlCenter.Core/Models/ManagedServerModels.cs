@@ -40,6 +40,13 @@ public sealed record ManagedServerAnalysis(
 
     public IReadOnlyList<string> ThirdPartyGscNames { get; init; } = [];
 
+    // BOIII exposes its UDP/RCON endpoint through the launcher on the usual
+    // dedicated-server layouts. This is advisory data gathered from a local
+    // file; no port is probed and no command is sent while analysing.
+    public int? DetectedServerPort { get; init; }
+
+    public string DetectedServerPortLauncher { get; init; } = string.Empty;
+
     public ServerIntegrationProfile IntegrationProfile { get; init; } = ServerIntegrationProfile.Unknown;
 
     public bool CanDeployFirstPartyFiles => RootExists && BoiiiRootDetected;

@@ -88,6 +88,9 @@ public partial class ServerManagerWindow : Window
         });
     }
 
+    private async void RefreshKnownServers_Click(object sender, RoutedEventArgs e) =>
+        await RunAsync(() => ViewModel.RefreshKnownServerRootsAsync(_lifetime.Token));
+
     private async void RecommendedAction_Click(object sender, RoutedEventArgs e)
     {
         var profile = ViewModel.SelectedProfile;

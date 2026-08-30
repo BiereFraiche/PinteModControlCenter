@@ -1,8 +1,8 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.0.** It adds WPF software rendering for remote-control sessions, hardens the SMB Agent lifecycle, makes the portable-folder format compatible with its standalone Agent and treats the confirmed absence of `hotfix.gsc` as expected. An existing PinteMod repair now changes only the known stock verifier, never existing modules or services.
+> **Current stable release: v2.4.1.** It refreshes known server roots without pairing, detects the BOIII/RCON port from `Server.bat`, and clearly distinguishes a full BOIII root from a PinteModData source.
 
-See the [v2.4.0 status](docs/STATUS_V2.4.0.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [v2.4.1 status](docs/STATUS_V2.4.1.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
 
@@ -11,29 +11,29 @@ For a legally obtained BOIII/Ezz base and PinteMod installation through the Cont
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-613%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-614%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
-[![Release](https://img.shields.io/badge/release-v2.4.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0)
+[![Release](https://img.shields.io/badge/release-v2.4.1-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.1)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current stable release:** v2.4.0.
-> v2.4.0 completes Debug and Release with **0 warnings, 0 errors and 613/613 tests passing**.
+> **Current stable release:** v2.4.1.
+> v2.4.1 completes Debug and Release with **0 warnings, 0 errors and 614/614 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download v2.4.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0)
+[Download v2.4.1](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.1)
 
-## v2.4.0 — stable
+## v2.4.1 — stable
 
 This release consolidates generation 4B1 after validation of Agent, RCON and PinteMod repair flows:
 
-| Item | v2.4.0 status |
+| Item | v2.4.1 status |
 |---|---|
-| Product version | `2.4.0` |
+| Product version | `2.4.1` |
 | Build | Debug and Release, 0 warnings, 0 errors |
-| Automated tests | 613/613 passing in both configurations |
+| Automated tests | 614/614 passing in both configurations |
 | Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |
 | Field validation | Server3 and fixed-PC/laptop Agent validated; non-overwriting module repair covered by test |
 
@@ -168,7 +168,7 @@ To build, test, publish and audit both Preview formats automatically:
 .\BUILD_MANAGER_PREVIEW.bat
 ```
 
-Outputs are written to `app/artifacts/release-v2.4.0-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
+Outputs are written to `app/artifacts/release-v2.4.1-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
 
 The same offline check can be run from either distribution:
 
@@ -202,13 +202,13 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-v2.4.0 automated validation:
+v2.4.1 automated validation:
 
 ```text
 Debug build       PASS — 0 warnings, 0 errors
 Release build     PASS — 0 warnings, 0 errors
-Debug tests       PASS — 613/613
-Release tests     PASS — 613/613
+Debug tests       PASS — 614/614
+Release tests     PASS — 614/614
 Packaged self-test PASS — RESULTAT=PASS, no server or network
 Single-EXE audit  PASS — one self-contained EXE, privacy audit passed
 Folder audit      PASS — archive and privacy audit passed

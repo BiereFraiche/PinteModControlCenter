@@ -42,6 +42,21 @@ public sealed class ServerInstallationAnalyzerTests
     }
 
     [TestMethod]
+    public void Analyze_ServerBat_DetectsDeclaredGamePort()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.CreateBoiii();
+        File.WriteAllText(
+            Path.Combine(directory.Root, "Server.bat"),
+            "@echo off\r\nset GamePort=27021\r\nstart boiii.exe +set net_port \"%GamePort%\"\r\n");
+
+        var result = new ServerInstallationAnalyzer().Analyze(directory.Root);
+
+        Assert.AreEqual(27021, result.DetectedServerPort);
+        Assert.AreEqual("Server.bat", result.DetectedServerPortLauncher);
+    }
+
+    [TestMethod]
     public void Analyze_KnownNamesWithUnknownContent_RemainThirdPartyAndFailClosed()
     {
         using var directory = new TemporaryServerDirectory();

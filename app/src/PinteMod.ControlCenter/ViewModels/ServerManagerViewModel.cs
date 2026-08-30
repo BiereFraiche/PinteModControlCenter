@@ -55,6 +55,7 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
     private bool _remoteAgentDetected;
     private string _remoteAgentVersion = string.Empty;
     private string _remoteAgentMachineName = string.Empty;
+    private string _serverPortSummary = "Port BOIII/RCON à vérifier dans le lanceur.";
     private bool _serverRunning;
 
     public ServerManagerProfileViewModel(
@@ -137,6 +138,12 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
                 OnPropertyChanged(nameof(CanStopSelected));
             }
         }
+    }
+
+    public string ServerPortSummary
+    {
+        get => _serverPortSummary;
+        private set => SetProperty(ref _serverPortSummary, value);
     }
 
     public string LauncherRelativePath
@@ -573,6 +580,28 @@ public sealed class ServerManagerProfileViewModel : ObservableObject
             OnPropertyChanged(nameof(CanPairRemoteAgent));
             OnPropertyChanged(nameof(CanLaunchSelected));
         }
+
+        if (analysis.DetectedServerPort is not { } detectedPort)
+        {
+            ServerPortSummary = "Port BOIII/RCON non trouvé automatiquement : vérifiez le lanceur sélectionné.";
+            return;
+        }
+
+        var selectedLauncher = string.IsNullOrWhiteSpace(LauncherRelativePath)
+            ? analysis.DetectedServerPortLauncher
+            : LauncherRelativePath;
+        ServerPortSummary = $"Port BOIII/RCON détecté dans {analysis.DetectedServerPortLauncher} : {detectedPort}.";
+
+        // A new profile used to start at 27017 even when Server.bat explicitly
+        // declared another port. Apply only over that historical default, never
+        // over a port already chosen by the operator.
+        if (int.TryParse(RconPortText, out var configuredPort) &&
+            configuredPort == OperatorConfiguration.Default.RconPort &&
+            string.Equals(selectedLauncher, analysis.DetectedServerPortLauncher, StringComparison.OrdinalIgnoreCase))
+        {
+            RconPortText = detectedPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            ServerPortSummary = $"Port BOIII/RCON détecté et appliqué depuis {analysis.DetectedServerPortLauncher} : {detectedPort}.";
+        }
     }
 }
 
@@ -894,6 +923,55 @@ public sealed class ServerManagerViewModel : ObservableObject
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             StatusMessage = "Analyse impossible : racine inaccessible ou permission insuffisante.";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // This is intentionally a file-only refresh: known local/UNC roots are
+    // rescanned, but no Agent catalog, pairing, remote command or process is
+    // touched. Pairing remains required only for remote lifecycle actions.
+    public async Task RefreshKnownServerRootsAsync(CancellationToken cancellationToken = default)
+    {
+        var candidates = Profiles
+            .Where(profile => !string.IsNullOrWhiteSpace(profile.ServerRoot))
+            .ToArray();
+        if (candidates.Length == 0)
+        {
+            StatusMessage = "Aucun serveur enregistré à actualiser.";
+            return;
+        }
+
+        IsBusy = true;
+        var refreshed = 0;
+        var unavailable = 0;
+        try
+        {
+            foreach (var profile in candidates)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var analysis = await _analyzer.AnalyzeAsync(profile.ServerRoot, cancellationToken);
+                    profile.ApplyAnalysis(analysis);
+                    if (analysis.BoiiiRootDetected)
+                    {
+                        profile.ApplyStorage(await _storageAnalyzer.AnalyzeAsync(profile.ServerRoot, cancellationToken));
+                    }
+                    profile.ApplyServerRunning(_runtimeProbe.IsRunning(profile.ServerRoot, ParsePort(profile.RconPortText)));
+                    refreshed++;
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    unavailable++;
+                }
+            }
+
+            StatusMessage = unavailable == 0
+                ? $"Actualisation terminée : {refreshed} serveur(s) relu(s). Aucun appairage ni commande distante n’a été utilisé."
+                : $"Actualisation terminée : {refreshed} serveur(s) relu(s), {unavailable} inaccessible(s). Aucun appairage ni commande distante n’a été utilisé.";
         }
         finally
         {

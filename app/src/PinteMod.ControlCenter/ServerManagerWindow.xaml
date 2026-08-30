@@ -92,7 +92,10 @@
                         <Button Content="CONFIGURER UN SERVEUR SUR CE PC" Style="{StaticResource PrimaryButtonStyle}"
                                 Padding="10,8" Margin="0,0,0,7" Click="ConfigureLocal_Click" />
                         <Button Content="AJOUTER UN SERVEUR DU RÉSEAU" Style="{StaticResource SecondaryButtonStyle}"
-                                Padding="10,8" Click="ConfigureNetwork_Click" />
+                                Padding="10,8" Margin="0,0,0,7" Click="ConfigureNetwork_Click" />
+                        <Button Content="ACTUALISER LES SERVEURS CONNUS" Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="10,8" Click="RefreshKnownServers_Click"
+                                ToolTip="Relit les dossiers locaux et réseau enregistrés, sans appairage ni commande distante." />
                     </StackPanel>
                     <ListBox Grid.Row="2" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"
                              SelectionChanged="Profiles_SelectionChanged" Background="Transparent" BorderThickness="0"
@@ -171,6 +174,9 @@
                                 <TextBlock Text="Si votre dossier réseau commence déjà par une adresse IP, ce champ est rempli automatiquement. Sinon indiquez l’IP locale du PC qui héberge BOIII."
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
                             </StackPanel>
+
+                            <TextBlock Text="{Binding SelectedProfile.ServerPortSummary}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="10" Margin="0,8,0,0" TextWrapping="Wrap" />
 
                             <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                                     BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,14,0,0">

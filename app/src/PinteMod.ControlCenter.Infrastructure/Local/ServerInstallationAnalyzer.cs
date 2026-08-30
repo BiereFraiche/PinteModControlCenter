@@ -1,9 +1,17 @@
 using PinteMod.ControlCenter.Core.Models;
 
+using System.Text.RegularExpressions;
+
 namespace PinteMod.ControlCenter.Infrastructure.Local;
 
 public sealed class ServerInstallationAnalyzer
 {
+    private static readonly Regex SetPortRegex = new(
+        @"^\s*set\s+""?(?:gameport|net_port)\s*=\s*""?(?<port>\d{1,5})""?\s*$",
+        RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex NetPortRegex = new(
+        @"\+set\s+net_port\s+""?(?<port>\d{1,5})""?",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private static readonly string[] ReservedGenericBridgeNames =
     [
         "cc_bridge_00_main.gsc",
@@ -75,6 +83,7 @@ public sealed class ServerInstallationAnalyzer
             ? new ThirdPartyGscAuditor().Audit(thirdPartyPaths, cancellationToken)
             : ThirdPartyGscAudit.Empty;
         var launchers = FindLauncherCandidates(root, cancellationToken);
+        var detectedPort = DetectServerPort(root, launchers, cancellationToken, out var detectedPortLauncher);
         var kind = pintemod
             ? ManagedServerIntegrationKind.PinteMod
             : bridge || genericBridge
@@ -119,6 +128,8 @@ public sealed class ServerInstallationAnalyzer
             ThirdPartyGscDetected = thirdPartyDetected,
             ThirdPartyGscCount = thirdPartyNames.Length,
             ThirdPartyGscNames = thirdPartyNames,
+            DetectedServerPort = detectedPort,
+            DetectedServerPortLauncher = detectedPortLauncher,
             IntegrationProfile = integrationProfile
         };
     }
@@ -326,6 +337,56 @@ public sealed class ServerInstallationAnalyzer
         }
 
         return results;
+    }
+
+    private static int? DetectServerPort(
+        string root,
+        IReadOnlyList<string> launchers,
+        CancellationToken cancellationToken,
+        out string launcherName)
+    {
+        launcherName = string.Empty;
+        foreach (var launcher in launchers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var extension = Path.GetExtension(launcher);
+            if (!extension.Equals(".bat", StringComparison.OrdinalIgnoreCase) &&
+                !extension.Equals(".cmd", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var path = Path.Combine(root, launcher);
+            try
+            {
+                var info = new FileInfo(path);
+                if (!info.Exists || info.Length > 1024 * 1024)
+                {
+                    continue;
+                }
+
+                var content = File.ReadAllText(path);
+                var match = SetPortRegex.Match(content);
+                if (!match.Success)
+                {
+                    match = NetPortRegex.Match(content);
+                }
+
+                if (match.Success &&
+                    int.TryParse(match.Groups["port"].Value, out var port) &&
+                    port is >= 1 and <= 65535)
+                {
+                    launcherName = launcher;
+                    return port;
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                // A launcher that cannot be read is simply not a proof of port.
+            }
+        }
+
+        return null;
     }
 
     private static bool IsUnc(string? path) =>

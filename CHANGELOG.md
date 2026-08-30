@@ -1,5 +1,11 @@
 # Journal des changements
 
+## 2.4.1 — stable publique
+
+- ajoute **Actualiser les serveurs connus** : relit toutes les racines locales ou réseau déjà enregistrées, sans appairage, commande RCON ni action de cycle de vie ;
+- détecte le port BOIII/RCON déclaré par `Server.bat` ou un lanceur `.cmd` et remplace automatiquement l’ancien défaut `27017` sur un profil neuf ;
+- clarifie que la carte **Connexion opérateur** attend `PinteModData`, tandis que le Gestionnaire sert à ajouter la racine BOIII complète.
+
 ## 2.4.0 — stable publique
 
 - l’absence confirmée de `hotfix.gsc` dans les distributions Ezz BOIII actuelles est désormais un état attendu du vérificateur, sans avertissement ni recommandation de téléchargement.
