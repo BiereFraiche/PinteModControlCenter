@@ -1,6 +1,6 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.4.** Both **Start** and **Start all** can launch a first local PinteMod server without preconfigured RCON; local PinteMod health remains visible if BOIII does not return an RCON packet. The [v2.4.5-rc4 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc4) is awaiting the final field recipe only.
+> **Current stable release: v2.4.4.** Both **Start** and **Start all** can launch a first local PinteMod server without preconfigured RCON; local PinteMod health remains visible if BOIII does not return an RCON packet. The [v2.4.5-rc5 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc5) is awaiting the final field recipe only.
 
 See the [v2.4.4 status](docs/STATUS_V2.4.4.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
@@ -11,7 +11,7 @@ For a legally obtained BOIII/Ezz base and PinteMod installation through the Cont
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-620%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-621%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 [![Release](https://img.shields.io/badge/release-v2.4.4-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4)
 
@@ -20,10 +20,10 @@ PinteMod Control Center is a local Windows operator application for observing an
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
 > **Current stable release:** v2.4.4.
-> The **v2.4.5-rc4** candidate completes Debug and Release with **0 warnings, 0 errors and 620/620 tests passing**. It remains a prerelease until the real BOIII field recipe succeeds.
+> The **v2.4.5-rc5** candidate completes Debug and Release with **0 warnings, 0 errors and 621/621 tests passing**. It remains a prerelease until the real BOIII field recipe succeeds.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc4)
+[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc5)
 
 ## v2.4.4 — stable
 

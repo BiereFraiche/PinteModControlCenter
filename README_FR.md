@@ -1,6 +1,6 @@
 # PinteMod Control Center
 
-> **Version stable actuelle : v2.4.4.** Le sélecteur 🇫🇷/🇬🇧 est mémorisé dans la barre de titre ; **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable. La [candidate v2.4.5-rc4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc4) attend uniquement la recette terrain finale.
+> **Version stable actuelle : v2.4.4.** Le sélecteur 🇫🇷/🇬🇧 est mémorisé dans la barre de titre ; **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable. La [candidate v2.4.5-rc5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc5) attend uniquement la recette terrain finale.
 
 Documents utiles : [état v2.4.4](docs/STATUS_V2.4.4.md) · [recette finale](docs/RECETTE_FINALE_FR.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
@@ -11,7 +11,7 @@ Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod ave
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-620%20r%C3%A9ussis-24C875)
+![Tests](https://img.shields.io/badge/tests-621%20r%C3%A9ussis-24C875)
 [![Version](https://img.shields.io/badge/version-v2.4.4-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4)
 
 PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WPF** destinée à observer et administrer un serveur dédié **Call of Duty: Black Ops III Zombies** utilisant [PinteMod](https://github.com/BiereFraiche/PinteMod) avec BOIII/Ezz.
@@ -19,10 +19,10 @@ PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WP
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
 
 > **Version stable actuelle :** v2.4.4.
-> La candidate **v2.4.5-rc4** termine Debug et Release avec **0 avertissement, 0 erreur et 620/620 tests réussis**. Elle reste une prépublication jusqu’à la recette BOIII réelle.
+> La candidate **v2.4.5-rc5** termine Debug et Release avec **0 avertissement, 0 erreur et 621/621 tests réussis**. Elle reste une prépublication jusqu’à la recette BOIII réelle.
 > Sans configuration explicite, l’application démarre toujours en simulation complète.
 
-[Télécharger la stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Tester la candidate v2.4.5-rc4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc4)
+[Télécharger la stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Tester la candidate v2.4.5-rc5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc5)
 
 ## v2.4.4 — stable
 

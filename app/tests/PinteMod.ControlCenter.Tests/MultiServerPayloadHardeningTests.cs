@@ -1,5 +1,6 @@
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Infrastructure.Local;
 
@@ -8,6 +9,43 @@ namespace PinteMod.ControlCenter.Tests;
 [TestClass]
 public sealed class MultiServerPayloadHardeningTests
 {
+    [TestMethod]
+    public void RecordHubDefinitions_AllowDormantProfilesWithSamePort_ButWorkersRefuseThem()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "PinteMod.ControlCenter.RecordHubPortTests", Guid.NewGuid().ToString("N"));
+        var first = Path.Combine(root, "first");
+        var second = Path.Combine(root, "second");
+        Directory.CreateDirectory(Path.Combine(first, "boiii"));
+        Directory.CreateDirectory(Path.Combine(second, "boiii"));
+        File.WriteAllText(Path.Combine(first, "Server.bat"), "@echo off");
+        File.WriteAllText(Path.Combine(second, "Server.bat"), "@echo off");
+        try
+        {
+            IReadOnlyCollection<MultiServerLaunchDefinition> definitions =
+            [
+                new("first", "Premier", first, "Server.bat", 27017),
+                new("second", "Second", second, "Server.bat", 27017)
+            ];
+            var normalize = typeof(MultiServerOrchestratorService).GetMethod(
+                "Normalize",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(normalize);
+
+            var hub = normalize.Invoke(null, [definitions, false, false]) as IReadOnlyList<MultiServerLaunchDefinition>;
+            Assert.IsNotNull(hub);
+            Assert.AreEqual(2, hub.Count);
+
+            var exception = Assert.ThrowsException<TargetInvocationException>(() =>
+                normalize.Invoke(null, [definitions, true, true]));
+            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            StringAssert.Contains(exception.InnerException.Message, "Port serveur invalide ou dupliqué");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
     [TestMethod]
     public void EmbeddedMultiServerPayload_ReconcilesLegacyWindowsWorkersAndHardensBanRuntime()
     {

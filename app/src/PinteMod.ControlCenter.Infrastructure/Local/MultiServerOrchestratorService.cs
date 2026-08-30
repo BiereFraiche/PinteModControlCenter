@@ -81,8 +81,15 @@ public sealed class MultiServerOrchestratorService
             return new ServerLaunchResult(false, "Aucun serveur local à lancer.");
         }
 
-        var launch = Normalize(launchServers, requireLauncher: true);
-        var hub = Normalize(recordHubServers.Count > 0 ? recordHubServers : launchServers, requireLauncher: false);
+        var launch = Normalize(launchServers, requireLauncher: true, requireUniquePorts: true);
+        // RecordHub only reads files beneath each distinct local root. It does
+        // not open or control BOIII ports, so dormant profile templates may
+        // legitimately still share their default port without blocking the
+        // server the operator explicitly chose to start.
+        var hub = Normalize(
+            recordHubServers.Count > 0 ? recordHubServers : launchServers,
+            requireLauncher: false,
+            requireUniquePorts: false);
 
         foreach (var server in launch)
         {
@@ -169,7 +176,8 @@ public sealed class MultiServerOrchestratorService
 
     private static IReadOnlyList<MultiServerLaunchDefinition> Normalize(
         IReadOnlyCollection<MultiServerLaunchDefinition> definitions,
-        bool requireLauncher)
+        bool requireLauncher,
+        bool requireUniquePorts)
     {
         var result = new List<MultiServerLaunchDefinition>();
         var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -196,7 +204,8 @@ public sealed class MultiServerOrchestratorService
                 throw new InvalidOperationException("Racine BOIII locale invalide ou dupliquée.");
             }
 
-            if (item.ServerPort is < 1 or > 65535 || !ports.Add(item.ServerPort))
+            if (item.ServerPort is < 1 or > 65535 ||
+                (requireUniquePorts && !ports.Add(item.ServerPort)))
             {
                 throw new InvalidOperationException("Port serveur invalide ou dupliqué.");
             }
