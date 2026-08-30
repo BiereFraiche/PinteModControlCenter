@@ -33,7 +33,7 @@ public partial class SettingsView : UserControl
         var secret = RconPasswordBox.Password;
         RconPasswordBox.Clear();
         var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
-            "Créer le premier mot de passe RCON avec la valeur saisie ?\n\nLe serveur doit être arrêté. Le Control Center ne remplace jamais un mot de passe déjà présent dans le .cfg BOIII.",
+            "Créer le premier mot de passe RCON avec la valeur saisie ?\n\nLe serveur doit être arrêté. Avec PinteMod, le Control Center prépare aussi les fichiers locaux requis par BOIII et le bridge. Aucun mot de passe déjà configuré n’est remplacé.",
             "Initialiser RCON",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning,

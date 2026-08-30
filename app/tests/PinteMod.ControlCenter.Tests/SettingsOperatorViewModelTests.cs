@@ -157,6 +157,40 @@ public sealed class SettingsOperatorViewModelTests
     }
 
     [TestMethod]
+    public async Task FirstPinteModRcon_StoresTheSameSecretForTheControlCenter()
+    {
+        var secretStore = new MemorySecretStore();
+        var bootstrap = new StubRconBootstrapService(new BoiiiRconBootstrapResult(true, "RCON PinteMod prêt."));
+        var viewModel = new SettingsViewModel(
+            serverRoot: "C:\\Server\\BOIII",
+            rconSecretStore: secretStore,
+            rconBootstrapService: bootstrap);
+
+        await viewModel.InitializeFirstRconSecretAsync("SafeRcon-2026");
+
+        Assert.AreEqual("C:\\Server\\BOIII", bootstrap.ServerRoot);
+        Assert.AreEqual("RCON INITIALISÉ · SECRET DPAPI ENREGISTRÉ", viewModel.RconSecretStatus);
+        Assert.AreEqual("SafeRcon-2026", await secretStore.ReadAsync());
+        Assert.IsFalse(viewModel.RconResponse.Contains("SafeRcon-2026", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task FirstPinteModRcon_WhenControlCenterSecretSaveFails_GuidesUserWithoutExposingSecret()
+    {
+        var bootstrap = new StubRconBootstrapService(new BoiiiRconBootstrapResult(true, "RCON PinteMod prêt."));
+        var viewModel = new SettingsViewModel(
+            serverRoot: "C:\\Server\\BOIII",
+            rconSecretStore: new FailingSecretStore(),
+            rconBootstrapService: bootstrap);
+
+        await viewModel.InitializeFirstRconSecretAsync("SafeRcon-2026");
+
+        Assert.AreEqual("RCON INITIALISÉ · SECRET LOCAL À ENREGISTRER", viewModel.RconSecretStatus);
+        StringAssert.Contains(viewModel.RconResponse, "Enregistrer RCON");
+        Assert.IsFalse(viewModel.RconResponse.Contains("SafeRcon-2026", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public async Task UnexpectedRconResponse_IsShownAsWarningAndNotAsSuccess()
     {
         var service = new StubRconDiagnosticService(new RconExecutionResult(
@@ -379,6 +413,30 @@ public sealed class SettingsOperatorViewModelTests
         }
 
         public Task<string?> ReadAsync(CancellationToken cancellationToken = default) => Task.FromResult(_secret);
+    }
+
+    private sealed class FailingSecretStore : IRconSecretStore
+    {
+        public Task<bool> HasSecretAsync(CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task SaveAsync(string secret, CancellationToken cancellationToken = default) =>
+            Task.FromException(new System.Security.Cryptography.CryptographicException());
+
+        public Task<string?> ReadAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
+    }
+
+    private sealed class StubRconBootstrapService(BoiiiRconBootstrapResult result) : IBoiiiRconBootstrapService
+    {
+        public string? ServerRoot { get; private set; }
+
+        public Task<BoiiiRconBootstrapResult> InitializeAsync(
+            string serverRoot,
+            string secret,
+            CancellationToken cancellationToken = default)
+        {
+            ServerRoot = serverRoot;
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class StubSelfTestService(ControlCenterSelfTestReport report) : IControlCenterSelfTestService

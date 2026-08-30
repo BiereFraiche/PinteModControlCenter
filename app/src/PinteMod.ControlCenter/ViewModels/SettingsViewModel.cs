@@ -766,7 +766,17 @@ public sealed class SettingsViewModel : PageViewModel
             return;
         }
 
-        var result = await _rconBootstrapService.InitializeAsync(OperatorServerRoot, secret, cancellationToken);
+        BoiiiRconBootstrapResult result;
+        try
+        {
+            result = await _rconBootstrapService.InitializeAsync(OperatorServerRoot, secret, cancellationToken);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+        {
+            RconSecretStatus = "RCON NON INITIALISÉ";
+            RconResponse = "Le premier RCON n’a pas pu être configuré : vérifiez les permissions du dossier serveur puis recommencez.";
+            return;
+        }
         if (!result.Success)
         {
             RconSecretStatus = "RCON NON INITIALISÉ";
@@ -774,10 +784,18 @@ public sealed class SettingsViewModel : PageViewModel
             return;
         }
 
-        await _rconSecretStore.SaveAsync(secret, cancellationToken);
-        _rconSecretStateInitialized = true;
-        RconSecretStatus = "RCON INITIALISÉ · SECRET DPAPI ENREGISTRÉ";
-        RconResponse = result.Message + " Le secret est aussi protégé pour ce compte Windows et ne sera pas réaffiché.";
+        try
+        {
+            await _rconSecretStore.SaveAsync(secret, cancellationToken);
+            _rconSecretStateInitialized = true;
+            RconSecretStatus = "RCON INITIALISÉ · SECRET DPAPI ENREGISTRÉ";
+            RconResponse = result.Message + " Le secret est aussi protégé pour ce compte Windows et ne sera pas réaffiché.";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+        {
+            RconSecretStatus = "RCON INITIALISÉ · SECRET LOCAL À ENREGISTRER";
+            RconResponse = result.Message + " Le Control Center n’a pas pu protéger sa copie locale : saisissez de nouveau le même mot de passe puis utilisez Enregistrer RCON.";
+        }
     }
 
     private async Task TestDataSourceAsync()
