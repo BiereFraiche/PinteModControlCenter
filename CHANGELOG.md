@@ -1,5 +1,10 @@
 # Journal des changements
 
+## 2.4.3 — stable publique
+
+- **Lancer tous** suit le même chemin que **Démarrer** pour un premier lancement : un serveur local sans RCON peut démarrer directement par son lanceur au lieu d’être bloqué ;
+- si BOIII ne retourne aucun paquet RCON mais que la source PinteMod est fraîche, le diagnostic santé affiche le résumé local fiable et indique clairement que le RCON reste à vérifier.
+
 ## 2.4.2 — stable publique
 
 - le premier démarrage d’un serveur PinteMod local utilise directement `Server.bat` tant qu’aucun secret Worker n’existe ; il ne dépend plus d’un RCON déjà configuré ;

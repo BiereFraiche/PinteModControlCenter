@@ -1290,19 +1290,7 @@ public sealed class ServerManagerViewModel : ObservableObject
         }
         else if (analysis.PinteModDetected && analysis.CanLaunchLocally)
         {
-            var workerSecretReady = _orchestratorService.IsRconSecretPrepared(profile.ProfileId);
-            if (!workerSecretReady)
-            {
-                var secret = await new DpapiRconSecretStore(
-                    OperatorProfileStoragePaths.GetRconSecretPath(profile.ProfileId)).ReadAsync(cancellationToken);
-                if (!string.IsNullOrWhiteSpace(secret))
-                {
-                    workerSecretReady = await _orchestratorService.PrepareRconSecretAsync(
-                        profile.ProfileId,
-                        secret,
-                        cancellationToken);
-                }
-            }
+            var workerSecretReady = await EnsureWorkerSecretPreparedAsync(profile.ProfileId, cancellationToken);
 
             if (!workerSecretReady)
             {
@@ -1399,11 +1387,37 @@ public sealed class ServerManagerViewModel : ObservableObject
         var successes = 0;
         var failures = 0;
 
-        if (localDefinitions.Count > 0)
+        var workerDefinitions = new List<MultiServerLaunchDefinition>();
+        var bootstrapDefinitions = new List<MultiServerLaunchDefinition>();
+        foreach (var definition in localDefinitions)
         {
-            var localResult = await _orchestratorService.LaunchAsync(localDefinitions, localDefinitions, cancellationToken);
+            if (await EnsureWorkerSecretPreparedAsync(definition.ProfileId, cancellationToken))
+            {
+                workerDefinitions.Add(definition);
+            }
+            else
+            {
+                bootstrapDefinitions.Add(definition);
+            }
+        }
+
+        if (workerDefinitions.Count > 0)
+        {
+            var localResult = await _orchestratorService.LaunchAsync(workerDefinitions, workerDefinitions, cancellationToken);
             messages.Add(localResult.Message);
-            if (localResult.Success) successes += localDefinitions.Count; else failures += localDefinitions.Count;
+            if (localResult.Success) successes += workerDefinitions.Count; else failures += workerDefinitions.Count;
+        }
+
+        foreach (var definition in bootstrapDefinitions)
+        {
+            var bootstrap = await _launchService.LaunchAsync(
+                definition.ServerRoot,
+                definition.LauncherRelativePath,
+                cancellationToken);
+            messages.Add($"{definition.DisplayName}: " + (bootstrap.Success
+                ? "premier lancement BOIII démarré avec Server.bat ; le Worker sera utilisé après la configuration RCON."
+                : bootstrap.Message));
+            if (bootstrap.Success) successes++; else failures++;
         }
 
         foreach (var profile in Profiles.Where(item => item.IsUncProfile))
@@ -1493,6 +1507,19 @@ public sealed class ServerManagerViewModel : ObservableObject
         }
 
         return result;
+    }
+
+    private async Task<bool> EnsureWorkerSecretPreparedAsync(string profileId, CancellationToken cancellationToken)
+    {
+        if (_orchestratorService.IsRconSecretPrepared(profileId))
+        {
+            return true;
+        }
+
+        var secret = await new DpapiRconSecretStore(
+            OperatorProfileStoragePaths.GetRconSecretPath(profileId)).ReadAsync(cancellationToken);
+        return !string.IsNullOrWhiteSpace(secret) &&
+               await _orchestratorService.PrepareRconSecretAsync(profileId, secret, cancellationToken);
     }
 
     private static int ParsePort(string value) =>

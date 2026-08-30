@@ -1,6 +1,6 @@
-# PinteMod Control Center — stable v2.4.2
+# PinteMod Control Center — stable v2.4.3
 
-La version stable produit `2.4.2`. Le premier lancement local passe par Server.bat sans dépendre d’un secret RCON ; l’initialisation RCON reste confirmée et ne remplace aucune configuration existante.
+La version stable produit `2.4.3`. Démarrer et Lancer tous peuvent lancer un premier serveur local sans RCON préalable ; un silence RCON reste distinct de l’état local PinteMod.
 
 Application Windows en C# / .NET 8 / WPF pour observer et administrer une session PinteMod depuis la machine serveur ou un poste du même LAN. Le mode simulé reste le comportement initial. Les données PinteMod sont lues en read-only ; les diagnostics et actions RCON autorisés sont exclusivement manuels et confirmés selon leur niveau de risque.
 

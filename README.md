@@ -1,8 +1,8 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.2.** The first local PinteMod launch runs `Server.bat` without requiring RCON, and an explicitly confirmed first secret can initialize RCON before Worker mode is used.
+> **Current stable release: v2.4.3.** Both **Start** and **Start all** can launch a first local PinteMod server without preconfigured RCON; local PinteMod health remains visible if BOIII does not return an RCON packet.
 
-See the [v2.4.2 status](docs/STATUS_V2.4.2.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [v2.4.3 status](docs/STATUS_V2.4.3.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
 
@@ -13,25 +13,25 @@ For a legally obtained BOIII/Ezz base and PinteMod installation through the Cont
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-614%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
-[![Release](https://img.shields.io/badge/release-v2.4.2-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.2)
+[![Release](https://img.shields.io/badge/release-v2.4.3-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.3)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current stable release:** v2.4.2.
-> v2.4.2 completes Debug and Release with **0 warnings, 0 errors and 616/616 tests passing**.
+> **Current stable release:** v2.4.3.
+> v2.4.3 completes Debug and Release with **0 warnings, 0 errors and 616/616 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download v2.4.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.2)
+[Download v2.4.3](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.3)
 
-## v2.4.2 — stable
+## v2.4.3 — stable
 
 This release consolidates generation 4B1 after validation of Agent, RCON and PinteMod repair flows:
 
-| Item | v2.4.2 status |
+| Item | v2.4.3 status |
 |---|---|
-| Product version | `2.4.2` |
+| Product version | `2.4.3` |
 | Build | Debug and Release, 0 warnings, 0 errors |
 | Automated tests | 616/616 passing in both configurations |
 | Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |

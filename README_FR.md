@@ -1,8 +1,8 @@
 # PinteMod Control Center
 
-> **Version stable actuelle : v2.4.2.** Le premier démarrage passe directement par `Server.bat`, même sans RCON, puis le premier secret peut initialiser RCON sur confirmation avant de basculer vers le Worker PinteMod.
+> **Version stable actuelle : v2.4.3.** **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable ; si BOIII ne répond pas en RCON, l’état local PinteMod reste lisible séparément.
 
-Documents utiles : [état v2.4.2](docs/STATUS_V2.4.2.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
+Documents utiles : [état v2.4.3](docs/STATUS_V2.4.3.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
 Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod avec le Control Center, voir [Démarrer avec un serveur BOIII vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). Le dépôt ne redistribue pas de serveur BOIII ni d’archive de jeu.
 
@@ -12,25 +12,25 @@ Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod ave
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-614%20r%C3%A9ussis-24C875)
-[![Version](https://img.shields.io/badge/version-v2.4.2-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.2)
+[![Version](https://img.shields.io/badge/version-v2.4.3-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.3)
 
 PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WPF** destinée à observer et administrer un serveur dédié **Call of Duty: Black Ops III Zombies** utilisant [PinteMod](https://github.com/BiereFraiche/PinteMod) avec BOIII/Ezz.
 
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
 
-> **Version stable actuelle :** v2.4.2.
+> **Version stable actuelle :** v2.4.3.
 > **0 avertissement, 0 erreur et 616/616 tests réussis** en Debug et Release.
 > Sans configuration explicite, l’application démarre toujours en simulation complète.
 
-[Télécharger v2.4.2](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.2)
+[Télécharger v2.4.3](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.3)
 
-## v2.4.2 — stable
+## v2.4.3 — stable
 
 Cette version consolide la génération 4B1 après validation des flux Agent, RCON et réparation PinteMod :
 
-| Élément | État v2.4.2 |
+| Élément | État v2.4.3 |
 |---|---|
-| Version produit | `2.4.2` |
+| Version produit | `2.4.3` |
 | Compilation | Debug et Release, 0 avertissement, 0 erreur |
 | Tests automatisés | 616/616 réussis dans les deux configurations |
 | Distribution | EXE autonome + dossier portable + ZIP + SHA-256 + rapport anonymisé |

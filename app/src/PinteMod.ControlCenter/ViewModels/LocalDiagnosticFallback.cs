@@ -16,14 +16,15 @@ internal static class LocalDiagnosticFallback
     public static bool TryCreate(
         RconDiagnosticCommand command,
         DashboardSnapshot snapshot,
-        out LocalDiagnosticFallbackResult result)
+        out LocalDiagnosticFallbackResult result,
+        bool rconDeliveryUnconfirmed = false)
     {
-        if (command == RconDiagnosticCommand.PauseStatus && TryPause(snapshot, out result))
+        if (command == RconDiagnosticCommand.PauseStatus && TryPause(snapshot, rconDeliveryUnconfirmed, out result))
         {
             return true;
         }
 
-        if (command == RconDiagnosticCommand.HealthFull && TryHealth(snapshot, out result))
+        if (command == RconDiagnosticCommand.HealthFull && TryHealth(snapshot, rconDeliveryUnconfirmed, out result))
         {
             return true;
         }
@@ -66,7 +67,7 @@ internal static class LocalDiagnosticFallback
 
         result = new(
             "ÉTAT LOCAL AUTORITAIRE",
-            $"{RuntimePrefix}{Environment.NewLine}{details}",
+            $"{Prefix(rconDeliveryUnconfirmed)}{Environment.NewLine}{details}",
             ServiceHealth.Healthy);
         return true;
     }
@@ -95,6 +96,7 @@ internal static class LocalDiagnosticFallback
 
     private static bool TryPause(
         DashboardSnapshot snapshot,
+        bool rconDeliveryUnconfirmed,
         out LocalDiagnosticFallbackResult result)
     {
         var observation = snapshot.LocalObservation.CommunityPause;
@@ -109,7 +111,7 @@ internal static class LocalDiagnosticFallback
 
         result = new(
             "STATUT LOCAL COMMUNITY PAUSE",
-            $"Commande RCON envoyée · sortie console non transportée · feedback local spécialisé affiché.{Environment.NewLine}" +
+            $"{Prefix(rconDeliveryUnconfirmed)} · feedback local spécialisé affiché.{Environment.NewLine}" +
             (pause.Active ? "Partie en pause." : "Partie non pausée."),
             ServiceHealth.Healthy);
         return true;
@@ -117,6 +119,7 @@ internal static class LocalDiagnosticFallback
 
     private static bool TryHealth(
         DashboardSnapshot snapshot,
+        bool rconDeliveryUnconfirmed,
         out LocalDiagnosticFallbackResult result)
     {
         var services = snapshot.Services
@@ -132,12 +135,18 @@ internal static class LocalDiagnosticFallback
         }
 
         result = new(
-            "RÉSUMÉ LOCAL · PAS LE HEALTH FULL",
-            "Commande RCON envoyée · BOIII n’a pas transporté les 51 contrôles de la console. " +
+            rconDeliveryUnconfirmed ? "RÉSUMÉ LOCAL · RCON À VÉRIFIER" : "RÉSUMÉ LOCAL · PAS LE HEALTH FULL",
+            (rconDeliveryUnconfirmed
+                ? "Aucune réponse RCON reçue, mais les données PinteMod locales sont fraîches. Vérifiez le port RCON avant toute action d’administration. "
+                : "Commande RCON envoyée · BOIII n’a pas transporté les 51 contrôles de la console. ") +
             $"Résumé des services locaux observables uniquement : {string.Join(" · ", services)}.",
             ServiceHealth.Warning);
         return true;
     }
+
+    private static string Prefix(bool rconDeliveryUnconfirmed) => rconDeliveryUnconfirmed
+        ? "Tentative RCON émise, sans réponse BOIII ; état local autoritaire affiché."
+        : RuntimePrefix;
 
     private static string FormatPlayers(ControlCenterRuntimeSnapshot runtime)
     {

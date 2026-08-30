@@ -914,12 +914,16 @@ public sealed class SettingsViewModel : PageViewModel
             command,
             endpoint);
         _operatorActivityStore?.RecordRconResult(result);
-        if (result.Status == RconExecutionStatus.EmptyResponse &&
+        if (result.Status is RconExecutionStatus.EmptyResponse or RconExecutionStatus.Timeout &&
             result.CommandSent &&
             _snapshotStore is not null)
         {
             var snapshot = await _snapshotStore.RefreshAsync();
-            if (LocalDiagnosticFallback.TryCreate(command, snapshot, out var fallback))
+            if (LocalDiagnosticFallback.TryCreate(
+                    command,
+                    snapshot,
+                    out var fallback,
+                    rconDeliveryUnconfirmed: result.Status == RconExecutionStatus.Timeout))
             {
                 RconResponse = fallback.Message;
                 RconCommandSent = "Commande envoyée : Oui";

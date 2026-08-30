@@ -1452,11 +1452,15 @@ public sealed class ServerViewModel : PageViewModel
 
         var result = await _rconDiagnosticService.ExecuteAsync(command, endpoint);
         _operatorActivityStore?.RecordRconResult(result);
-        if (result.Status == RconExecutionStatus.EmptyResponse && result.CommandSent)
+        if (result.Status is RconExecutionStatus.EmptyResponse or RconExecutionStatus.Timeout && result.CommandSent)
         {
             var refreshed = await _snapshotStore.RefreshAsync();
             ApplySnapshot(refreshed);
-            if (LocalDiagnosticFallback.TryCreate(command, refreshed, out var fallback))
+            if (LocalDiagnosticFallback.TryCreate(
+                    command,
+                    refreshed,
+                    out var fallback,
+                    rconDeliveryUnconfirmed: result.Status == RconExecutionStatus.Timeout))
             {
                 SetServerDiagnosticResult(fallback.Status, fallback.Message, true, fallback.Health);
                 return;
