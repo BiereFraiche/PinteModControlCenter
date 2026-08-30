@@ -121,41 +121,77 @@ public partial class App : Application
                 argument.StartsWith("--data-mode=", StringComparison.OrdinalIgnoreCase) ||
                 argument.StartsWith("--server-root=", StringComparison.OrdinalIgnoreCase));
             var tabs = new List<ServerTabViewModel>();
+            var unavailableProfileCount = 0;
+            var recoveryTabUsed = false;
 
             foreach (var profileId in _workspaceConfiguration.ProfileIds)
             {
-                var configurationStore = CreateConfigurationStore(profileId);
-                var savedConfiguration = await configurationStore.LoadAsync(_applicationLifetime.Token);
-                var managedConfiguration = await new JsonManagedServerProfileStore(
-                    OperatorProfileStoragePaths.GetManagedServerProfilePath(profileId))
-                    .LoadAsync(_applicationLifetime.Token);
-                var receivesCommandLine = hasExplicitDataSelection &&
-                                          string.Equals(
-                                              profileId,
-                                              _workspaceConfiguration.ActiveProfileId,
-                                              StringComparison.Ordinal);
-                var managerSelectedProfile = !receivesCommandLine &&
-                                             !string.IsNullOrWhiteSpace(managerSelectedProfileId) &&
-                                             string.Equals(profileId, managerSelectedProfileId, StringComparison.Ordinal);
-                var usingSavedDataSource = !receivesCommandLine &&
-                                           savedConfiguration.ActivateDataSourceOnStartup &&
-                                           !string.IsNullOrWhiteSpace(savedConfiguration.ServerRoot);
-                var startup = receivesCommandLine
-                    ? parsedStartup
-                    : ApplicationStartupOptions.Resolve(
-                        [],
+                ServerRuntimeContext? context = null;
+                try
+                {
+                    var configurationStore = CreateConfigurationStore(profileId);
+                    var savedConfiguration = await configurationStore.LoadAsync(_applicationLifetime.Token);
+                    var managedConfiguration = await new JsonManagedServerProfileStore(
+                        OperatorProfileStoragePaths.GetManagedServerProfilePath(profileId))
+                        .LoadAsync(_applicationLifetime.Token);
+                    var receivesCommandLine = hasExplicitDataSelection &&
+                                              string.Equals(
+                                                  profileId,
+                                                  _workspaceConfiguration.ActiveProfileId,
+                                                  StringComparison.Ordinal);
+                    var managerSelectedProfile = !receivesCommandLine &&
+                                                 !string.IsNullOrWhiteSpace(managerSelectedProfileId) &&
+                                                 string.Equals(profileId, managerSelectedProfileId, StringComparison.Ordinal);
+                    var usingSavedDataSource = !receivesCommandLine &&
+                                               savedConfiguration.ActivateDataSourceOnStartup &&
+                                               !string.IsNullOrWhiteSpace(savedConfiguration.ServerRoot);
+                    var startup = receivesCommandLine
+                        ? parsedStartup
+                        : ApplicationStartupOptions.Resolve(
+                            [],
+                            savedConfiguration,
+                            managerSelectedProfile && savedConfiguration.ActivateDataSourceOnStartup);
+                    context = CreateServerContext(
+                        profileId,
                         savedConfiguration,
-                        managerSelectedProfile && savedConfiguration.ActivateDataSourceOnStartup);
-                var context = CreateServerContext(
-                    profileId,
-                    savedConfiguration,
-                    configurationStore,
-                    startup,
-                    usingSavedDataSource,
-                    managedConfiguration.RemoteAgentId);
-                var tab = CreateTab(context, savedConfiguration.ProfileDisplayName);
-                _serverContexts.Add(profileId, context);
-                tabs.Add(tab);
+                        configurationStore,
+                        startup,
+                        usingSavedDataSource,
+                        managedConfiguration.RemoteAgentId);
+                    var tab = CreateTab(context, savedConfiguration.ProfileDisplayName);
+                    _serverContexts.Add(profileId, context);
+                    tabs.Add(tab);
+                    context = null;
+                }
+                catch (Exception)
+                {
+                    // A saved profile can contain an obsolete local integration.
+                    // Never make that profile prevent access to the other tabs.
+                    context?.Dispose();
+                    unavailableProfileCount++;
+                }
+            }
+
+            if (tabs.Count == 0)
+            {
+                // The recovery tab is deliberately not persisted: it gives the
+                // operator access to the Manager without overwriting profiles,
+                // local paths, RCON configuration or DPAPI secrets.
+                const string recoveryProfileId = "recovery";
+                var recoveryStore = CreateConfigurationStore(recoveryProfileId);
+                var recoveryConfiguration = OperatorConfiguration.Default with
+                {
+                    ProfileDisplayName = "Récupération locale"
+                };
+                var recoveryContext = CreateServerContext(
+                    recoveryProfileId,
+                    recoveryConfiguration,
+                    recoveryStore,
+                    ApplicationStartupOptions.Parse([]),
+                    usingSavedDataSource: false);
+                _serverContexts.Add(recoveryProfileId, recoveryContext);
+                tabs.Add(CreateTab(recoveryContext, recoveryConfiguration.ProfileDisplayName));
+                recoveryTabUsed = true;
             }
 
             _workspace = new ControlCenterWorkspaceViewModel(
@@ -174,6 +210,19 @@ public partial class App : Application
             window.Closing += OnMainWindowClosing;
             window.Show();
             ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+            if (unavailableProfileCount > 0 || recoveryTabUsed)
+            {
+                PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+                    recoveryTabUsed
+                        ? "Les profils enregistrés n’ont pas pu être chargés. Le Control Center reste ouvert en mode récupération ; ouvrez le Gestionnaire pour les analyser ou les corriger."
+                        : unavailableProfileCount == 1
+                        ? "Un ancien profil n’a pas pu être chargé. Les autres profils restent disponibles ; ouvrez le Gestionnaire pour l’analyser ou le corriger."
+                        : $"{unavailableProfileCount} anciens profils n’ont pas pu être chargés. Le Control Center reste ouvert en mode récupération ; ouvrez le Gestionnaire pour les analyser ou les corriger.",
+                    "PinteMod Control Center",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
 
             if (managerViewModel.KeepManagerOpenAfterControlCenter)
             {
