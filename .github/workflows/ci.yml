@@ -47,6 +47,11 @@ jobs:
         if: matrix.configuration == 'Release'
         run: dotnet publish .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Release -r win-x64 --self-contained true --no-restore --no-build -o .\app\artifacts\ci-folder -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false
 
+      - name: Bundle the standalone remote Agent in the portable folder
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: Copy-Item -LiteralPath .\app\artifacts\ci-single-exe\PinteMod.ControlCenter.exe -Destination .\app\artifacts\ci-folder\PinteMod.ControlCenter.Agent.exe -Force
+
       - name: Run packaged self-test without server
         if: matrix.configuration == 'Release'
         shell: pwsh
@@ -70,7 +75,7 @@ jobs:
         if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: PinteMod-ControlCenter-Fix16-win-x64
+          name: PinteMod-ControlCenter-win-x64
           path: |
             app/artifacts/ci-single-exe/PinteMod.ControlCenter.exe
             app/artifacts/PinteMod.ControlCenter-single-exe-win-x64.zip
