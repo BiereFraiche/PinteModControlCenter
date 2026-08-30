@@ -1,6 +1,6 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.4.** Both **Start** and **Start all** can launch a first local PinteMod server without preconfigured RCON; local PinteMod health remains visible if BOIII does not return an RCON packet. The [v2.4.5-rc5 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc5) is awaiting the final field recipe only.
+> **Current stable release: v2.4.4.** Both **Start** and **Start all** can launch a first local PinteMod server without preconfigured RCON; local PinteMod health remains visible if BOIII does not return an RCON packet. The [v2.4.5-rc6 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc6) is awaiting the final field recipe only.
 
 See the [v2.4.4 status](docs/STATUS_V2.4.4.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
@@ -20,10 +20,10 @@ PinteMod Control Center is a local Windows operator application for observing an
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
 > **Current stable release:** v2.4.4.
-> The **v2.4.5-rc5** candidate completes Debug and Release with **0 warnings, 0 errors and 621/621 tests passing**. It remains a prerelease until the real BOIII field recipe succeeds.
+> The **v2.4.5-rc6** candidate completes Debug and Release with **0 warnings, 0 errors and 621/621 tests passing**. It remains a prerelease until the real BOIII field recipe succeeds.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc5)
+[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc6](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc6)
 
 ## v2.4.4 — stable
 

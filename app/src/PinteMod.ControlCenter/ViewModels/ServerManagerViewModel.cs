@@ -885,12 +885,25 @@ public sealed class ServerManagerViewModel : ObservableObject
             string.Equals(profile.ProfileId, workspace.ActiveProfileId, StringComparison.Ordinal))
             ?? viewModel.Profiles.FirstOrDefault();
 
-        await viewModel.RefreshInstalledLocalAgentRegistrationsIfNeededAsync(cancellationToken);
-        await viewModel.ImportAuthenticatedRemoteCatalogProfilesAsync(cancellationToken);
+        // The manager is the recovery point for a local installation.  An
+        // unreachable network source or a stale Agent registration must never
+        // prevent it from opening: the operator needs this window precisely to
+        // refresh or repair those optional integrations.
+        await viewModel.RunOptionalStartupStepAsync(
+            () => viewModel.RefreshInstalledLocalAgentRegistrationsIfNeededAsync(cancellationToken),
+            "L’Agent local n’a pas pu être actualisé automatiquement.",
+            cancellationToken);
+        await viewModel.RunOptionalStartupStepAsync(
+            async () => { await viewModel.ImportAuthenticatedRemoteCatalogProfilesAsync(cancellationToken); },
+            "Les serveurs réseau n’ont pas pu être actualisés automatiquement.",
+            cancellationToken);
 
         if (viewModel.SelectedProfile is not null && !string.IsNullOrWhiteSpace(viewModel.SelectedProfile.ServerRoot))
         {
-            await viewModel.AnalyzeSelectedAsync(cancellationToken);
+            await viewModel.RunOptionalStartupStepAsync(
+                () => viewModel.AnalyzeSelectedAsync(cancellationToken),
+                "Le serveur sélectionné n’a pas pu être analysé au démarrage.",
+                cancellationToken);
         }
 
         return viewModel;
@@ -1720,6 +1733,27 @@ public sealed class ServerManagerViewModel : ObservableObject
         if (!result.Success)
         {
             StatusMessage = "Le profil a été enregistré, mais le catalogue de l’Agent local n’a pas pu être actualisé : " + result.Message;
+        }
+    }
+
+    private async Task RunOptionalStartupStepAsync(
+        Func<Task> operation,
+        string failureMessage,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await operation();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // Keep this deliberately generic: startup diagnostics must not leak
+            // a private UNC path, local path, RCON setting, or agent secret.
+            StatusMessage = failureMessage + " Le gestionnaire reste disponible pour réessayer ou corriger la source.";
         }
     }
 

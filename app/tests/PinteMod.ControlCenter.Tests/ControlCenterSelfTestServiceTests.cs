@@ -19,7 +19,7 @@ public sealed class ControlCenterSelfTestServiceTests
         var text = report.ToDisplayText();
 
         Assert.IsTrue(report.Success, text);
-        Assert.AreEqual("2.4.5-rc5", report.ProductVersion);
+        Assert.AreEqual("2.4.5-rc6", report.ProductVersion);
         StringAssert.Contains(text, "RESULTAT=PASS");
         StringAssert.Contains(text, "Payloads embarqués");
         StringAssert.Contains(text, "aucun réseau");
