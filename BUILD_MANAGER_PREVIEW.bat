@@ -111,7 +111,7 @@ echo   %OUT_SINGLE_ZIP%
 echo   %OUT_HASHES%
 echo   %OUT_SELFTEST%
 echo.
-echo Stable v2.4.4 : premier lancement simplifié, diagnostic local PinteMod et langue mémorisée.
+echo Candidate v2.4.5-rc2 : premier lancement simplifié, RCON PinteMod natif et langue mémorisée.
 echo Le meme EXE peut aussi fonctionner en Agent distant SMB sur le PC serveur.
 echo.
 popd
