@@ -4,6 +4,8 @@
 
 See the [v2.4.0 status](docs/STATUS_V2.4.0.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
+For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
+
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)

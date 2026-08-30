@@ -4,6 +4,8 @@
 
 Documents utiles : [état v2.4.0](docs/STATUS_V2.4.0.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
+Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod avec le Control Center, voir [Démarrer avec un serveur BOIII vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). Le dépôt ne redistribue pas de serveur BOIII ni d’archive de jeu.
+
 [English documentation](README.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
