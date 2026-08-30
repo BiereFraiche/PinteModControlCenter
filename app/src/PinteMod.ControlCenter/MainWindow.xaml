@@ -267,7 +267,7 @@
                                    Visibility="{Binding AdvancedMode, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
-                            <TextBlock Text="Version 2.4.4 · Stable" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
+                            <TextBlock Text="Version 2.4.5 · Candidat recette" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
                         </StackPanel>
                     </Grid>
                 </Border>

@@ -5,10 +5,10 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>PinteMod.ControlCenter</AssemblyName>
     <RootNamespace>PinteMod.ControlCenter</RootNamespace>
-    <Version>2.4.4</Version>
-    <AssemblyVersion>2.4.4.0</AssemblyVersion>
-    <FileVersion>2.4.4.0</FileVersion>
-    <InformationalVersion>2.4.4</InformationalVersion>
+    <Version>2.4.5</Version>
+    <AssemblyVersion>2.4.5.0</AssemblyVersion>
+    <FileVersion>2.4.5.0</FileVersion>
+    <InformationalVersion>2.4.5-rc1</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>PinteMod Control Center</Product>
     <Description>Gestionnaire multi-serveurs BOIII, PinteMod et intégrations adaptatives.</Description>
