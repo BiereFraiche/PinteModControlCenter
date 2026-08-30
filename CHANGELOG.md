@@ -1,8 +1,9 @@
 # Journal des changements
 
-## 2.4.0 Integration Preview 4B1 Fix24
+## 2.4.0 — stable publique
 
 - l’absence confirmée de `hotfix.gsc` dans les distributions Ezz BOIII actuelles est désormais un état attendu du vérificateur, sans avertissement ni recommandation de téléchargement.
+- la réparation d’une installation PinteMod déjà détectée cible uniquement le vérificateur stock connu ; aucun module ni service tel que `PinteMod_Ban_Service.ps1` n’est remplacé.
 
 ## 2.4.0 Integration Preview 4B1 Fix23
 

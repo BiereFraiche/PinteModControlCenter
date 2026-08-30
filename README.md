@@ -1,47 +1,46 @@
 # PinteMod Control Center
 
-> **Current development build: Integration Preview 4B1 Fix24 (`2.4.0-preview-integration.4b1.fix24`).** It adds WPF software rendering for remote-control sessions, hardens the SMB Agent lifecycle, makes the portable-folder format compatible with its standalone Agent and treats the confirmed absence of `hotfix.gsc` as expected. Server3 and the fixed-PC/laptop Agent link have been human-validated. v2.2.0 remains the latest public stable release.
+> **Current stable release: v2.4.0.** It adds WPF software rendering for remote-control sessions, hardens the SMB Agent lifecycle, makes the portable-folder format compatible with its standalone Agent and treats the confirmed absence of `hotfix.gsc` as expected. An existing PinteMod repair now changes only the known stock verifier, never existing modules or services.
 
-See the [Fix24 status](docs/STATUS_PREVIEW4B1_FIX24.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [v2.4.0 status](docs/STATUS_V2.4.0.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Preview tests](https://img.shields.io/badge/Preview-611%20tests%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-613%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
-[![Release](https://img.shields.io/badge/release-v2.2.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
-[![Preview](https://img.shields.io/badge/prerelease-Fix15-F5A623)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0-preview-integration.4b1.fix15)
+[![Release](https://img.shields.io/badge/release-v2.4.0-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current stable release:** v2.2.0.
-> Preview Fix24 completes Debug and Release with **0 warnings, 0 errors and 611/611 tests passing**.
+> **Current stable release:** v2.4.0.
+> v2.4.0 completes Debug and Release with **0 warnings, 0 errors and 613/613 tests passing**.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download v2.2.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.2.0)
+[Download v2.4.0](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.0)
 
-## Integration Preview 4B1 Fix24
+## v2.4.0 — stable
 
-This branch prepares the next Control Center generation without replacing stable v2.2.0:
+This release consolidates generation 4B1 after validation of Agent, RCON and PinteMod repair flows:
 
-| Item | Fix24 status |
+| Item | v2.4.0 status |
 |---|---|
-| Product version | `2.4.0-preview-integration.4b1.fix24` |
+| Product version | `2.4.0` |
 | Build | Debug and Release, 0 warnings, 0 errors |
-| Automated tests | 611/611 passing in both configurations |
+| Automated tests | 613/613 passing in both configurations |
 | Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |
-| Field validation | Server3 and fixed-PC/laptop Agent validated; GitHub publication remains to be decided |
+| Field validation | Server3 and fixed-PC/laptop Agent validated; non-overwriting module repair covered by test |
 
-The Preview adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. Fix22 adds software-rendering startup for incompatible GPUs/remote-control sessions and includes a standalone Agent beside the portable-folder application, so Agent activation no longer depends on the folder's DLLs.
+The release adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. Software-rendering startup supports incompatible GPUs/remote-control sessions and a standalone Agent beside the portable-folder application prevents Agent activation from depending on the folder's DLLs.
 
 Build and audit every deliverable in one pass on Windows:
 
 ```powershell
-.\BUILD_PREVIEW.bat
+.\BUILD_MANAGER_PREVIEW.bat
 ```
 
 The Control Center can run in a Windows VM and be viewed from another PC through the hypervisor console or RDP behind a secured VPN/gateway. It adds no web server or remote-control port. See the [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
@@ -164,10 +163,10 @@ dotnet run --project .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csp
 To build, test, publish and audit both Preview formats automatically:
 
 ```powershell
-.\BUILD_PREVIEW.bat
+.\BUILD_MANAGER_PREVIEW.bat
 ```
 
-Outputs are written to `app/artifacts/integration-preview4b1-fix24-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
+Outputs are written to `app/artifacts/release-v2.4.0-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
 
 The same offline check can be run from either distribution:
 
@@ -201,13 +200,13 @@ Generated builds, portable archives, local settings, DPAPI secrets, server copie
 
 ## Validation status
 
-Integration Preview 4B1 Fix24 automated validation:
+v2.4.0 automated validation:
 
 ```text
 Debug build       PASS — 0 warnings, 0 errors
 Release build     PASS — 0 warnings, 0 errors
-Debug tests       PASS — 611/611
-Release tests     PASS — 611/611
+Debug tests       PASS — 613/613
+Release tests     PASS — 613/613
 Packaged self-test PASS — RESULTAT=PASS, no server or network
 Single-EXE audit  PASS — one self-contained EXE, privacy audit passed
 Folder audit      PASS — archive and privacy audit passed

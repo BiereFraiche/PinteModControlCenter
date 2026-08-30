@@ -104,4 +104,4 @@ $hashLines += "$(Get-Sha256Hex -Path $selfTest) *SELF-TEST.txt"
     ($hashLines -join "`r`n") + "`r`n",
     [Text.UTF8Encoding]::new($false))
 
-Write-Output "PREVIEW_PACKAGES_OK single=$singleZip folder=$folderZip"
+Write-Output "PACKAGES_OK single=$singleZip folder=$folderZip"

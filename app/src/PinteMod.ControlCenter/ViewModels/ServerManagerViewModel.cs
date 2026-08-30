@@ -1112,7 +1112,11 @@ public sealed class ServerManagerViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            var result = await _payloadService.InstallPinteModStableAsync(profile.ServerRoot, cancellationToken);
+            var analysis = _analyzer.Analyze(profile.ServerRoot, cancellationToken);
+            profile.ApplyAnalysis(analysis);
+            var result = analysis.PinteModDetected
+                ? await _payloadService.RepairInstallationVerifierAsync(profile.ServerRoot, cancellationToken)
+                : await _payloadService.InstallPinteModStableAsync(profile.ServerRoot, cancellationToken);
             StatusMessage = result.Message;
             await AnalyzeSelectedAsync(cancellationToken);
             return result;

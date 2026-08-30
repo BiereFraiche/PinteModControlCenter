@@ -134,6 +134,70 @@ public sealed class EmbeddedServerPayloadService
         entryPath.Replace('\\', '/').Equals(InstallationVerifierRelativePath, StringComparison.OrdinalIgnoreCase) &&
         existingHash.Equals(LegacyInstallationVerifierSha256, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Répare uniquement le vérificateur d'installation PinteMod. Cette voie est
+    /// réservée à une installation PinteMod déjà détectée : aucun module, service
+    /// ou script existant n'est relu ni modifié.
+    /// </summary>
+    public async Task<ServerDeploymentResult> RepairInstallationVerifierAsync(
+        string serverRoot,
+        CancellationToken cancellationToken = default)
+    {
+        var root = ValidateServerRoot(serverRoot);
+        var target = ResolveSafeTarget(root, InstallationVerifierRelativePath);
+        byte[] embeddedBytes;
+        await using (var resource = OpenResource(PinteModResourceSuffix))
+        using (var archive = new ZipArchive(resource, ZipArchiveMode.Read, leaveOpen: false))
+        {
+            var entry = archive.GetEntry(InstallationVerifierRelativePath)
+                        ?? throw new InvalidOperationException("Vérificateur PinteMod absent du payload embarqué.");
+            await using var source = entry.Open();
+            using var memory = new MemoryStream();
+            await source.CopyToAsync(memory, cancellationToken).ConfigureAwait(false);
+            embeddedBytes = memory.ToArray();
+        }
+
+        var embeddedHash = Convert.ToHexString(SHA256.HashData(embeddedBytes));
+        if (File.Exists(target))
+        {
+            var existingHash = await ComputeFileSha256Async(target, cancellationToken).ConfigureAwait(false);
+            if (existingHash.Equals(embeddedHash, StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServerDeploymentResult(
+                    true,
+                    "Vérificateur PinteMod déjà à jour. Aucun module ni service existant n’a été modifié.",
+                    [],
+                    [Relative(root, target)]);
+            }
+
+            if (!CanReplaceKnownLegacyFile(InstallationVerifierRelativePath, existingHash))
+            {
+                return new ServerDeploymentResult(
+                    false,
+                    "Réparation refusée : le vérificateur PinteMod présent est inconnu. Aucun module, service ou script existant n’a été modifié.",
+                    [],
+                    []);
+            }
+
+            var backup = target + ".manager-backup-v2.1.1";
+            if (!File.Exists(backup))
+            {
+                File.Copy(target, backup, overwrite: false);
+            }
+        }
+        else
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        }
+
+        await WriteAllBytesSafeAsync(target, embeddedBytes, cancellationToken).ConfigureAwait(false);
+        return new ServerDeploymentResult(
+            true,
+            "Vérificateur PinteMod mis à jour. Aucun module ni service PinteMod existant n’a été modifié.",
+            [Relative(root, target)],
+            []);
+    }
+
     public async Task<ServerDeploymentResult> InstallOrUpdateBridgeAsync(
         string serverRoot,
         IReadOnlyCollection<string> allowedMaps,

@@ -1,6 +1,6 @@
-# PinteMod Control Center — stable v2.2.0 / Preview 4B1 Fix24
+# PinteMod Control Center — stable v2.4.0
 
-La branche Preview produit `2.4.0-preview-integration.4b1.fix24`. Server3 et la liaison Agent fixe/portable sont validés humainement ; la publication GitHub est préparée.
+La version stable produit `2.4.0`. Server3 et la liaison Agent fixe/portable sont validés humainement. La réparation d'une installation PinteMod déjà détectée ne modifie que le vérificateur stock connu.
 
 Application Windows en C# / .NET 8 / WPF pour observer et administrer une session PinteMod depuis la machine serveur ou un poste du même LAN. Le mode simulé reste le comportement initial. Les données PinteMod sont lues en read-only ; les diagnostics et actions RCON autorisés sont exclusivement manuels et confirmés selon leur niveau de risque.
 
@@ -59,17 +59,17 @@ app\src\PinteMod.ControlCenter\bin\Release\net8.0-windows\PinteMod.ControlCenter
 
 Sans argument, l’application reste entièrement simulée.
 
-## Paquets Preview Windows x64
+## Paquets stables Windows x64
 
-Depuis la racine du dépôt, double-cliquer `BUILD_PREVIEW.bat`. Le workflow produit :
+Depuis la racine du dépôt, double-cliquer `BUILD_MANAGER_PREVIEW.bat`. Le workflow produit :
 
 ```text
-app\artifacts\integration-preview4b1-fix24-win-x64\single-exe\PinteMod.ControlCenter.exe
-app\artifacts\integration-preview4b1-fix24-win-x64\folder\
-app\artifacts\integration-preview4b1-fix24-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
-app\artifacts\integration-preview4b1-fix24-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
-app\artifacts\integration-preview4b1-fix24-win-x64\SHA256SUMS.txt
-app\artifacts\integration-preview4b1-fix24-win-x64\SELF-TEST.txt
+app\artifacts\release-v2.4.0-win-x64\single-exe\PinteMod.ControlCenter.exe
+app\artifacts\release-v2.4.0-win-x64\folder\
+app\artifacts\release-v2.4.0-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
+app\artifacts\release-v2.4.0-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
+app\artifacts\release-v2.4.0-win-x64\SHA256SUMS.txt
+app\artifacts\release-v2.4.0-win-x64\SELF-TEST.txt
 ```
 
 L’EXE unique et le dossier sont tous deux autonomes pour Windows x64. Le dossier peut être recompressé ou envoyé tel quel, mais il doit rester complet sur la machine cible.
