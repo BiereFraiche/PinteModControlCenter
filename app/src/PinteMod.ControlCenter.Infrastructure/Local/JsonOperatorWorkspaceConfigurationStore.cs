@@ -153,9 +153,13 @@ public sealed partial class JsonOperatorWorkspaceConfigurationStore : IOperatorW
             activeProfileId)
         {
             AdvancedMode = configuration.AdvancedMode,
-            KeepManagerOpenAfterControlCenter = configuration.KeepManagerOpenAfterControlCenter
+            KeepManagerOpenAfterControlCenter = configuration.KeepManagerOpenAfterControlCenter,
+            UiLanguageCode = NormalizeUiLanguage(configuration.UiLanguageCode)
         };
     }
+
+    private static string NormalizeUiLanguage(string? code) =>
+        string.Equals(code, "en-US", StringComparison.OrdinalIgnoreCase) ? "en-US" : "fr-FR";
 
     [GeneratedRegex("^[a-z0-9][a-z0-9-]{0,39}$", RegexOptions.CultureInvariant)]
     private static partial Regex ProfileIdPattern();

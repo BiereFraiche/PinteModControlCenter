@@ -143,6 +143,11 @@
                                    Foreground="{StaticResource TextMutedBrush}" FontSize="10"
                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <ComboBox x:Name="LanguageSelector" Width="112" Height="28" Margin="0,2,6,2"
+                                      ItemsSource="{Binding UiLanguages}" DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage}"
+                                      ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged"
+                                      shell:WindowChrome.IsHitTestVisibleInChrome="True" />
                             <Button Content="—" Width="42" Height="32" Padding="0" FontSize="12"
                                     Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MinimizeButton_Click"
                                     shell:WindowChrome.IsHitTestVisibleInChrome="True" />
@@ -262,7 +267,7 @@
                                    Visibility="{Binding AdvancedMode, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
-                            <TextBlock Text="Version 2.4.3 · Stable" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
+                            <TextBlock Text="Version 2.4.4 · Stable" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
                         </StackPanel>
                     </Grid>
                 </Border>

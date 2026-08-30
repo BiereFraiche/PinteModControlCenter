@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -164,7 +165,9 @@ public partial class App : Application
                 RemoveServerAsync,
                 SetActiveServerAsync,
                 _workspaceConfiguration.AdvancedMode,
-                SetDisplayModeAsync);
+                SetDisplayModeAsync,
+                _workspaceConfiguration.UiLanguageCode,
+                SetUiLanguageAsync);
             AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
             var window = new MainWindow { DataContext = _workspace };
             MainWindow = window;
@@ -199,6 +202,19 @@ public partial class App : Application
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(-1);
+        }
+    }
+
+    private async Task SetUiLanguageAsync(string languageCode)
+    {
+        var normalized = string.Equals(languageCode, "en-US", StringComparison.OrdinalIgnoreCase) ? "en-US" : "fr-FR";
+        var culture = CultureInfo.GetCultureInfo(normalized);
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        _workspaceConfiguration = _workspaceConfiguration with { UiLanguageCode = normalized };
+        if (_workspaceStore is not null)
+        {
+            await _workspaceStore.SaveAsync(_workspaceConfiguration, _applicationLifetime.Token);
         }
     }
 

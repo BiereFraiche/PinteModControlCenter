@@ -90,12 +90,15 @@ public sealed record OperatorWorkspaceConfiguration(
 
     public bool KeepManagerOpenAfterControlCenter { get; init; } = false;
 
+    public string UiLanguageCode { get; init; } = "fr-FR";
+
     public static OperatorWorkspaceConfiguration Default { get; } = new(
         CurrentSchemaVersion,
         [PrimaryProfileId],
         PrimaryProfileId)
     {
         AdvancedMode = false,
-        KeepManagerOpenAfterControlCenter = false
+        KeepManagerOpenAfterControlCenter = false,
+        UiLanguageCode = "fr-FR"
     };
 }

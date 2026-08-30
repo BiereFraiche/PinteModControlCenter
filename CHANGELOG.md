@@ -1,5 +1,10 @@
 # Journal des changements
 
+## 2.4.4 — stable publique
+
+- ajoute un sélecteur compact de langue dans la barre de titre, avec 🇫🇷 Français et 🇬🇧 English ; le choix est mémorisé dans l’espace de travail local ;
+- prépare l’application à l’internationalisation sans modifier les serveurs, secrets ou données PinteMod.
+
 ## 2.4.3 — stable publique
 
 - **Lancer tous** suit le même chemin que **Démarrer** pour un premier lancement : un serveur local sans RCON peut démarrer directement par son lanceur au lieu d’être bloqué ;

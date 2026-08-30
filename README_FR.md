@@ -1,8 +1,8 @@
 # PinteMod Control Center
 
-> **Version stable actuelle : v2.4.3.** **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable ; si BOIII ne répond pas en RCON, l’état local PinteMod reste lisible séparément.
+> **Version stable actuelle : v2.4.4.** Le sélecteur 🇫🇷/🇬🇧 est mémorisé dans la barre de titre ; **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable.
 
-Documents utiles : [état v2.4.3](docs/STATUS_V2.4.3.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
+Documents utiles : [état v2.4.4](docs/STATUS_V2.4.4.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
 Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod avec le Control Center, voir [Démarrer avec un serveur BOIII vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). Le dépôt ne redistribue pas de serveur BOIII ni d’archive de jeu.
 
@@ -12,7 +12,7 @@ Pour partir d’une base BOIII/Ezz obtenue légalement et installer PinteMod ave
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-614%20r%C3%A9ussis-24C875)
-[![Version](https://img.shields.io/badge/version-v2.4.3-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.3)
+[![Version](https://img.shields.io/badge/version-v2.4.4-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4)
 
 PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WPF** destinée à observer et administrer un serveur dédié **Call of Duty: Black Ops III Zombies** utilisant [PinteMod](https://github.com/BiereFraiche/PinteMod) avec BOIII/Ezz.
 

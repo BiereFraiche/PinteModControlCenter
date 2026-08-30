@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using PinteMod.ControlCenter.Core.Models;
 using PinteMod.ControlCenter.Services;
 
@@ -11,9 +12,11 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
     private readonly Func<ServerTabViewModel, Task<bool>> _removeServer;
     private readonly Func<string, Task> _activeServerChanged;
     private readonly Func<bool, Task> _displayModeChanged;
+    private readonly Func<string, Task> _languageChanged;
     private ServerTabViewModel _activeServer;
     private string? _workspaceNotice;
     private bool _advancedMode;
+    private string _selectedUiLanguage;
 
     public ControlCenterWorkspaceViewModel(
         IEnumerable<ServerTabViewModel> servers,
@@ -22,14 +25,18 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
         Func<ServerTabViewModel, Task<bool>> removeServer,
         Func<string, Task> activeServerChanged,
         bool advancedMode = false,
-        Func<bool, Task>? displayModeChanged = null)
+        Func<bool, Task>? displayModeChanged = null,
+        string uiLanguageCode = "fr-FR",
+        Func<string, Task>? languageChanged = null)
     {
         ArgumentNullException.ThrowIfNull(servers);
         _addServer = addServer ?? throw new ArgumentNullException(nameof(addServer));
         _removeServer = removeServer ?? throw new ArgumentNullException(nameof(removeServer));
         _activeServerChanged = activeServerChanged ?? throw new ArgumentNullException(nameof(activeServerChanged));
         _displayModeChanged = displayModeChanged ?? (_ => Task.CompletedTask);
+        _languageChanged = languageChanged ?? (_ => Task.CompletedTask);
         _advancedMode = advancedMode;
+        _selectedUiLanguage = NormalizeUiLanguage(uiLanguageCode);
         Servers = new ObservableCollection<ServerTabViewModel>(servers);
         if (Servers.Count == 0)
         {
@@ -71,6 +78,18 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
     public AsyncRelayCommand<ServerTabViewModel> RemoveServerCommand { get; }
 
     public AsyncRelayCommand ToggleDisplayModeCommand { get; }
+
+    public IReadOnlyList<UiLanguageOption> UiLanguages { get; } =
+    [
+        new("fr-FR", "🇫🇷", "Français"),
+        new("en-US", "🇬🇧", "English")
+    ];
+
+    public string SelectedUiLanguage
+    {
+        get => _selectedUiLanguage;
+        private set => SetProperty(ref _selectedUiLanguage, value);
+    }
 
     public bool AdvancedMode
     {
@@ -115,6 +134,27 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
         AdvancedMode = !AdvancedMode;
         await _displayModeChanged(AdvancedMode);
     }
+
+    public async Task SetUiLanguageAsync(string? languageCode)
+    {
+        var normalized = NormalizeUiLanguage(languageCode);
+        if (string.Equals(SelectedUiLanguage, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        SelectedUiLanguage = normalized;
+        var culture = CultureInfo.GetCultureInfo(normalized);
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        await _languageChanged(normalized);
+        WorkspaceNotice = normalized == "en-US"
+            ? "Language saved. Full English interface will apply progressively as translations are added."
+            : "Langue enregistrée. L’interface française reste la référence actuelle.";
+    }
+
+    private static string NormalizeUiLanguage(string? code) =>
+        string.Equals(code, "en-US", StringComparison.OrdinalIgnoreCase) ? "en-US" : "fr-FR";
 
     private async Task SelectServerAsync(ServerTabViewModel server)
     {
@@ -187,6 +227,11 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
             OnPropertyChanged(nameof(WindowTitle));
         }
     }
+}
+
+public sealed record UiLanguageOption(string Code, string Flag, string Label)
+{
+    public string DisplayName => $"{Flag} {Label}";
 }
 
 public sealed class ServerTabViewModel : ObservableObject
