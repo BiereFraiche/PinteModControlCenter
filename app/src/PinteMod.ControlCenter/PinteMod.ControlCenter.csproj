@@ -8,7 +8,7 @@
     <Version>2.4.5</Version>
     <AssemblyVersion>2.4.5.0</AssemblyVersion>
     <FileVersion>2.4.5.0</FileVersion>
-    <InformationalVersion>2.4.5-rc8</InformationalVersion>
+    <InformationalVersion>2.4.5-rc9</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>PinteMod Control Center</Product>
     <Description>Gestionnaire multi-serveurs BOIII, PinteMod et intégrations adaptatives.</Description>

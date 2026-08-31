@@ -45,10 +45,28 @@ public static class AccentThemeService
             return;
         }
 
-        var option = Resolve(OperatorAccentTheme.NormalizeOrDefault(key));
-        application.Resources["AccentBrush"] = new SolidColorBrush(option.AccentColor);
-        application.Resources["AccentBrightBrush"] = new SolidColorBrush(option.BrightColor);
-        application.Resources["AccentSoftBrush"] = new SolidColorBrush(option.SoftColor);
+        // Startup can resume while WPF is still finalising its application
+        // resources on slower/remote Windows sessions.  The default XAML theme
+        // is already valid, so a cosmetic accent must never prevent the window
+        // from opening.
+        if (!application.Dispatcher.CheckAccess())
+        {
+            application.Dispatcher.Invoke(() => Apply(key));
+            return;
+        }
+
+        try
+        {
+            var option = Resolve(OperatorAccentTheme.NormalizeOrDefault(key));
+            application.Resources["AccentBrush"] = new SolidColorBrush(option.AccentColor);
+            application.Resources["AccentBrightBrush"] = new SolidColorBrush(option.BrightColor);
+            application.Resources["AccentSoftBrush"] = new SolidColorBrush(option.SoftColor);
+        }
+        catch (InvalidOperationException)
+        {
+            // Keep the default accent from App.xaml. It is preferable to a
+            // failed cosmetic choice on a remote/compatibility WPF session.
+        }
     }
 
     private static AccentThemeOption Create(
