@@ -211,11 +211,15 @@ public partial class App : Application
                 _workspaceConfiguration.UiLanguageCode,
                 SetUiLanguageAsync);
             startupPhase = "chargement de l’interface";
-            AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
-            var window = new MainWindow { DataContext = _workspace };
-            MainWindow = window;
-            window.Closing += OnMainWindowClosing;
-            window.Show();
+            MainWindow? window = null;
+            await Dispatcher.InvokeAsync(() =>
+            {
+                AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
+                window = new MainWindow { DataContext = _workspace };
+                MainWindow = window;
+                window.Closing += OnMainWindowClosing;
+                window.Show();
+            });
             ShutdownMode = ShutdownMode.OnMainWindowClose;
 
             if (unavailableProfileCount > 0 || recoveryTabUsed)
@@ -235,7 +239,7 @@ public partial class App : Application
             {
                 var companionManager = new ServerManagerWindow(managerViewModel, companionWindow: true);
                 companionManager.Show();
-                window.Activate();
+                window?.Activate();
             }
 
             startupPhase = "démarrage des services locaux";
@@ -243,7 +247,7 @@ public partial class App : Application
             {
                 try
                 {
-                    await context.StartAsync(window.Dispatcher);
+                    await context.StartAsync(window?.Dispatcher ?? Dispatcher);
                 }
                 catch (Exception exception)
                 {
