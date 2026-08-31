@@ -41,8 +41,10 @@ public partial class App : Application
             return;
         }
 
+        var startupPhase = "préparation locale";
         try
         {
+            startupPhase = "vérification des mises à jour locales";
             var preferredUiUpdateIndex = Array.FindIndex(e.Args, argument => string.Equals(argument, "--preferred-ui-apply-update", StringComparison.OrdinalIgnoreCase));
             if (preferredUiUpdateIndex >= 0 && preferredUiUpdateIndex + 1 < e.Args.Length && int.TryParse(e.Args[preferredUiUpdateIndex + 1], out var previousPreferredUiPid))
             {
@@ -104,7 +106,9 @@ public partial class App : Application
             // The same executable is both the server/profile manager and the Control Center.
             // Keep shutdown explicit while the modal manager is the only window.
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            startupPhase = "chargement du gestionnaire de serveurs";
             var managerViewModel = await ServerManagerViewModel.CreateAsync(_applicationLifetime.Token);
+            startupPhase = "ouverture du gestionnaire de serveurs";
             var managerWindow = new ServerManagerWindow(managerViewModel);
             if (managerWindow.ShowDialog() != true)
             {
@@ -114,6 +118,7 @@ public partial class App : Application
 
             var managerSelectedProfileId = managerViewModel.SelectedProfile?.ProfileId;
 
+            startupPhase = "lecture des profils enregistrés";
             _workspaceStore = new JsonOperatorWorkspaceConfigurationStore();
             _workspaceConfiguration = await _workspaceStore.LoadAsync(_applicationLifetime.Token);
             var parsedStartup = ApplicationStartupOptions.Parse(e.Args);
@@ -194,6 +199,7 @@ public partial class App : Application
                 recoveryTabUsed = true;
             }
 
+            startupPhase = "création du tableau de bord";
             _workspace = new ControlCenterWorkspaceViewModel(
                 tabs,
                 _workspaceConfiguration.ActiveProfileId,
@@ -204,6 +210,7 @@ public partial class App : Application
                 SetDisplayModeAsync,
                 _workspaceConfiguration.UiLanguageCode,
                 SetUiLanguageAsync);
+            startupPhase = "chargement de l’interface";
             AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
             var window = new MainWindow { DataContext = _workspace };
             MainWindow = window;
@@ -231,6 +238,7 @@ public partial class App : Application
                 window.Activate();
             }
 
+            startupPhase = "démarrage des services locaux";
             foreach (var context in _serverContexts.Values)
             {
                 try
@@ -243,10 +251,10 @@ public partial class App : Application
                 }
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
             PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
-                "Le Control Center n’a pas pu être initialisé. Vérifiez les paramètres de lancement et les sources locales.",
+                $"Le Control Center n’a pas pu être initialisé pendant : {startupPhase}.\n\nDiagnostic sûr : {exception.GetType().Name}.\nAucun chemin privé ni mot de passe n’est affiché.",
                 "PinteMod Control Center",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);

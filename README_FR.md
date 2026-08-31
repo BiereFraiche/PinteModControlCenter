@@ -1,6 +1,6 @@
 # PinteMod Control Center
 
-> **Version stable actuelle : v2.4.4.** Le sélecteur 🇫🇷/🇬🇧 est mémorisé dans la barre de titre ; **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable. La [candidate v2.4.5-rc7](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc7) attend uniquement la recette terrain finale.
+> **Version stable actuelle : v2.4.4.** Le sélecteur 🇫🇷/🇬🇧 est mémorisé dans la barre de titre ; **Démarrer** comme **Lancer tous** peuvent lancer un premier serveur PinteMod local sans RCON préalable. La [candidate v2.4.5-rc8](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc8) attend uniquement la recette terrain finale.
 
 Documents utiles : [état v2.4.4](docs/STATUS_V2.4.4.md) · [recette finale](docs/RECETTE_FINALE_FR.md) · [test terrain](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) · [déploiement VM](docs/DEPLOIEMENT_VM_FR.md).
 
@@ -19,10 +19,10 @@ PinteMod Control Center est une application Windows locale en **C# / .NET 8 / WP
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
 
 > **Version stable actuelle :** v2.4.4.
-> La candidate **v2.4.5-rc7** termine Debug et Release avec **0 avertissement, 0 erreur et 621/621 tests réussis**. Elle reste une prépublication jusqu’à la recette BOIII réelle.
+> La candidate **v2.4.5-rc8** termine Debug et Release avec **0 avertissement, 0 erreur et 621/621 tests réussis**. Elle reste une prépublication jusqu’à la recette BOIII réelle.
 > Sans configuration explicite, l’application démarre toujours en simulation complète.
 
-[Télécharger la stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Tester la candidate v2.4.5-rc7](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc7)
+[Télécharger la stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Tester la candidate v2.4.5-rc8](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc8)
 
 ## v2.4.4 — stable
 
