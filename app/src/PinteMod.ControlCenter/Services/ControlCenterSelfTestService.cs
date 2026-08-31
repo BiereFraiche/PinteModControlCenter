@@ -58,7 +58,7 @@ public sealed record ControlCenterSelfTestReport(
 
 public sealed class ControlCenterSelfTestService : IControlCenterSelfTestService
 {
-    internal const string ExpectedProductVersion = "2.4.5-rc10";
+    internal const string ExpectedProductVersion = "2.4.5-rc11";
 
     private readonly Func<ControlCenterSelfTestCheck> _userInterfaceProbe;
 

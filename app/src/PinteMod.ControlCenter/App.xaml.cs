@@ -29,10 +29,10 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        if (GraphicsCompatibilityStartupOptions.IsRequested(e.Args))
-        {
-            RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
-        }
+        // The Control Center is often used through AnyDesk, RDP or a VM
+        // console. Software rendering prevents a remote GPU/driver from
+        // rejecting the first WPF window; this UI has no graphics workload.
+        RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
 
         if (SelfTestStartupOptions.IsRequested(e.Args))
         {
