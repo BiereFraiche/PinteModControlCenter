@@ -47,6 +47,40 @@ public sealed class MultiServerPayloadHardeningTests
     }
 
     [TestMethod]
+    public void RecordHubDefinitions_IgnoreDuplicatePhysicalRoots_ButWorkersRefuseThem()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "PinteMod.ControlCenter.RecordHubRootTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "boiii"));
+        File.WriteAllText(Path.Combine(root, "Server.bat"), "@echo off");
+        try
+        {
+            IReadOnlyCollection<MultiServerLaunchDefinition> definitions =
+            [
+                new("first", "Premier", root, "Server.bat", 27017),
+                new("legacy", "Ancien profil", root, "Server.bat", 27018)
+            ];
+            var normalize = typeof(MultiServerOrchestratorService).GetMethod(
+                "Normalize",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(normalize);
+
+            var hub = normalize.Invoke(null, [definitions, false, false]) as IReadOnlyList<MultiServerLaunchDefinition>;
+            Assert.IsNotNull(hub);
+            Assert.AreEqual(1, hub.Count);
+            Assert.AreEqual("first", hub[0].ProfileId);
+
+            var exception = Assert.ThrowsException<TargetInvocationException>(() =>
+                normalize.Invoke(null, [definitions, true, true]));
+            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            StringAssert.Contains(exception.InnerException.Message, "Racine BOIII locale dupliquée");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void EmbeddedMultiServerPayload_ReconcilesLegacyWindowsWorkersAndHardensBanRuntime()
     {
         using var archive = OpenPayload(".Payloads.PinteMod_MULTI_20260819.zip");

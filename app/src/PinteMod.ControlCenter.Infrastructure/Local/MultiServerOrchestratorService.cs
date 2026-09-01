@@ -116,7 +116,7 @@ public sealed class MultiServerOrchestratorService
             return new ServerLaunchResult(false, "Payload MultiServer incomplet dans le Manager.");
         }
 
-        // RecordHub must always see every configured local PinteMod root, even when
+        // RecordHub must always see every distinct local PinteMod root, even when
         // the operator launches only one server. Its mutex prevents duplicates.
         var hubRoot = Path.Combine(root, "PinteModRecordHub");
         Directory.CreateDirectory(hubRoot);
@@ -199,9 +199,21 @@ public sealed class MultiServerOrchestratorService
             }
 
             var root = Path.GetFullPath(item.ServerRoot.Trim()).TrimEnd(Path.DirectorySeparatorChar);
-            if (!Directory.Exists(Path.Combine(root, "boiii")) || !roots.Add(root))
+            if (!Directory.Exists(Path.Combine(root, "boiii")))
             {
-                throw new InvalidOperationException("Racine BOIII locale invalide ou dupliquée.");
+                throw new InvalidOperationException("Racine BOIII locale invalide.");
+            }
+
+            if (!roots.Add(root))
+            {
+                // RecordHub is file-only. An old duplicate Manager profile
+                // must not prevent the selected BOIII server from launching.
+                if (!requireUniquePorts)
+                {
+                    continue;
+                }
+
+                throw new InvalidOperationException("Racine BOIII locale dupliquée.");
             }
 
             if (item.ServerPort is < 1 or > 65535 ||

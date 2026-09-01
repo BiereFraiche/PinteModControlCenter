@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net;
 using System.Collections.ObjectModel;
+using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
 using PinteMod.ControlCenter.Infrastructure.Local;
 using PinteMod.ControlCenter.Security;
@@ -627,6 +628,7 @@ public sealed class ServerManagerViewModel : ObservableObject
     private readonly RemoteAgentInstallerService _remoteAgentInstaller;
     private readonly ManagedServerRuntimeProbe _runtimeProbe;
     private readonly ManagedServerStopService _stopService;
+    private readonly IBoiiiRconBootstrapService _rconBootstrapService;
     private readonly GitHubUpdateCheckService _githubUpdateService = new();
     private OperatorWorkspaceConfiguration _workspaceConfiguration;
     private ServerManagerProfileViewModel? _selectedProfile;
@@ -654,7 +656,8 @@ public sealed class ServerManagerViewModel : ObservableObject
         RemoteLaunchClientService remoteLaunchClient,
         RemoteAgentInstallerService remoteAgentInstaller,
         ManagedServerRuntimeProbe runtimeProbe,
-        ManagedServerStopService stopService)
+        ManagedServerStopService stopService,
+        IBoiiiRconBootstrapService rconBootstrapService)
     {
         _workspaceStore = workspaceStore;
         _workspaceConfiguration = workspaceConfiguration;
@@ -667,6 +670,7 @@ public sealed class ServerManagerViewModel : ObservableObject
         _remoteAgentInstaller = remoteAgentInstaller;
         _runtimeProbe = runtimeProbe;
         _stopService = stopService;
+        _rconBootstrapService = rconBootstrapService;
         _isAdvancedMode = workspaceConfiguration.AdvancedMode;
         _keepManagerOpenAfterControlCenter = workspaceConfiguration.KeepManagerOpenAfterControlCenter;
         _selectedUiLanguage = NormalizeUiLanguage(workspaceConfiguration.UiLanguageCode);
@@ -901,7 +905,8 @@ public sealed class ServerManagerViewModel : ObservableObject
             new RemoteLaunchClientService(),
             new RemoteAgentInstallerService(),
             new ManagedServerRuntimeProbe(),
-            new ManagedServerStopService());
+            new ManagedServerStopService(),
+            new BoiiiRconBootstrapService());
 
         foreach (var profileId in workspace.ProfileIds)
         {
@@ -1375,6 +1380,69 @@ public sealed class ServerManagerViewModel : ObservableObject
         return result;
     }
 
+    // The prompt is intentionally owned by the WPF window so a password never
+    // becomes a bindable ViewModel property. This only checks protected state.
+    public async Task<bool> NeedsFirstRconSetupAsync(CancellationToken cancellationToken = default)
+    {
+        var profile = SelectedProfile;
+        if (profile is null || profile.IsUncProfile || string.IsNullOrWhiteSpace(profile.ServerRoot))
+        {
+            return false;
+        }
+
+        try
+        {
+            return !await new DpapiRconSecretStore(
+                OperatorProfileStoragePaths.GetRconSecretPath(profile.ProfileId)).HasSecretAsync(cancellationToken);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+        {
+            // The optional first-run prompt must not block normal BOIII startup.
+            return false;
+        }
+    }
+
+    public async Task<ServerLaunchResult> InitializeFirstRconAsync(string secret, CancellationToken cancellationToken = default)
+    {
+        var profile = SelectedProfile ?? throw new InvalidOperationException("Aucun profil sélectionné.");
+        if (profile.IsUncProfile)
+        {
+            return new ServerLaunchResult(false, "Le premier RCON doit être défini sur le PC qui héberge le serveur.");
+        }
+
+        profile.ApplyServerRunning(_runtimeProbe.IsRunning(profile.ServerRoot, ParsePort(profile.RconPortText)));
+        if (profile.ServerRunning)
+        {
+            return new ServerLaunchResult(false, "Arrêtez d’abord BOIII avant de créer le premier RCON.");
+        }
+
+        var bootstrap = await _rconBootstrapService.InitializeAsync(profile.ServerRoot, secret, cancellationToken);
+        if (!bootstrap.Success)
+        {
+            StatusMessage = bootstrap.Message;
+            return new ServerLaunchResult(false, bootstrap.Message);
+        }
+
+        try
+        {
+            var secretStore = new DpapiRconSecretStore(
+                OperatorProfileStoragePaths.GetRconSecretPath(profile.ProfileId));
+            await secretStore.SaveAsync(secret, cancellationToken);
+            var workerReady = await EnsureWorkerSecretPreparedAsync(profile.ProfileId, cancellationToken);
+            var message = workerReady
+                ? bootstrap.Message + " Le secret est protégé pour ce compte Windows."
+                : bootstrap.Message + " Le secret est protégé pour ce compte Windows ; le Worker sera finalisé au prochain lancement.";
+            StatusMessage = message;
+            return new ServerLaunchResult(true, message);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+        {
+            const string message = "RCON créé dans le serveur, mais Windows n’a pas pu protéger sa copie locale. Ouvrez Paramètres et enregistrez le même RCON avant d’utiliser les commandes.";
+            StatusMessage = message;
+            return new ServerLaunchResult(true, message);
+        }
+    }
+
     public async Task<ServerLaunchResult> StopSelectedAsync(CancellationToken cancellationToken = default)
     {
         var profile = SelectedProfile ?? throw new InvalidOperationException("Aucun profil sélectionné.");
@@ -1517,6 +1585,7 @@ public sealed class ServerManagerViewModel : ObservableObject
         CancellationToken cancellationToken)
     {
         var result = new List<MultiServerLaunchDefinition>();
+        var distinctRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var profile in Profiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -1542,6 +1611,23 @@ public sealed class ServerManagerViewModel : ObservableObject
                 continue;
             }
 
+            string canonicalRoot;
+            try
+            {
+                canonicalRoot = Path.GetFullPath(profile.ServerRoot.Trim()).TrimEnd(Path.DirectorySeparatorChar);
+            }
+            catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                continue;
+            }
+
+            // An old imported or renamed profile may target the same physical
+            // server. RecordHub must see that root once, never block a launch.
+            if (!distinctRoots.Add(canonicalRoot))
+            {
+                continue;
+            }
+
             if (!int.TryParse(profile.RconPortText, out var port) || port is < 1 or > 65535)
             {
                 continue;
@@ -1550,7 +1636,7 @@ public sealed class ServerManagerViewModel : ObservableObject
             result.Add(new MultiServerLaunchDefinition(
                 profile.ProfileId,
                 profile.DisplayName,
-                profile.ServerRoot,
+                canonicalRoot,
                 profile.LauncherRelativePath,
                 port));
         }

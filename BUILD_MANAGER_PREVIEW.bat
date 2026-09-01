@@ -8,7 +8,7 @@ set "ROOT=%~dp0"
 set "APP=%ROOT%app"
 set "SLN=%APP%\PinteMod.ControlCenter.sln"
 set "PROJECT=%APP%\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj"
-set "OUTROOT=%APP%\artifacts\release-v2.4.5-rc21-win-x64"
+set "OUTROOT=%APP%\artifacts\release-v2.4.5-rc22-win-x64"
 set "OUT_SINGLE=%OUTROOT%\single-exe"
 set "OUT_FOLDER=%OUTROOT%\folder"
 set "OUT_SINGLE_ZIP=%OUTROOT%\PinteMod.ControlCenter-single-exe-win-x64.zip"
@@ -19,7 +19,7 @@ set "OUT_SELFTEST_FOLDER_TEMP=%OUTROOT%\SELF-TEST-FOLDER.tmp.txt"
 set "PACKAGER=%APP%\packaging\Build-PreviewPackages.ps1"
 
 echo ============================================================
-echo  PinteMod Control Center - CANDIDAT RECETTE v2.4.5-rc21
+echo  PinteMod Control Center - CANDIDAT RECETTE v2.4.5-rc22
 echo ============================================================
 echo.
 where dotnet >nul 2>nul
@@ -85,7 +85,7 @@ if errorlevel 1 goto :selftestfail
 findstr /x /c:"RESULTAT=PASS" "%OUT_SELFTEST%" >nul
 if errorlevel 1 goto :selftestfail
 del /q "%OUT_SELFTEST_FOLDER_TEMP%"
-powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%PACKAGER%" -SingleDirectory "%OUT_SINGLE%" -FolderDirectory "%OUT_FOLDER%" -OutputRoot "%OUTROOT%" -RepositoryRoot "%ROOT%" -SelfTestReport "%OUT_SELFTEST%"
+powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%PACKAGER%" "%OUT_SINGLE%" "%OUT_FOLDER%" "%OUTROOT%" "%ROOT%" "%OUT_SELFTEST%"
 if errorlevel 1 goto :fail
 if not exist "%OUT_SINGLE_ZIP%" goto :folderfail
 if not exist "%OUT_FOLDER_ZIP%" goto :folderfail
@@ -111,7 +111,7 @@ echo   %OUT_SINGLE_ZIP%
 echo   %OUT_HASHES%
 echo   %OUT_SELFTEST%
 echo.
-echo Candidate v2.4.5-rc21 : démarrage WPF résilient, diagnostic sûr, récupération des profils et RCON PinteMod natif.
+echo Candidate v2.4.5-rc22 : assistant de premier RCON, lancement ouvrant automatiquement le Control Center et profils doublons tolérés.
 echo Le meme EXE peut aussi fonctionner en Agent distant SMB sur le PC serveur.
 echo.
 popd

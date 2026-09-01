@@ -12,8 +12,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $RepositoryRoot,
 
-    [Parameter(Mandatory = $true)]
-    [string] $SelfTestReport
+    [string] $SelfTestReport = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -41,6 +40,10 @@ $output = [IO.Path]::GetFullPath($OutputRoot).TrimEnd([IO.Path]::DirectorySepara
 $single = [IO.Path]::GetFullPath($SingleDirectory).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $folder = [IO.Path]::GetFullPath($FolderDirectory).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $outputPrefix = $output + [IO.Path]::DirectorySeparatorChar
+
+if ([string]::IsNullOrWhiteSpace($SelfTestReport)) {
+    $SelfTestReport = Join-Path $output 'SELF-TEST.txt'
+}
 
 foreach ($candidate in @($single, $folder)) {
     if (-not $candidate.StartsWith($outputPrefix, [StringComparison]::OrdinalIgnoreCase)) {

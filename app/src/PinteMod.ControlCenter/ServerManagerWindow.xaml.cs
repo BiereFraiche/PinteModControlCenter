@@ -287,14 +287,23 @@ public partial class ServerManagerWindow : Window
                 return;
             }
 
+            if (!await ConfigureFirstRconBeforeLaunchAsync())
+            {
+                return;
+            }
+
             var launch = await ViewModel.LaunchSelectedAsync(_lifetime.Token);
             PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
                 launch.Success
-                    ? result.Message + "\n\n" + launch.Message + "\n\nVous pourrez définir le RCON plus tard dans Paramètres, sans empêcher ce premier lancement."
+                    ? result.Message + "\n\n" + launch.Message
                     : result.Message + "\n\nLa préparation est terminée, mais le démarrage doit être vérifié : " + launch.Message,
                 "Serveur prêt",
                 MessageBoxButton.OK,
                 launch.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            if (launch.Success)
+            {
+                await OpenSelectedControlCenterAsync();
+            }
         });
     }
 
@@ -449,12 +458,21 @@ public partial class ServerManagerWindow : Window
     {
         await RunAsync(async () =>
         {
+            if (!await ConfigureFirstRconBeforeLaunchAsync())
+            {
+                return;
+            }
+
             var result = await ViewModel.LaunchSelectedAsync(_lifetime.Token);
             PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
                 result.Message,
                 "PinteMod Manager",
                 MessageBoxButton.OK,
                 result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            if (result.Success)
+            {
+                await OpenSelectedControlCenterAsync();
+            }
         });
     }
 
@@ -486,6 +504,11 @@ public partial class ServerManagerWindow : Window
     {
         await RunAsync(async () =>
         {
+            if (!await ConfigureFirstRconBeforeLaunchAsync())
+            {
+                return;
+            }
+
             var result = await ViewModel.LaunchSelectedAsync(_lifetime.Token);
             if (!result.Success)
             {
@@ -502,6 +525,41 @@ public partial class ServerManagerWindow : Window
                 DialogResult = true;
             }
         });
+    }
+
+    private async Task<bool> ConfigureFirstRconBeforeLaunchAsync()
+    {
+        if (!await ViewModel.NeedsFirstRconSetupAsync(_lifetime.Token))
+        {
+            return true;
+        }
+
+        var dialog = new PinteMod.ControlCenter.Views.FirstLaunchRconWindow { Owner = this };
+        if (dialog.ShowDialog() != true || dialog.StartWithoutRcon)
+        {
+            return dialog.StartWithoutRcon;
+        }
+
+        var secret = dialog.TakeSecret();
+        try
+        {
+            var result = await ViewModel.InitializeFirstRconAsync(secret, _lifetime.Token);
+            if (result.Success)
+            {
+                return true;
+            }
+
+            PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+                result.Message,
+                "Premier RCON",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false;
+        }
+        finally
+        {
+            secret = string.Empty;
+        }
     }
 
     private async void OpenControlCenter_Click(object sender, RoutedEventArgs e) =>
