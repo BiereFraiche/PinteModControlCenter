@@ -225,12 +225,12 @@ public partial class App : Application
                 AccentThemeService.Apply(_workspace.ActiveServer.AccentColorKey);
                 startupPhase = "création de la fenêtre principale";
                 window = new MainWindow { DataContext = _workspace };
-                startupPhase = "enregistrement de la fenêtre principale";
-                MainWindow = window;
                 startupPhase = "branchement de la fermeture";
                 window.Closing += OnMainWindowClosing;
                 startupPhase = "affichage de la fenêtre principale";
                 window.Show();
+                startupPhase = "enregistrement de la fenêtre principale";
+                MainWindow = window;
             });
             ShutdownMode = ShutdownMode.OnMainWindowClose;
 
