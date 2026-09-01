@@ -269,8 +269,9 @@ public partial class App : Application
         }
         catch (Exception exception)
         {
+            var diagnostic = StartupFailureDiagnostic.Describe(exception);
             PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
-                $"Le Control Center n’a pas pu être initialisé pendant : {startupPhase}.\n\nDiagnostic sûr : {exception.GetType().Name}.\nAucun chemin privé ni mot de passe n’est affiché.",
+                $"Le Control Center n’a pas pu être initialisé pendant : {startupPhase}.\n\nDiagnostic filtré : {diagnostic}\n\nLes chemins privés et les secrets sont masqués.",
                 "PinteMod Control Center",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
