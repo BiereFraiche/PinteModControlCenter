@@ -1,6 +1,6 @@
-# PinteMod Control Center — stable v2.4.3
+# PinteMod Control Center — candidat recette v2.4.5-rc21
 
-La version stable produit `2.4.3`. Démarrer et Lancer tous peuvent lancer un premier serveur local sans RCON préalable ; un silence RCON reste distinct de l’état local PinteMod.
+La version stable publique reste `2.4.4`. Le candidat `2.4.5-rc21` prépare la recette terrain finale : démarrage local sans RCON préalable, agent LAN, interface compatible session distante et dossier autonome. Un silence RCON reste distinct de l’état local PinteMod.
 
 Application Windows en C# / .NET 8 / WPF pour observer et administrer une session PinteMod depuis la machine serveur ou un poste du même LAN. Le mode simulé reste le comportement initial. Les données PinteMod sont lues en read-only ; les diagnostics et actions RCON autorisés sont exclusivement manuels et confirmés selon leur niveau de risque.
 
@@ -64,12 +64,12 @@ Sans argument, l’application reste entièrement simulée.
 Depuis la racine du dépôt, double-cliquer `BUILD_MANAGER_PREVIEW.bat`. Le workflow produit :
 
 ```text
-app\artifacts\release-v2.4.1-win-x64\single-exe\PinteMod.ControlCenter.exe
-app\artifacts\release-v2.4.1-win-x64\folder\
-app\artifacts\release-v2.4.1-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
-app\artifacts\release-v2.4.1-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
-app\artifacts\release-v2.4.1-win-x64\SHA256SUMS.txt
-app\artifacts\release-v2.4.1-win-x64\SELF-TEST.txt
+app\artifacts\release-v2.4.5-rc21-win-x64\single-exe\PinteMod.ControlCenter.exe
+app\artifacts\release-v2.4.5-rc21-win-x64\folder\
+app\artifacts\release-v2.4.5-rc21-win-x64\PinteMod.ControlCenter-single-exe-win-x64.zip
+app\artifacts\release-v2.4.5-rc21-win-x64\PinteMod.ControlCenter-folder-win-x64.zip
+app\artifacts\release-v2.4.5-rc21-win-x64\SHA256SUMS.txt
+app\artifacts\release-v2.4.5-rc21-win-x64\SELF-TEST.txt
 ```
 
 L’EXE unique et le dossier sont tous deux autonomes pour Windows x64. Le dossier peut être recompressé ou envoyé tel quel, mais il doit rester complet sur la machine cible.
