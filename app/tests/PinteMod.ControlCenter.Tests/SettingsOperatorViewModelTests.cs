@@ -429,7 +429,19 @@ public sealed class SettingsOperatorViewModelTests
     {
         public string? ServerRoot { get; private set; }
 
+        public Task<bool> HasConfiguredRconAsync(string serverRoot, CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+
         public Task<BoiiiRconBootstrapResult> InitializeAsync(
+            string serverRoot,
+            string secret,
+            CancellationToken cancellationToken = default)
+        {
+            ServerRoot = serverRoot;
+            return Task.FromResult(result);
+        }
+
+        public Task<BoiiiRconBootstrapResult> ReplaceAsync(
             string serverRoot,
             string secret,
             CancellationToken cancellationToken = default)

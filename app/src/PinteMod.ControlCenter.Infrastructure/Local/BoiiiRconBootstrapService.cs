@@ -20,6 +20,9 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
     private static readonly Regex ExistingRconRegex = new(
         @"^\s*(?:set\s+)?""?rcon_password\b",
         RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex ExistingRconLineRegex = new(
+        @"^\s*(?:set\s+)?""?rcon_password""?(?:\s+.*)?$",
+        RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
     private static readonly Regex ExistingPinteModBlockRegex = new(
         @"(?ms)^\s*// BEGIN PINTEMOD LOCAL SECRETS\s*$.*?^\s*// END PINTEMOD LOCAL SECRETS\s*$(?:\r?\n)?",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -37,6 +40,40 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
         Func<string, string, CancellationToken, Task<bool>>? writeDpapiSecretAsync = null)
     {
         _writeDpapiSecretAsync = writeDpapiSecretAsync ?? WriteDpapiSecretAsync;
+    }
+
+    public async Task<bool> HasConfiguredRconAsync(string serverRoot, CancellationToken cancellationToken = default)
+    {
+        var root = serverRoot?.Trim() ?? string.Empty;
+        if (root.Length == 0 || !Directory.Exists(root) || !Directory.Exists(Path.Combine(root, "boiii")))
+        {
+            return false;
+        }
+
+        try
+        {
+            var launcher = Path.Combine(root, "Server.bat");
+            if (!File.Exists(launcher)) return false;
+            var launcherText = await File.ReadAllTextAsync(launcher, cancellationToken).ConfigureAwait(false);
+            var configMatch = ServerFilenameRegex.Match(launcherText);
+            if (!configMatch.Success) return false;
+
+            var configPath = new[]
+            {
+                Path.Combine(root, "zone", configMatch.Groups["file"].Value),
+                Path.Combine(root, configMatch.Groups["file"].Value)
+            }.FirstOrDefault(File.Exists);
+            if (configPath is null) return false;
+
+            // Deliberately inspect only the presence of the directive. The
+            // secret itself is never parsed, returned, logged, or displayed.
+            var configText = await File.ReadAllTextAsync(configPath, cancellationToken).ConfigureAwait(false);
+            return ExistingRconRegex.IsMatch(configText) || ExistingPinteModBlockRegex.IsMatch(configText);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return false;
+        }
     }
 
     public async Task<BoiiiRconBootstrapResult> InitializeAsync(
@@ -108,6 +145,150 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
         return isPinteModServer
             ? await InitializePinteModAsync(root, configPath, configText, launcherText, suppliedSecret, _writeDpapiSecretAsync, cancellationToken).ConfigureAwait(false)
             : await InitializeBoiiiOnlyAsync(configPath, configText, suppliedSecret, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<BoiiiRconBootstrapResult> ReplaceAsync(
+        string serverRoot,
+        string secret,
+        CancellationToken cancellationToken = default)
+    {
+        var suppliedSecret = secret ?? string.Empty;
+        if (!SecretRegex.IsMatch(suppliedSecret))
+        {
+            return new BoiiiRconBootstrapResult(false, "Secret refusé : 8 à 128 caractères, sans espace ni guillemet.");
+        }
+
+        var root = serverRoot?.Trim() ?? string.Empty;
+        if (root.Length == 0 || !Directory.Exists(root) || !Directory.Exists(Path.Combine(root, "boiii")))
+        {
+            return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : choisissez d’abord la racine BOIII complète.");
+        }
+
+        try
+        {
+            var launcherPath = Path.Combine(root, "Server.bat");
+            if (!File.Exists(launcherPath))
+            {
+                return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : Server.bat est introuvable à la racine serveur.");
+            }
+
+            var launcherText = await File.ReadAllTextAsync(launcherPath, cancellationToken).ConfigureAwait(false);
+            var configMatch = ServerFilenameRegex.Match(launcherText);
+            if (!configMatch.Success)
+            {
+                return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : Server.bat ne déclare pas un fichier server .cfg explicite.");
+            }
+
+            var configPath = new[]
+            {
+                Path.Combine(root, "zone", configMatch.Groups["file"].Value),
+                Path.Combine(root, configMatch.Groups["file"].Value)
+            }.FirstOrDefault(File.Exists);
+            if (configPath is null)
+            {
+                return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : le fichier serveur déclaré par Server.bat est introuvable.");
+            }
+
+            var configText = await File.ReadAllTextAsync(configPath, cancellationToken).ConfigureAwait(false);
+            if (ExistingPinteModBlockRegex.IsMatch(configText))
+            {
+                return await ReplacePinteModSecretAsync(root, configPath, suppliedSecret, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!ExistingRconLineRegex.IsMatch(configText))
+            {
+                return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : aucun RCON BOIII explicite n’a été trouvé.");
+            }
+
+            await ReplaceTextAtomicallyAsync(
+                configPath,
+                ReplaceRconDirective(configText, suppliedSecret),
+                cancellationToken).ConfigureAwait(false);
+            return new BoiiiRconBootstrapResult(true, "RCON BOIII remplacé. L’ancienne valeur reste masquée ; redémarrez le serveur pour utiliser la nouvelle.");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return new BoiiiRconBootstrapResult(false, "Remplacement RCON impossible : aucune modification fiable n’a été finalisée.");
+        }
+    }
+
+    private async Task<BoiiiRconBootstrapResult> ReplacePinteModSecretAsync(
+        string root,
+        string serverConfigPath,
+        string secret,
+        CancellationToken cancellationToken)
+    {
+        var zoneRoot = Path.GetDirectoryName(serverConfigPath)!;
+        var localSecretsPath = Path.Combine(zoneRoot, "pintemod_server_secrets.cfg");
+        var bridgeSecretPath = Path.Combine(root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt");
+        if (!File.Exists(localSecretsPath) || !File.Exists(bridgeSecretPath))
+        {
+            return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : les fichiers secrets PinteMod attendus sont incomplets.");
+        }
+
+        var localSecrets = await File.ReadAllTextAsync(localSecretsPath, cancellationToken).ConfigureAwait(false);
+        if (!ExistingRconLineRegex.IsMatch(localSecrets))
+        {
+            return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : le fichier PinteMod ne contient pas de directive RCON reconnue.");
+        }
+
+        var localTemporary = localSecretsPath + ".pintemod-controlcenter.tmp";
+        var bridgeTemporary = bridgeSecretPath + ".pintemod-controlcenter.tmp";
+        var bridgeBackup = bridgeSecretPath + ".pintemod-controlcenter.replace-backup";
+        try
+        {
+            await File.WriteAllTextAsync(
+                localTemporary,
+                ReplaceRconDirective(localSecrets, secret),
+                new UTF8Encoding(false),
+                cancellationToken).ConfigureAwait(false);
+            if (!await _writeDpapiSecretAsync(bridgeTemporary, secret, cancellationToken).ConfigureAwait(false))
+            {
+                return new BoiiiRconBootstrapResult(false, "Remplacement RCON impossible : Windows n’a pas pu protéger le nouveau secret GeoIP PinteMod.");
+            }
+
+            File.Move(bridgeSecretPath, bridgeBackup, overwrite: true);
+            File.Move(bridgeTemporary, bridgeSecretPath, overwrite: false);
+            File.Move(localTemporary, localSecretsPath, overwrite: true);
+            TryDelete(bridgeBackup);
+            return new BoiiiRconBootstrapResult(true, "RCON PinteMod remplacé et bridge GeoIP synchronisé. L’ancienne valeur reste masquée ; redémarrez le serveur.");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            try
+            {
+                if (File.Exists(bridgeBackup)) File.Move(bridgeBackup, bridgeSecretPath, overwrite: true);
+            }
+            catch (Exception rollbackException) when (rollbackException is IOException or UnauthorizedAccessException)
+            {
+                return new BoiiiRconBootstrapResult(false, "Remplacement RCON interrompu : vérifiez les permissions des fichiers PinteMod avant de recommencer.");
+            }
+
+            return new BoiiiRconBootstrapResult(false, "Remplacement RCON impossible : aucune modification fiable n’a été finalisée.");
+        }
+        finally
+        {
+            TryDelete(localTemporary);
+            TryDelete(bridgeTemporary);
+            TryDelete(bridgeBackup);
+        }
+    }
+
+    private static string ReplaceRconDirective(string source, string secret) =>
+        ExistingRconLineRegex.Replace(source, "set rcon_password \"" + secret + "\"");
+
+    private static async Task ReplaceTextAtomicallyAsync(string path, string content, CancellationToken cancellationToken)
+    {
+        var temporary = path + ".pintemod-controlcenter.tmp";
+        try
+        {
+            await File.WriteAllTextAsync(temporary, content, new UTF8Encoding(false), cancellationToken).ConfigureAwait(false);
+            File.Move(temporary, path, overwrite: true);
+        }
+        finally
+        {
+            TryDelete(temporary);
+        }
     }
 
     private static async Task<BoiiiRconBootstrapResult> InitializeBoiiiOnlyAsync(

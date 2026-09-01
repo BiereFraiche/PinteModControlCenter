@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:PinteMod.ControlCenter.Controls">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <controls:ResponsiveUniformGrid MinItemWidth="430" MaxColumns="2" Margin="16">
+        <controls:ResponsiveMasonryGrid MinItemWidth="430" MaxColumns="2" Margin="16">
             <Border Style="{StaticResource CardStyle}" Margin="4">
                 <StackPanel>
                     <TextBlock Text="CONNEXION OPÉRATEUR" Style="{StaticResource SectionTitleStyle}" />
@@ -220,21 +220,26 @@
                     <TextBlock Text="Bouton désactivé ? Cliquez d’abord sur TESTER LA SOURCE dans la carte Connexion opérateur."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
 
-                    <TextBlock Text="2 · SECRET RCON" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
-                    <TextBlock Text="Utilisez le même secret que celui déjà configuré pour BOIII. Ne me le transmettez pas : il reste protégé sur ce compte Windows."
+                    <TextBlock Text="2 · ENREGISTRER LE RCON DÉJÀ CRÉÉ" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
+                    <TextBlock Text="Si BOIII a déjà un RCON, entrez ici le même mot de passe : cela ne modifie pas le serveur. Ne me le transmettez pas : il reste protégé sur ce compte Windows."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
                     <Grid Margin="0,7,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <PasswordBox x:Name="RconPasswordBox" MaxLength="128" ToolTip="Le secret n’est jamais lié au ViewModel ni réaffiché." />
-                        <Button Grid.Column="1" Content="ENREGISTRER LE SECRET" Click="SaveRconSecret_Click"
+                        <Button Grid.Column="1" Content="ENREGISTRER POUR CE PC" Click="SaveRconSecret_Click"
                                 Style="{StaticResource PrimaryButtonStyle}" Margin="10,0,0,0" Padding="12,7" />
                     </Grid>
                     <TextBlock Text="{Binding RconSecretStatus}" Foreground="{DynamicResource AccentBrightBrush}"
                                FontSize="9" FontWeight="Bold" Margin="0,6,0,0" />
-                    <Button Content="UTILISER CE SECRET COMME PREMIER RCON DU SERVEUR" Click="InitializeFirstRcon_Click"
+                    <Button Content="CRÉER LE PREMIER RCON (SERVEUR VIERGE)" Click="InitializeFirstRcon_Click"
                             Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0"
                             ToolTip="Serveur arrêté requis. Écrit rcon_password une seule fois dans le .cfg explicitement déclaré par Server.bat, puis protège le même secret localement." />
                     <TextBlock Text="À utiliser uniquement sur un serveur vierge : aucun mot de passe RCON existant n’est remplacé."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    <Button Content="REMPLACER LE RCON DU SERVEUR" Click="ReplaceRcon_Click"
+                            Style="{StaticResource DangerButtonStyle}" HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0"
+                            ToolTip="Serveur arrêté requis. Remplace le RCON sans afficher l’ancienne valeur." />
+                    <TextBlock Text="La valeur actuelle reste toujours masquée : seul son état configuré est indiqué."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
 
                     <TextBlock Text="3 · LANCER UN TEST MANUEL" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
@@ -374,6 +379,6 @@
                                Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,8,0,0" />
                 </StackPanel>
             </Border>
-        </controls:ResponsiveUniformGrid>
+        </controls:ResponsiveMasonryGrid>
     </ScrollViewer>
 </UserControl>

@@ -923,14 +923,6 @@ public sealed class ServerManagerViewModel : ObservableObject
             string.Equals(profile.ProfileId, workspace.ActiveProfileId, StringComparison.Ordinal))
             ?? viewModel.Profiles.FirstOrDefault();
 
-        // The manager is the recovery point for a local installation.  An
-        // unreachable network source or a stale Agent registration must never
-        // prevent it from opening: the operator needs this window precisely to
-        // refresh or repair those optional integrations.
-        await viewModel.RunOptionalStartupStepAsync(
-            () => viewModel.RefreshInstalledLocalAgentRegistrationsIfNeededAsync(cancellationToken),
-            "L’Agent local n’a pas pu être actualisé automatiquement.",
-            cancellationToken);
         await viewModel.RunOptionalStartupStepAsync(
             async () => { await viewModel.ImportAuthenticatedRemoteCatalogProfilesAsync(cancellationToken); },
             "Les serveurs réseau n’ont pas pu être actualisés automatiquement.",
@@ -1118,7 +1110,7 @@ public sealed class ServerManagerViewModel : ObservableObject
     }
 
     public Task SaveSelectedAsync(CancellationToken cancellationToken = default) =>
-        SaveSelectedCoreAsync(refreshInstalledAgent: true, cancellationToken: cancellationToken);
+        SaveSelectedCoreAsync(refreshInstalledAgent: false, cancellationToken: cancellationToken);
 
     private async Task SaveSelectedCoreAsync(bool refreshInstalledAgent, CancellationToken cancellationToken)
     {
@@ -1217,20 +1209,11 @@ public sealed class ServerManagerViewModel : ObservableObject
         created.AddRange(bridge.CreatedFiles);
         var skipped = new List<string>(pinteMod.SkippedFiles);
         skipped.AddRange(bridge.SkippedFiles);
-        var agentMessage = string.Empty;
-
         await AnalyzeSelectedAsync(cancellationToken);
-        if (!profile.IsUncProfile && profile.Analysis?.CanLaunchLocally == true)
-        {
-            var agent = await EnableRemoteAgentAsync(cancellationToken);
-            agentMessage = agent.Success
-                ? " · connexion à distance préparée sur ce PC"
-                : " · PinteMod prêt, mais la connexion à distance reste à activer manuellement";
-            created.AddRange(agent.CreatedFiles);
-            skipped.AddRange(agent.SkippedFiles);
-        }
-
-        StatusMessage = "Serveur prêt : PinteMod + module Control Center installés" + agentMessage + ".";
+        // Installing PinteMod must leave a clean BOIII root. The optional
+        // Remote Agent, which creates .pintemod-controlcenter, is enabled only
+        // through the explicit Agent button in the Manager.
+        StatusMessage = "Serveur prêt : PinteMod + module Control Center installés. L’Agent distant reste désactivé tant que vous ne l’activez pas explicitement.";
         await AnalyzeSelectedAsync(cancellationToken);
         return new ServerDeploymentResult(true, StatusMessage, created, skipped);
     }
@@ -1392,8 +1375,17 @@ public sealed class ServerManagerViewModel : ObservableObject
 
         try
         {
-            return !await new DpapiRconSecretStore(
+            var secretStored = await new DpapiRconSecretStore(
                 OperatorProfileStoragePaths.GetRconSecretPath(profile.ProfileId)).HasSecretAsync(cancellationToken);
+            if (secretStored)
+            {
+                return false;
+            }
+
+            // A server that already owns an RCON must never be offered a
+            // replacement. The operator can simply save that existing secret
+            // under Paramètres without altering BOIII.
+            return !await _rconBootstrapService.HasConfiguredRconAsync(profile.ServerRoot, cancellationToken);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
         {

@@ -45,4 +45,27 @@ public partial class SettingsView : UserControl
 
         await viewModel.InitializeFirstRconSecretAsync(secret);
     }
+
+    private async void ReplaceRcon_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel viewModel)
+        {
+            return;
+        }
+
+        var secret = RconPasswordBox.Password;
+        RconPasswordBox.Clear();
+        var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+            "Remplacer le mot de passe RCON existant par la nouvelle valeur saisie ?\n\nLe serveur doit être arrêté. L’ancien mot de passe ne sera jamais affiché et le nouveau sera protégé pour ce compte Windows.",
+            "Remplacer RCON",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+        if (answer != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await viewModel.ReplaceRconSecretAsync(secret);
+    }
 }

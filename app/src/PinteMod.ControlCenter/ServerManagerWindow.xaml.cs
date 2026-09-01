@@ -265,7 +265,7 @@ public partial class ServerManagerWindow : Window
     private async Task ConfirmAndPreparePinteModAsync()
     {
         var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
-            "Préparer puis démarrer automatiquement ce serveur avec PinteMod ?\n\nLe Control Center installe les fichiers first-party, met le module de compatibilité à jour, prépare l’Agent de gestion puis démarre BOIII. Les scripts tiers et les données joueurs ne sont jamais écrasés. Le premier RCON peut être défini plus tard dans Paramètres.",
+            "Préparer puis démarrer automatiquement ce serveur avec PinteMod ?\n\nLe Control Center installe les fichiers first-party et le module de compatibilité, puis démarre BOIII. L’Agent distant n’est pas activé ici : le serveur reste propre tant que vous ne l’activez pas explicitement. Les scripts tiers et les données joueurs ne sont jamais écrasés.",
             "Préparer et démarrer",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);

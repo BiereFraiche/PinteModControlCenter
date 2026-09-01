@@ -798,6 +798,48 @@ public sealed class SettingsViewModel : PageViewModel
         }
     }
 
+    public async Task ReplaceRconSecretAsync(string secret, CancellationToken cancellationToken = default)
+    {
+        if (_rconSecretStore is null || _rconBootstrapService is null)
+        {
+            RconSecretStatus = "REMPLACEMENT INDISPONIBLE";
+            RconResponse = "Cette installation ne peut pas remplacer RCON depuis le Control Center.";
+            return;
+        }
+
+        BoiiiRconBootstrapResult result;
+        try
+        {
+            result = await _rconBootstrapService.ReplaceAsync(OperatorServerRoot, secret, cancellationToken);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+        {
+            RconSecretStatus = "RCON NON REMPLACÉ";
+            RconResponse = "Le RCON n’a pas pu être remplacé : vérifiez les permissions du dossier serveur puis recommencez.";
+            return;
+        }
+
+        if (!result.Success)
+        {
+            RconSecretStatus = "RCON NON REMPLACÉ";
+            RconResponse = result.Message;
+            return;
+        }
+
+        try
+        {
+            await _rconSecretStore.SaveAsync(secret, cancellationToken);
+            _rconSecretStateInitialized = true;
+            RconSecretStatus = "RCON REMPLACÉ · SECRET DPAPI ENREGISTRÉ";
+            RconResponse = result.Message + " Le nouveau secret est protégé pour ce compte Windows et ne sera pas réaffiché.";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+        {
+            RconSecretStatus = "RCON REMPLACÉ · SECRET LOCAL À ENREGISTRER";
+            RconResponse = result.Message + " Le Control Center n’a pas pu protéger sa copie locale : saisissez de nouveau le même mot de passe puis utilisez Enregistrer pour ce PC.";
+        }
+    }
+
     private async Task TestDataSourceAsync()
     {
         if (_localDataSourceProbe is null)

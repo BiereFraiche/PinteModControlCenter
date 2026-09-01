@@ -42,6 +42,55 @@ public sealed class BoiiiRconBootstrapServiceTests
     }
 
     [TestMethod]
+    public async Task ReplaceAsync_ExistingRcon_ReplacesDirectiveWithoutReturningThePreviousSecret()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n", "set rcon_password \"AlreadySet-2026\"\r\n");
+
+        var result = await new BoiiiRconBootstrapService().ReplaceAsync(directory.Root, "NewRcon-2026");
+
+        Assert.IsTrue(result.Success, result.Message);
+        Assert.IsFalse(result.Message.Contains("AlreadySet-2026", StringComparison.Ordinal));
+        var config = await File.ReadAllTextAsync(directory.ConfigPath);
+        StringAssert.Contains(config, "set rcon_password \"NewRcon-2026\"");
+        Assert.IsFalse(config.Contains("AlreadySet-2026", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task ReplaceAsync_PinteModServer_ReplacesPrivateDirectiveAndSynchronizesBridge()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n");
+        directory.AddPinteModFiles();
+        var service = new BoiiiRconBootstrapService(async (path, secret, cancellationToken) =>
+        {
+            await File.WriteAllTextAsync(path, "protected-" + secret, cancellationToken);
+            return true;
+        });
+        Assert.IsTrue((await service.InitializeAsync(directory.Root, "OldRcon-2026")).Success);
+
+        var result = await service.ReplaceAsync(directory.Root, "NewRcon-2026");
+
+        Assert.IsTrue(result.Success, result.Message);
+        var privateConfig = await File.ReadAllTextAsync(Path.Combine(directory.Root, "zone", "pintemod_server_secrets.cfg"));
+        StringAssert.Contains(privateConfig, "set rcon_password \"NewRcon-2026\"");
+        Assert.IsFalse(privateConfig.Contains("OldRcon-2026", StringComparison.Ordinal));
+        var bridgeSecret = await File.ReadAllTextAsync(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt"));
+        Assert.AreEqual("protected-NewRcon-2026", bridgeSecret);
+    }
+
+    [TestMethod]
+    public async Task HasConfiguredRconAsync_ReturnsOnlyDirectivePresence()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n", "set rcon_password \"AlreadySet-2026\"\r\n");
+
+        var configured = await new BoiiiRconBootstrapService().HasConfiguredRconAsync(directory.Root);
+
+        Assert.IsTrue(configured);
+    }
+
+    [TestMethod]
     public async Task InitializeAsync_PinteModServer_CreatesNativeLocalSetup()
     {
         using var directory = new TemporaryServerDirectory();

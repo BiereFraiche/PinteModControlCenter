@@ -16,7 +16,7 @@
         <TextBlock Text="PREMIER DÉMARRAGE" Style="{StaticResource SectionTitleStyle}" />
         <TextBlock Grid.Row="1" Margin="0,8,0,18" TextWrapping="Wrap"
                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" LineHeight="18"
-                   Text="Définissez maintenant le premier mot de passe RCON. Il permet ensuite les contrôles depuis le Control Center. Le mot de passe est protégé par Windows et ne sera jamais réaffiché." />
+                   Text="Définissez maintenant le premier mot de passe RCON pour un serveur vierge. S’il existe déjà, ne le remplacez pas : démarrez le serveur puis enregistrez ce même mot de passe dans Paramètres. Le mot de passe est protégé par Windows et ne sera jamais réaffiché." />
         <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="14">
             <StackPanel>
                 <TextBlock Text="MOT DE PASSE RCON" Style="{StaticResource EyebrowTextStyle}" />
