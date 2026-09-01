@@ -518,16 +518,31 @@ public partial class App : Application
         }
 
         _shutdownStarted = true;
-        await _profileOperations.WaitAsync();
-        _profileOperations.Release();
         StopAllContexts();
-        await Task.WhenAll(_serverContexts.Values.Select(context => context.WaitForShutdownAsync()));
-        DisposeResources();
-        _shutdownCompleted = true;
-        if (sender is Window window)
+        try
         {
-            window.Closing -= OnMainWindowClosing;
-            window.Close();
+            // A stuck local reader or a closing modal operation must never
+            // keep the desktop application resident forever. Cancellation is
+            // already requested above; give the graceful path a short, finite
+            // window before closing the UI process.
+            var profileOperation = _profileOperations.WaitAsync();
+            if (await Task.WhenAny(profileOperation, Task.Delay(TimeSpan.FromSeconds(2))) == profileOperation)
+            {
+                _profileOperations.Release();
+            }
+
+            var contextsShutdown = Task.WhenAll(_serverContexts.Values.Select(context => context.WaitForShutdownAsync()));
+            await Task.WhenAny(contextsShutdown, Task.Delay(TimeSpan.FromSeconds(5)));
+        }
+        finally
+        {
+            DisposeResources();
+            _shutdownCompleted = true;
+            if (sender is Window window)
+            {
+                window.Closing -= OnMainWindowClosing;
+                window.Close();
+            }
         }
     }
 

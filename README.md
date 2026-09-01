@@ -1,6 +1,6 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.4.** **Start** proposes a protected first RCON before the initial launch, while keeping a deliberate “start without RCON” choice. A successful launch opens the Control Center automatically. The [v2.4.5-rc24 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc24) is awaiting the final field recipe only.
+> **Current stable release: v2.4.4.** **Start** proposes a protected first RCON before the initial launch, while keeping a deliberate “start without RCON” choice. A successful launch opens the Control Center automatically. The [v2.4.5-rc25 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc25) is awaiting the final field recipe only.
 
 See the [v2.4.4 status](docs/STATUS_V2.4.4.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
@@ -20,10 +20,10 @@ PinteMod Control Center is a local Windows operator application for observing an
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
 > **Current stable release:** v2.4.4.
-> The **v2.4.5-rc24** candidate keeps BOIII RCON ownership intact unless the operator explicitly replaces it, does not activate the optional Agent during a normal installation, and completes Debug and Release with **0 warnings, 0 errors and 628/628 tests passing**. It remains a prerelease until the real BOIII field recipe succeeds.
+> The **v2.4.5-rc25** candidate closes the desktop UI after a bounded shutdown, keeps BOIII RCON ownership intact unless the operator explicitly replaces it, and does not activate the optional Agent during a normal installation. It remains a prerelease until the real BOIII field recipe succeeds.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc24](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc24)
+[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc25](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc25)
 
 ## v2.4.4 — stable
 
