@@ -81,8 +81,8 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
 
     public IReadOnlyList<UiLanguageOption> UiLanguages { get; } =
     [
-        new("fr-FR", "FR", "Français"),
-        new("en-US", "EN", "English")
+        new("fr-FR", "🇫🇷", "Français"),
+        new("en-US", "🇬🇧", "English")
     ];
 
     public string SelectedUiLanguage
@@ -231,8 +231,6 @@ public sealed class ControlCenterWorkspaceViewModel : ObservableObject
 
 public sealed record UiLanguageOption(string Code, string Flag, string Label)
 {
-    public string ShortLabel => Flag;
-
     public string DisplayName => Label;
 }
 

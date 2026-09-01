@@ -11,14 +11,6 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private void MinimizeButton_Click(object sender, RoutedEventArgs e) =>
-        WindowState = WindowState.Minimized;
-
-    private void MaximizeButton_Click(object sender, RoutedEventArgs e) =>
-        ToggleMaximize();
-
-    private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
-
     private async void LanguageSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DataContext is ControlCenterWorkspaceViewModel workspace &&
@@ -28,8 +20,4 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ToggleMaximize() =>
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
 }

@@ -43,6 +43,25 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="LanguageComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource SurfaceAltBrush}" />
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border Background="{StaticResource AppBackgroundBrush}"
@@ -121,35 +140,13 @@
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="34" />
                     <RowDefinition Height="50" />
                     <RowDefinition Height="70" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="28" />
                 </Grid.RowDefinitions>
 
-                <Border x:Name="WindowDragBar" Grid.Row="0" Background="{StaticResource SidebarBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
-                    <Grid Margin="14,0,0,0">
-                        <TextBlock Text="{Binding ActiveServer.DisplayName, StringFormat=PinteMod Control Center · {0}}"
-                                   Foreground="{StaticResource TextMutedBrush}" FontSize="10"
-                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <ComboBox x:Name="LanguageSelector" Width="52" Height="28" Margin="0,2,6,2"
-                                      ItemsSource="{Binding UiLanguages}" DisplayMemberPath="ShortLabel"
-                                      SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage, Mode=OneWay}"
-                                      ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged" />
-                            <Button Content="—" Width="42" Height="32" Padding="0" FontSize="12"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MinimizeButton_Click" />
-                            <Button Content="□" Width="42" Height="32" Padding="0" FontSize="12"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MaximizeButton_Click" />
-                            <Button Content="×" Width="42" Height="32" Padding="0" FontSize="14"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="CloseButton_Click" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border Grid.Row="1" Background="{StaticResource SidebarBrush}"
+                <Border Grid.Row="0" Background="{StaticResource SidebarBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
                     <Grid Margin="14,4,14,4">
                         <Grid.ColumnDefinitions>
@@ -195,7 +192,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="2" Background="{StaticResource AppBackgroundBrush}"
+                <Border Grid.Row="1" Background="{StaticResource AppBackgroundBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
                     <Grid Margin="24,0,24,0">
                         <Grid.ColumnDefinitions>
@@ -209,6 +206,16 @@
                                        Visibility="{Binding AdvancedMode, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ComboBox x:Name="LanguageSelector" Width="48" Height="30" Margin="0,0,8,0"
+                                      Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                      BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
+                                      ItemsSource="{Binding UiLanguages}" ItemContainerStyle="{StaticResource LanguageComboBoxItemStyle}"
+                                      SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage, Mode=OneWay}"
+                                      ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate><TextBlock Text="{Binding Flag}" FontSize="14" HorizontalAlignment="Center" /></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                             <Button Content="{Binding DisplayModeButtonLabel}" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding ToggleDisplayModeCommand}" Margin="0,0,8,0"
                                     ToolTip="Afficher ou masquer les informations techniques"
@@ -226,7 +233,7 @@
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="3">
+                <Grid Grid.Row="2">
                     <ContentControl Content="{Binding ActiveServer.Shell.CurrentPage}" />
                     <StackPanel VerticalAlignment="Top" Margin="24,10,24,0">
                         <Border Background="{StaticResource DangerSoftBrush}" BorderBrush="{StaticResource DangerBrush}"
@@ -247,7 +254,7 @@
                     </StackPanel>
                 </Grid>
 
-                <Border Grid.Row="4" Background="{StaticResource SidebarBrush}"
+                <Border Grid.Row="3" Background="{StaticResource SidebarBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,0,0">
                     <Grid Margin="14,0">
                         <TextBlock Text="{Binding ActiveServer.Shell.ReadOnlyFooterLabel}" Style="{StaticResource EyebrowTextStyle}"

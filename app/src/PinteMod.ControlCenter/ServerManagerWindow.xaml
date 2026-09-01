@@ -7,6 +7,13 @@
         WindowStartupLocation="CenterScreen"
         Loaded="Window_Loaded"
         Background="{StaticResource AppBackgroundBrush}">
+    <Window.Resources>
+        <Style x:Key="LanguageComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource SurfaceAltBrush}" />
+            <Setter Property="Padding" Value="8,5" />
+        </Style>
+    </Window.Resources>
     <Grid Margin="18">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -61,10 +68,16 @@
                     <TextBlock Text="{Binding GitHubUpdateStatus}" Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="9" MaxWidth="280" TextWrapping="Wrap" TextAlignment="Right" Margin="0,7,0,0" />
                     <StackPanel Orientation="Horizontal" Margin="0,7,0,0" HorizontalAlignment="Right">
-                        <ComboBox x:Name="LanguageSelector" Width="52" Height="28" Margin="0,0,6,0"
-                                  ItemsSource="{Binding UiLanguages}" DisplayMemberPath="ShortLabel"
+                        <ComboBox x:Name="LanguageSelector" Width="48" Height="28" Margin="0,0,6,0"
+                                  Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                  BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
+                                  ItemsSource="{Binding UiLanguages}" ItemContainerStyle="{StaticResource LanguageComboBoxItemStyle}"
                                   SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage, Mode=OneWay}"
-                                  ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged" />
+                                  ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding Flag}" FontSize="14" HorizontalAlignment="Center" /></DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <Button Content="VÉRIFIER GITHUB" Style="{StaticResource SecondaryButtonStyle}" Padding="9,5" Margin="0,0,6,0"
                                 Click="CheckGitHub_Click" />
                         <Button Content="MODE SIMPLE" Style="{StaticResource SecondaryButtonStyle}" Padding="9,5" Margin="0,0,6,0"

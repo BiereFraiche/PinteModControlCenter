@@ -707,8 +707,8 @@ public sealed class ServerManagerViewModel : ObservableObject
 
     public IReadOnlyList<UiLanguageOption> UiLanguages { get; } =
     [
-        new("fr-FR", "FR", "Français"),
-        new("en-US", "EN", "English")
+        new("fr-FR", "🇫🇷", "Français"),
+        new("en-US", "🇬🇧", "English")
     ];
 
     public string SelectedUiLanguage
