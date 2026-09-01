@@ -2,21 +2,13 @@
         x:Name="RootWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Icon="Assets/PinteMod.AppIcon.png"
         Title="{Binding WindowTitle}"
         Width="1060" Height="840"
         MinWidth="900" MinHeight="640"
-        WindowStyle="None" ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen"
         SnapsToDevicePixels="True"
         Background="{StaticResource AppBackgroundBrush}">
-    <shell:WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="34" ResizeBorderThickness="6"
-                            GlassFrameThickness="0" CornerRadius="0"
-                            UseAeroCaptionButtons="False" />
-    </shell:WindowChrome.WindowChrome>
-
     <Window.Resources>
         <Style x:Key="ServerTabRadioStyle" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
@@ -146,17 +138,13 @@
                             <ComboBox x:Name="LanguageSelector" Width="112" Height="28" Margin="0,2,6,2"
                                       ItemsSource="{Binding UiLanguages}" DisplayMemberPath="DisplayName"
                                       SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage}"
-                                      ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged"
-                                      shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                      ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged" />
                             <Button Content="—" Width="42" Height="32" Padding="0" FontSize="12"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MinimizeButton_Click"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MinimizeButton_Click" />
                             <Button Content="□" Width="42" Height="32" Padding="0" FontSize="12"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MaximizeButton_Click"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="MaximizeButton_Click" />
                             <Button Content="×" Width="42" Height="32" Padding="0" FontSize="14"
-                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="CloseButton_Click"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    Style="{StaticResource BaseButtonStyle}" BorderThickness="0" Click="CloseButton_Click" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -170,7 +158,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
-                                      shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                                      >
                             <ItemsControl ItemsSource="{Binding Servers}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
@@ -181,7 +169,7 @@
                                                      Style="{StaticResource ServerTabRadioStyle}"
                                                      Command="{Binding DataContext.SelectServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                      CommandParameter="{Binding}"
-                                                     shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                                                     >
                                             <StackPanel Orientation="Horizontal">
                                                 <Ellipse Width="8" Height="8" Fill="{Binding AccentPreviewBrush}"
                                                          Margin="0,0,7,0" VerticalAlignment="Center" />
@@ -198,12 +186,12 @@
                                 Command="{Binding RemoveServerCommand}"
                                 CommandParameter="{Binding ActiveServer}"
                                 ToolTip="Retirer l’onglet actif sans toucher au serveur"
-                                shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                />
                         <Button Grid.Column="2" Content="+ SERVEUR" Padding="10,5" Margin="8,0,0,0"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Command="{Binding AddServerCommand}"
                                 ToolTip="Ajouter un profil serveur isolé"
-                                shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                />
                     </Grid>
                 </Border>
 
@@ -224,10 +212,10 @@
                             <Button Content="{Binding DisplayModeButtonLabel}" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding ToggleDisplayModeCommand}" Margin="0,0,8,0"
                                     ToolTip="Afficher ou masquer les informations techniques"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    />
                             <Button Content="ACTUALISER" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding ActiveServer.Shell.RefreshCommand}" Margin="0,0,14,0"
-                                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    />
                             <StackPanel HorizontalAlignment="Right"
                                         Visibility="{Binding ActualWidth, ElementName=RootWindow, Converter={StaticResource WidthToVisibilityConverter}, ConverterParameter=980}">
                                 <TextBlock Text="HEURE LOCALE" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Right" />

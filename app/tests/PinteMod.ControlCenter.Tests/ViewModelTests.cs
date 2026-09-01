@@ -709,8 +709,9 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "ActiveServer.Shell.NavigationItems");
         StringAssert.Contains(xaml, "ActiveServer.Shell.CurrentPage");
         StringAssert.Contains(xaml, "ActiveServer.Shell.RefreshCommand");
-        StringAssert.Contains(xaml, "CaptionHeight=\"34\"");
-        StringAssert.Contains(xaml, "x:Name=\"WindowDragBar\" Grid.Row=\"0\"");
+        StringAssert.Contains(xaml, "Title=\"{Binding WindowTitle}\"");
+        Assert.IsFalse(xaml.Contains("WindowChrome", StringComparison.Ordinal));
+        Assert.IsFalse(xaml.Contains("WindowStyle=\"None\"", StringComparison.Ordinal));
         StringAssert.Contains(xaml, "<Border Grid.Row=\"1\" Background=\"{StaticResource SidebarBrush}\"");
         StringAssert.Contains(xaml, "Fill=\"{Binding AccentPreviewBrush}\"");
     }
