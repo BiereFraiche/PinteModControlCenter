@@ -131,7 +131,7 @@ public sealed class ControlCenterWorkspaceViewModelTests
 
         await workspace.SetUiLanguageAsync("en-US");
 
-        CollectionAssert.AreEqual(new[] { "🇫🇷", "🇬🇧" }, workspace.UiLanguages.Select(option => option.Flag).ToArray());
+        CollectionAssert.AreEqual(new[] { "fr-FR", "en-US" }, workspace.UiLanguages.Select(option => option.Code).ToArray());
         Assert.AreEqual("en-US", workspace.SelectedUiLanguage);
         Assert.AreEqual("en-US", savedLanguage);
     }

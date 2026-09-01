@@ -13,6 +13,36 @@
             <Setter Property="Background" Value="{StaticResource SurfaceAltBrush}" />
             <Setter Property="Padding" Value="8,5" />
         </Style>
+        <DataTemplate x:Key="LanguageFlagTemplate">
+            <Grid Width="24" Height="14">
+                <Border x:Name="FrenchFlag" Visibility="Collapsed" BorderBrush="#6B7888" BorderThickness="0.5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Background="#1E4FA3" />
+                        <Border Grid.Column="1" Background="#F7F7F7" />
+                        <Border Grid.Column="2" Background="#D91C2A" />
+                    </Grid>
+                </Border>
+                <Grid x:Name="BritishFlag" Visibility="Collapsed" Background="#1E4FA3" ClipToBounds="True">
+                    <Border Background="#F7F7F7" Height="6" VerticalAlignment="Center" />
+                    <Border Background="#F7F7F7" Width="7" HorizontalAlignment="Center" />
+                    <Border Background="#D91C2A" Height="3" VerticalAlignment="Center" />
+                    <Border Background="#D91C2A" Width="3" HorizontalAlignment="Center" />
+                </Grid>
+            </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Code}" Value="fr-FR">
+                        <Setter TargetName="FrenchFlag" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Code}" Value="en-US">
+                        <Setter TargetName="BritishFlag" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+        </DataTemplate>
     </Window.Resources>
     <Grid Margin="18">
         <Grid.RowDefinitions>
@@ -72,11 +102,9 @@
                                   Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
                                   BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
                                   ItemsSource="{Binding UiLanguages}" ItemContainerStyle="{StaticResource LanguageComboBoxItemStyle}"
+                                  ItemTemplate="{StaticResource LanguageFlagTemplate}"
                                   SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage, Mode=OneWay}"
                                   ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate><TextBlock Text="{Binding Flag}" FontSize="14" HorizontalAlignment="Center" /></DataTemplate>
-                            </ComboBox.ItemTemplate>
                         </ComboBox>
                         <Button Content="VÉRIFIER GITHUB" Style="{StaticResource SecondaryButtonStyle}" Padding="9,5" Margin="0,0,6,0"
                                 Click="CheckGitHub_Click" />
