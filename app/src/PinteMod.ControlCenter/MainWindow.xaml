@@ -135,8 +135,8 @@
                                    Foreground="{StaticResource TextMutedBrush}" FontSize="10"
                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <ComboBox x:Name="LanguageSelector" Width="112" Height="28" Margin="0,2,6,2"
-                                      ItemsSource="{Binding UiLanguages}" DisplayMemberPath="DisplayName"
+                            <ComboBox x:Name="LanguageSelector" Width="52" Height="28" Margin="0,2,6,2"
+                                      ItemsSource="{Binding UiLanguages}" DisplayMemberPath="ShortLabel"
                                       SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage, Mode=OneWay}"
                                       ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged" />
                             <Button Content="—" Width="42" Height="32" Padding="0" FontSize="12"

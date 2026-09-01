@@ -638,6 +638,7 @@ public sealed class ServerManagerViewModel : ObservableObject
     private string? _githubLatestVersion;
     private string _githubUpdateStatus = "GitHub : vérification en attente…";
     private bool _keepManagerOpenAfterControlCenter;
+    private string _selectedUiLanguage;
     private bool _updateAttentionVisible;
     private string _updateAttentionTitle = "MISE À JOUR";
     private string _updateAttentionMessage = string.Empty;
@@ -668,6 +669,7 @@ public sealed class ServerManagerViewModel : ObservableObject
         _stopService = stopService;
         _isAdvancedMode = workspaceConfiguration.AdvancedMode;
         _keepManagerOpenAfterControlCenter = workspaceConfiguration.KeepManagerOpenAfterControlCenter;
+        _selectedUiLanguage = NormalizeUiLanguage(workspaceConfiguration.UiLanguageCode);
     }
 
     public ObservableCollection<ServerManagerProfileViewModel> Profiles { get; } = [];
@@ -702,6 +704,18 @@ public sealed class ServerManagerViewModel : ObservableObject
     }
 
     public bool IsSimpleMode => !IsAdvancedMode;
+
+    public IReadOnlyList<UiLanguageOption> UiLanguages { get; } =
+    [
+        new("fr-FR", "FR", "Français"),
+        new("en-US", "EN", "English")
+    ];
+
+    public string SelectedUiLanguage
+    {
+        get => _selectedUiLanguage;
+        private set => SetProperty(ref _selectedUiLanguage, value);
+    }
 
     public string DisplayModeLabel => IsAdvancedMode ? "MODE AVANCÉ" : "MODE SIMPLE";
 
@@ -757,6 +771,25 @@ public sealed class ServerManagerViewModel : ObservableObject
             ? "Mode avancé activé : les détails techniques et outils de maintenance sont visibles."
             : "Mode simple activé : seuls les choix utiles au quotidien sont affichés.";
     }
+
+    public async Task SetUiLanguageAsync(string? languageCode, CancellationToken cancellationToken = default)
+    {
+        var normalized = NormalizeUiLanguage(languageCode);
+        if (string.Equals(SelectedUiLanguage, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        SelectedUiLanguage = normalized;
+        _workspaceConfiguration = _workspaceConfiguration with { UiLanguageCode = normalized };
+        await _workspaceStore.SaveAsync(_workspaceConfiguration, cancellationToken);
+        StatusMessage = normalized == "en-US"
+            ? "Language saved. The French interface remains the current reference."
+            : "Langue enregistrée. L’interface française reste la référence actuelle.";
+    }
+
+    private static string NormalizeUiLanguage(string? languageCode) =>
+        string.Equals(languageCode, "en-US", StringComparison.OrdinalIgnoreCase) ? "en-US" : "fr-FR";
 
     public string StatusMessage
     {

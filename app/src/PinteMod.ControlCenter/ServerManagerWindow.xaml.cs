@@ -47,6 +47,14 @@ public partial class ServerManagerWindow : Window
     private async void AdvancedMode_Click(object sender, RoutedEventArgs e) =>
         await RunAsync(() => ViewModel.SetAdvancedModeAsync(true, _lifetime.Token));
 
+    private async void LanguageSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LanguageSelector.SelectedValue is string languageCode)
+        {
+            await RunAsync(() => ViewModel.SetUiLanguageAsync(languageCode, _lifetime.Token));
+        }
+    }
+
     private async void ConfigureLocal_Click(object sender, RoutedEventArgs e)
     {
         await RunAsync(async () =>

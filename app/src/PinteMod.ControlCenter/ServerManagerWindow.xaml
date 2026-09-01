@@ -61,6 +61,10 @@
                     <TextBlock Text="{Binding GitHubUpdateStatus}" Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="9" MaxWidth="280" TextWrapping="Wrap" TextAlignment="Right" Margin="0,7,0,0" />
                     <StackPanel Orientation="Horizontal" Margin="0,7,0,0" HorizontalAlignment="Right">
+                        <ComboBox x:Name="LanguageSelector" Width="52" Height="28" Margin="0,0,6,0"
+                                  ItemsSource="{Binding UiLanguages}" DisplayMemberPath="ShortLabel"
+                                  SelectedValuePath="Code" SelectedValue="{Binding SelectedUiLanguage, Mode=OneWay}"
+                                  ToolTip="Langue de l’interface" SelectionChanged="LanguageSelector_SelectionChanged" />
                         <Button Content="VÉRIFIER GITHUB" Style="{StaticResource SecondaryButtonStyle}" Padding="9,5" Margin="0,0,6,0"
                                 Click="CheckGitHub_Click" />
                         <Button Content="MODE SIMPLE" Style="{StaticResource SecondaryButtonStyle}" Padding="9,5" Margin="0,0,6,0"

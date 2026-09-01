@@ -114,6 +114,29 @@ public sealed class ControlCenterWorkspaceViewModelTests
     }
 
     [TestMethod]
+    public async Task ChangingLanguage_UsesShortLabelsAndPersistsTheSelectedCode()
+    {
+        var first = CreateTab("primary", "Serveur principal");
+        string? savedLanguage = null;
+        var workspace = new ControlCenterWorkspaceViewModel(
+            [first], first.ProfileId,
+            () => Task.FromResult(CreateTab("srv-second", "Serveur 2")),
+            _ => Task.FromResult(true),
+            _ => Task.CompletedTask,
+            languageChanged: languageCode =>
+            {
+                savedLanguage = languageCode;
+                return Task.CompletedTask;
+            });
+
+        await workspace.SetUiLanguageAsync("en-US");
+
+        CollectionAssert.AreEqual(new[] { "FR", "EN" }, workspace.UiLanguages.Select(option => option.ShortLabel).ToArray());
+        Assert.AreEqual("en-US", workspace.SelectedUiLanguage);
+        Assert.AreEqual("en-US", savedLanguage);
+    }
+
+    [TestMethod]
     public void EachTabKeepsAnIndependentValidatedAccentColor()
     {
         var first = CreateTab("primary", "Serveur principal");
