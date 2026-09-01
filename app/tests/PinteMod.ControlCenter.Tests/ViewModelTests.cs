@@ -712,6 +712,7 @@ public sealed class ViewModelTests
         StringAssert.Contains(xaml, "Title=\"{Binding WindowTitle}\"");
         Assert.IsFalse(xaml.Contains("WindowChrome", StringComparison.Ordinal));
         Assert.IsFalse(xaml.Contains("WindowStyle=\"None\"", StringComparison.Ordinal));
+        StringAssert.Contains(xaml, "SelectedValue=\"{Binding SelectedUiLanguage, Mode=OneWay}\"");
         StringAssert.Contains(xaml, "<Border Grid.Row=\"1\" Background=\"{StaticResource SidebarBrush}\"");
         StringAssert.Contains(xaml, "Fill=\"{Binding AccentPreviewBrush}\"");
     }
