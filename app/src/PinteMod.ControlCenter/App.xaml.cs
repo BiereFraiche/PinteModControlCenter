@@ -110,11 +110,18 @@ public partial class App : Application
             var managerViewModel = await ServerManagerViewModel.CreateAsync(_applicationLifetime.Token);
             startupPhase = "ouverture du gestionnaire de serveurs";
             var managerWindow = new ServerManagerWindow(managerViewModel);
+            // A modal first window otherwise becomes WPF's MainWindow.  On
+            // some remote sessions its close starts an implicit shutdown before
+            // the actual dashboard can call Show().
+            MainWindow = null;
             if (managerWindow.ShowDialog() != true)
             {
                 Shutdown(0);
                 return;
             }
+
+            // Reassert the intended lifetime after the modal window closed.
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             var managerSelectedProfileId = managerViewModel.SelectedProfile?.ProfileId;
 
