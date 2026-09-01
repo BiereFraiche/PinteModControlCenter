@@ -98,7 +98,7 @@
                     <TextBlock Text="{Binding GitHubUpdateStatus}" Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="9" MaxWidth="280" TextWrapping="Wrap" TextAlignment="Right" Margin="0,7,0,0" />
                     <StackPanel Orientation="Horizontal" Margin="0,7,0,0" HorizontalAlignment="Right">
-                        <ComboBox x:Name="LanguageSelector" Width="48" Height="28" Margin="0,0,6,0"
+                        <ComboBox x:Name="LanguageSelector" Width="80" Height="28" Margin="0,0,6,0"
                                   Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
                                   BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
                                   ItemsSource="{Binding UiLanguages}" ItemContainerStyle="{StaticResource LanguageComboBoxItemStyle}"
