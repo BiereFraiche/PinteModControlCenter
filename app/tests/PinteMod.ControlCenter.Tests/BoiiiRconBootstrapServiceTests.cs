@@ -117,6 +117,49 @@ public sealed class BoiiiRconBootstrapServiceTests
     }
 
     [TestMethod]
+    public async Task UpdateServerPortAsync_ReplacesOnlyTheNetPortDirective()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create(
+            "set ServerFilename=server_zm.cfg\r\n",
+            "set sv_hostname \"Test\"\r\nset net_port \"27017\"\r\n");
+
+        var result = await new BoiiiRconBootstrapService().UpdateServerPortAsync(directory.Root, 27025);
+
+        Assert.IsTrue(result.Success, result.Message);
+        var config = await File.ReadAllTextAsync(directory.ConfigPath);
+        StringAssert.Contains(config, "set net_port \"27025\"");
+        Assert.IsFalse(config.Contains("27017", StringComparison.Ordinal));
+        StringAssert.Contains(config, "set sv_hostname \"Test\"");
+    }
+
+    [TestMethod]
+    public async Task UpdateServerPortAsync_MissingDirective_AppendsOneSupportedDirective()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n");
+
+        var result = await new BoiiiRconBootstrapService().UpdateServerPortAsync(directory.Root, 27026);
+
+        Assert.IsTrue(result.Success, result.Message);
+        var config = await File.ReadAllTextAsync(directory.ConfigPath);
+        StringAssert.Contains(config, "set net_port \"27026\"");
+    }
+
+    [TestMethod]
+    public async Task UpdateServerPortAsync_InvalidPort_LeavesConfigUntouched()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n", "set net_port \"27017\"\r\n");
+        var before = await File.ReadAllTextAsync(directory.ConfigPath);
+
+        var result = await new BoiiiRconBootstrapService().UpdateServerPortAsync(directory.Root, 0);
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(before, await File.ReadAllTextAsync(directory.ConfigPath));
+    }
+
+    [TestMethod]
     public async Task InitializeAsync_PinteModServer_CreatesNativeLocalSetup()
     {
         using var directory = new TemporaryServerDirectory();

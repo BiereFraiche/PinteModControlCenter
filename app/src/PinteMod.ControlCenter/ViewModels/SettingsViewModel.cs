@@ -33,6 +33,8 @@ public sealed class SettingsViewModel : PageViewModel
     private string? _lastAcceptedProbeSignature;
     private string _rconAddress;
     private string _rconPortText;
+    private string _serverPortUpdateStatus = "NON MODIFIÉ";
+    private string _serverPortUpdateMessage = "Le port renseigné peut être appliqué au fichier serveur déclaré par Server.bat.";
     private string _rconSecretStatus = "NON CONFIGURÉ";
     private string _rconTestStatus = "NON TESTÉ";
     private string _rconResponse = "Aucune commande RCON envoyée.";
@@ -465,6 +467,18 @@ public sealed class SettingsViewModel : PageViewModel
         }
     }
 
+    public string ServerPortUpdateStatus
+    {
+        get => _serverPortUpdateStatus;
+        private set => SetProperty(ref _serverPortUpdateStatus, value);
+    }
+
+    public string ServerPortUpdateMessage
+    {
+        get => _serverPortUpdateMessage;
+        private set => SetProperty(ref _serverPortUpdateMessage, value);
+    }
+
     public string ConfigurationSaveStatus
     {
         get => _configurationSaveStatus;
@@ -837,6 +851,52 @@ public sealed class SettingsViewModel : PageViewModel
         {
             RconSecretStatus = "RCON REMPLACÉ · SECRET LOCAL À ENREGISTRER";
             RconResponse = result.Message + " Le Control Center n’a pas pu protéger sa copie locale : saisissez de nouveau le même mot de passe puis utilisez Enregistrer pour ce PC.";
+        }
+    }
+
+    public async Task UpdateServerPortAsync(CancellationToken cancellationToken = default)
+    {
+        if (_rconBootstrapService is null)
+        {
+            ServerPortUpdateStatus = "MODIFICATION INDISPONIBLE";
+            ServerPortUpdateMessage = "Cette installation ne peut pas modifier le port depuis le Control Center.";
+            return;
+        }
+
+        if (!TryGetRconPort(out var port))
+        {
+            ServerPortUpdateStatus = "PORT INVALIDE";
+            ServerPortUpdateMessage = "Entrez un port compris entre 1 et 65535 avant de l’appliquer au serveur.";
+            return;
+        }
+
+        BoiiiRconBootstrapResult result;
+        try
+        {
+            result = await _rconBootstrapService.UpdateServerPortAsync(OperatorServerRoot, port, cancellationToken);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            ServerPortUpdateStatus = "PORT NON MODIFIÉ";
+            ServerPortUpdateMessage = "Le port n’a pas pu être modifié : vérifiez les permissions du dossier serveur puis recommencez.";
+            return;
+        }
+
+        ServerPortUpdateStatus = result.Success ? "PORT APPLIQUÉ" : "PORT NON MODIFIÉ";
+        ServerPortUpdateMessage = result.Message;
+        if (!result.Success || !CanSaveConfiguration)
+        {
+            return;
+        }
+
+        try
+        {
+            await SaveConfigurationAsync();
+            ServerPortUpdateMessage += " Le port est aussi mémorisé pour les diagnostics RCON du Control Center.";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            ServerPortUpdateMessage += " Le fichier serveur est à jour ; mémorisez aussi l’adresse et le port dans le Control Center.";
         }
     }
 

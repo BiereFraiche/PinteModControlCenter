@@ -220,6 +220,18 @@
                     <TextBlock Text="Bouton désactivé ? Cliquez d’abord sur TESTER LA SOURCE dans la carte Connexion opérateur."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
 
+                    <TextBlock Text="MODIFIER LE PORT BOIII DU SERVEUR" Style="{StaticResource EyebrowTextStyle}" Margin="0,18,0,0" />
+                    <TextBlock Text="Utilise le port renseigné ci-dessus et met à jour uniquement la directive net_port du fichier déclaré par Server.bat (souvent zone/server_zm.cfg). Arrêtez BOIII avant de continuer."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    <Button Content="APPLIQUER LE PORT À SERVER_ZM.CFG" Click="UpdateServerPort_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0"
+                            ToolTip="Serveur arrêté requis. Modifie seulement net_port et ne lit ni n’affiche aucun secret RCON." />
+                    <TextBlock Text="{Binding ServerPortUpdateStatus}" Foreground="{DynamicResource AccentBrightBrush}"
+                               FontSize="9" FontWeight="Bold" Margin="0,7,0,0" />
+                    <TextBlock Text="{Binding ServerPortUpdateMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
+
                     <TextBlock Text="2 · ENREGISTRER LE RCON DÉJÀ CRÉÉ" Style="{StaticResource EyebrowTextStyle}" Margin="0,16,0,0" />
                     <TextBlock Text="Si BOIII a déjà un RCON, entrez ici le même mot de passe : cela ne modifie pas le serveur. Ne me le transmettez pas : il reste protégé sur ce compte Windows."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,6,0,0" TextWrapping="Wrap" />

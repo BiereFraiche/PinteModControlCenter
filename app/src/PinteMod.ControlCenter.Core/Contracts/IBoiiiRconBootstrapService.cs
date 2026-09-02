@@ -21,4 +21,11 @@ public interface IBoiiiRconBootstrapService
         string serverRoot,
         string secret,
         CancellationToken cancellationToken = default);
+
+    // Updates only the BOIII net_port directive in the server cfg declared
+    // by Server.bat. It never reads, returns or writes an RCON secret.
+    Task<BoiiiRconBootstrapResult> UpdateServerPortAsync(
+        string serverRoot,
+        int port,
+        CancellationToken cancellationToken = default);
 }

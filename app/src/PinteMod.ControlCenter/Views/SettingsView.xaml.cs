@@ -68,4 +68,25 @@ public partial class SettingsView : UserControl
 
         await viewModel.ReplaceRconSecretAsync(secret);
     }
+
+    private async void UpdateServerPort_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel viewModel)
+        {
+            return;
+        }
+
+        var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+            "Appliquer ce port au fichier serveur déclaré par Server.bat ?\n\nLe serveur doit être arrêté. Le Control Center modifie uniquement la directive net_port ; aucun mot de passe RCON n’est lu ni affiché.",
+            "Modifier le port BOIII",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+        if (answer != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await viewModel.UpdateServerPortAsync();
+    }
 }

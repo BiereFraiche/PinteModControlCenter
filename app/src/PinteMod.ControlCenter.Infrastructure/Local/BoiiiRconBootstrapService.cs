@@ -32,6 +32,9 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
     private static readonly Regex NetPortRegex = new(
         @"(?im)(?:\+set\s+|\+)?net_port\s+""?(?<port>\d{2,5})""?",
         RegexOptions.CultureInvariant);
+    private static readonly Regex NetPortDirectiveRegex = new(
+        @"^\s*(?:set\s+)?net_port\s+""?\d{1,5}""?\s*$",
+        RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
     private static readonly Regex SecretRegex = new(
         @"\A[A-Za-z0-9!@#$%^&*+=._-]{8,128}\z",
         RegexOptions.CultureInvariant);
@@ -73,6 +76,64 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
         {
             return false;
+        }
+    }
+
+    public async Task<BoiiiRconBootstrapResult> UpdateServerPortAsync(
+        string serverRoot,
+        int port,
+        CancellationToken cancellationToken = default)
+    {
+        if (port is < 1 or > 65535)
+        {
+            return new BoiiiRconBootstrapResult(false, "Port refusé : entrez une valeur comprise entre 1 et 65535.");
+        }
+
+        var root = serverRoot?.Trim() ?? string.Empty;
+        if (root.Length == 0 || !Directory.Exists(root) || !Directory.Exists(Path.Combine(root, "boiii")))
+        {
+            return new BoiiiRconBootstrapResult(false, "Modification du port refusée : choisissez d’abord la racine BOIII complète.");
+        }
+
+        try
+        {
+            var launcherPath = Path.Combine(root, "Server.bat");
+            if (!File.Exists(launcherPath))
+            {
+                return new BoiiiRconBootstrapResult(false, "Modification du port refusée : Server.bat est introuvable à la racine serveur.");
+            }
+
+            var launcherText = await File.ReadAllTextAsync(launcherPath, cancellationToken).ConfigureAwait(false);
+            var configMatch = ServerFilenameRegex.Match(launcherText);
+            if (!configMatch.Success)
+            {
+                return new BoiiiRconBootstrapResult(false, "Modification du port refusée : Server.bat ne déclare pas un fichier server .cfg explicite.");
+            }
+
+            var configPath = new[]
+            {
+                Path.Combine(root, "zone", configMatch.Groups["file"].Value),
+                Path.Combine(root, configMatch.Groups["file"].Value)
+            }.FirstOrDefault(File.Exists);
+            if (configPath is null)
+            {
+                return new BoiiiRconBootstrapResult(false, "Modification du port refusée : le fichier serveur déclaré par Server.bat est introuvable.");
+            }
+
+            var configText = await File.ReadAllTextAsync(configPath, cancellationToken).ConfigureAwait(false);
+            var directive = "set net_port \"" + port.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
+            var updated = NetPortDirectiveRegex.IsMatch(configText)
+                ? NetPortDirectiveRegex.Replace(configText, directive)
+                : configText.TrimEnd() + "\r\n\r\n// PinteMod Control Center : port BOIII configuré localement.\r\n" + directive + "\r\n";
+
+            await ReplaceTextAtomicallyAsync(configPath, updated, cancellationToken).ConfigureAwait(false);
+            return new BoiiiRconBootstrapResult(
+                true,
+                "Port BOIII mis à jour dans " + Path.GetFileName(configPath) + ". Redémarrez le serveur pour l’utiliser.");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return new BoiiiRconBootstrapResult(false, "Modification du port impossible : aucune modification fiable n’a été finalisée.");
         }
     }
 

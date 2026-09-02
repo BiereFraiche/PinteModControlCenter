@@ -449,6 +449,15 @@ public sealed class SettingsOperatorViewModelTests
             ServerRoot = serverRoot;
             return Task.FromResult(result);
         }
+
+        public Task<BoiiiRconBootstrapResult> UpdateServerPortAsync(
+            string serverRoot,
+            int port,
+            CancellationToken cancellationToken = default)
+        {
+            ServerRoot = serverRoot;
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class StubSelfTestService(ControlCenterSelfTestReport report) : IControlCenterSelfTestService
