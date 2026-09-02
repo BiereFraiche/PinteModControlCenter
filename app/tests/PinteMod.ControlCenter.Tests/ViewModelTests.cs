@@ -762,9 +762,9 @@ public sealed class ViewModelTests
         var presentationRoot = FindPresentationSourceRoot();
         var xaml = File.ReadAllText(Path.Combine(presentationRoot, "Views", "DashboardView.xaml"));
 
-        StringAssert.Contains(xaml, "DERNIERS MESSAGES JOUEURS");
+        StringAssert.Contains(xaml, "DERNIÈRE ACTIVITÉ JOUEURS");
         StringAssert.Contains(xaml, "ItemsSource=\"{Binding PlayerChat.RecentMessages}\"");
-        StringAssert.Contains(xaml, "CHAT LOCAL · READ-ONLY");
+        StringAssert.Contains(xaml, "CHAT ET CONNEXIONS · READ-ONLY");
         Assert.IsFalse(xaml.Contains("PlayerChat.Xuid", StringComparison.OrdinalIgnoreCase));
     }
 

@@ -179,7 +179,6 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
                 OnPropertyChanged(nameof(DurationDisplayText));
                 OnPropertyChanged(nameof(PlayersDisplay));
                 OnPropertyChanged(nameof(RankedStatusDisplay));
-                OnPropertyChanged(nameof(RuntimeSourceLabel));
                 OnPropertyChanged(nameof(MapName));
                 OnPropertyChanged(nameof(MapCode));
                 OnPropertyChanged(nameof(ServerAlreadyRunning));
@@ -207,7 +206,6 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
                 OnPropertyChanged(nameof(InstallationSummary));
                 OnPropertyChanged(nameof(InstallationHealth));
                 OnPropertyChanged(nameof(LogsSourceSummary));
-                OnPropertyChanged(nameof(RuntimeSourceLabel));
             }
         }
     }
@@ -231,15 +229,6 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
     public RankedStatus RankedStatusDisplay => Server?.RankedStatusAvailable == true
         ? Server.RankedStatus
         : RankedStatus.Unknown;
-
-    public string RuntimeSourceLabel => Server switch
-    {
-        { RuntimeValuesInferred: true } => "INFÉRÉ DEPUIS LES LOGS",
-        not null when LocalObservation.RuntimeSnapshot.Metadata.ReadStatus == LocalReadStatus.Success &&
-                      LocalObservation.RuntimeSnapshot.Metadata.Freshness == DataFreshness.Fresh => "MISE À JOUR AUTOMATIQUE",
-        not null when Server.SessionProvenance == DataProvenance.Unavailable => "DONNÉE INDISPONIBLE",
-        _ => "DONNÉE SIMULÉE"
-    };
 
     public string InstallationSummary => LocalObservation.InstallationVerification.Value is { } report
         ? $"INSTALLATION · PASS {report.PassCount} · WARNING {report.WarningCount} · ERROR {report.ErrorCount}"

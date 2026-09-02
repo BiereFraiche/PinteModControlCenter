@@ -4,6 +4,7 @@ public enum BlockALocalFile
 {
     InstallationVerification,
     BanServiceStatus,
+    ActiveBansDatabase,
     Roles,
     CommunityPauseFeedback,
     CommunityPauseLog
@@ -16,6 +17,7 @@ public sealed class BlockALocalPathPolicy
         {
             [BlockALocalFile.InstallationVerification] = Path.Combine("diagnostics", "installation_verification.json"),
             [BlockALocalFile.BanServiceStatus] = Path.Combine("bans", "service_status.json"),
+            [BlockALocalFile.ActiveBansDatabase] = Path.Combine("bans", "bans.json"),
             [BlockALocalFile.Roles] = Path.Combine("identity", "roles.json"),
             [BlockALocalFile.CommunityPauseFeedback] = Path.Combine("remote", "feedback.latest.txt"),
             [BlockALocalFile.CommunityPauseLog] = Path.Combine("logs", "pause.log")

@@ -4,6 +4,7 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -15,7 +16,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Text="CHAT JOUEURS" Style="{StaticResource SectionTitleStyle}" />
-                    <TextBlock Text="Uniquement les messages normaux écrits en game. JOIN, LEAVE, COMMAND, RANKS et événements système ne sont pas affichés."
+                    <TextBlock Text="Messages normaux, connexions et déconnexions observés. Les commandes et les événements système ne sont pas affichés."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,7,18,0" />
                     <TextBlock Text="{Binding SourceSummary}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" TextWrapping="Wrap" Margin="0,8,18,0" />
                     <TextBlock Text="{Binding SourceLabel}" Foreground="{DynamicResource AccentBrightBrush}" FontSize="9" Margin="0,3,18,0" />
@@ -35,7 +36,36 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+            <StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <TextBlock Text="BANS ACTIFS" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Text="LECTURE LOCALE · AUCUNE MODIFICATION" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Right" />
+                </Grid>
+                <TextBlock Text="{Binding ActiveBanStatus}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,8" />
+                <ItemsControl ItemsSource="{Binding ActiveBans}"
+                              Visibility="{Binding HasActiveBans, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource DangerSoftBrush}" BorderBrush="{StaticResource DangerBrush}"
+                                    BorderThickness="1" CornerRadius="5" Padding="10,7" Margin="0,0,8,8" MaxWidth="300">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Duration}" Foreground="{StaticResource DangerBrush}" FontSize="10" Margin="0,3,0,0" />
+                                    <TextBlock Text="{Binding ExpiresLabel}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding Reason}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -84,7 +114,7 @@
                 <StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                             Visibility="{Binding HasMessages, Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
                     <TextBlock Text="AUCUN MESSAGE JOUEUR" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Center" />
-                    <TextBlock Text="Les prochains messages normaux écrits en game apparaîtront ici."
+                    <TextBlock Text="Les prochains messages, connexions et déconnexions apparaîtront ici."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,7,0,0" />
                 </StackPanel>
             </Grid>

@@ -97,7 +97,6 @@
                         <TextBlock Text="MANCHE" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="{Binding RoundDisplay}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0"
                                    Foreground="{DynamicResource AccentBrightBrush}" />
-                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
@@ -105,14 +104,12 @@
                         <TextBlock Text="DURÉE DE SESSION" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="{Binding DurationDisplayText}"
                                    Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
                     <StackPanel>
                         <TextBlock Text="JOUEURS CONNECTÉS" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="{Binding PlayersDisplay}" Style="{StaticResource KpiValueStyle}" Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource CardStyle}" Margin="4">
@@ -122,7 +119,6 @@
                                    Style="{StaticResource KpiValueStyle}"
                                    Foreground="{Binding RankedStatusDisplay, Converter={StaticResource StatusBrushConverter}}"
                                    Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding RuntimeSourceLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,0" />
                     </StackPanel>
                 </Border>
             </controls:ResponsiveUniformGrid>
@@ -213,10 +209,10 @@
                     Visibility="{Binding PlayerChat, Converter={StaticResource NullToVisibilityConverter}}">
                 <StackPanel>
                     <Grid Margin="0,0,0,10">
-                        <TextBlock Text="DERNIERS MESSAGES JOUEURS" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="DERNIÈRE ACTIVITÉ JOUEURS" Style="{StaticResource SectionTitleStyle}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
-                            <TextBlock Text="CHAT LOCAL · READ-ONLY" Style="{StaticResource EyebrowTextStyle}" />
+                            <TextBlock Text="CHAT ET CONNEXIONS · READ-ONLY" Style="{StaticResource EyebrowTextStyle}" />
                         </StackPanel>
                     </Grid>
                     <ItemsControl ItemsSource="{Binding PlayerChat.RecentMessages}"
@@ -240,7 +236,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="Aucun message joueur capturé pour ce profil."
+                    <TextBlock Text="Aucune activité joueur capturée pour ce profil."
                                Foreground="{StaticResource TextMutedBrush}" FontSize="10" HorizontalAlignment="Center" Margin="0,10,0,4"
                                Visibility="{Binding PlayerChat.HasRecentMessages, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
                     <TextBlock Text="L’historique complet reste disponible dans l’onglet Chat joueurs."

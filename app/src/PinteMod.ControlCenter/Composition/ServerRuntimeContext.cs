@@ -208,10 +208,13 @@ public sealed class ServerRuntimeContext : IDisposable
 
         var chatClock = new SystemClock();
         PlayerChatLogReader? playerChatReader = null;
+        LocalActiveBanReader? activeBanReader = null;
         if (localOptions is not null)
         {
             playerChatReader = new PlayerChatLogReader(localOptions, chatClock);
             disposables.Add(playerChatReader);
+            activeBanReader = new LocalActiveBanReader(localOptions, chatClock);
+            disposables.Add(activeBanReader);
         }
 
         var playerChatHistoryStore = new JsonPlayerChatHistoryStore(
@@ -256,7 +259,12 @@ public sealed class ServerRuntimeContext : IDisposable
         var rconOperations = new OperatorRconOperationCoordinator();
         var records = new RecordsViewModel(snapshotStore);
         var logs = new LogsViewModel(snapshotStore, operatorActivityStore, clipboardService);
-        var playerChat = new PlayerChatViewModel(snapshotStore, playerChatHistoryStore, playerChatReader);
+        var playerChat = new PlayerChatViewModel(
+            snapshotStore,
+            playerChatHistoryStore,
+            playerChatReader,
+            activeBanReader,
+            operatorActivityStore);
         var settings = new SettingsViewModel(
             startup.DataMode,
             integrationProfile.Kind == ManagedServerIntegrationKind.Unknown

@@ -62,6 +62,28 @@ public sealed class PlayerChatViewModelTests
     }
 
     [TestMethod]
+    public async Task ConnectionEvents_AppearInPersistentPlayerActivityWithoutChatMessages()
+    {
+        using var temp = new TemporaryHistory();
+        var clock = new FakeClock(new DateTimeOffset(2026, 8, 18, 22, 0, 0, TimeSpan.Zero));
+        using var history = new JsonPlayerChatHistoryStore(temp.Path, clock);
+        var snapshot = HybridSnapshot("session-1", "zm_castle",
+        [
+            ConnectionEvent("Joueur connecté", "Joueur : Alice · Client : 1", TimeSpan.FromMinutes(2)),
+            ConnectionEvent("Joueur déconnecté", "Joueur : Alice · Client : 1", TimeSpan.FromMinutes(4))
+        ]);
+        var viewModel = new PlayerChatViewModel(new MutableSnapshotStore(snapshot), history);
+
+        await viewModel.InitializeAsync();
+
+        Assert.AreEqual(2, viewModel.Messages.Count);
+        Assert.AreEqual("Alice", viewModel.Messages[0].DisplayName);
+        Assert.AreEqual("a rejoint le serveur.", viewModel.Messages[0].Message);
+        Assert.AreEqual("a quitté le serveur.", viewModel.Messages[1].Message);
+        Assert.AreEqual(2, viewModel.RecentMessages.Count);
+    }
+
+    [TestMethod]
     public async Task ClearChatCommand_DoesNotModifyServerChatLog()
     {
         using var root = new TemporaryServerRoot();
@@ -113,7 +135,10 @@ public sealed class PlayerChatViewModelTests
         string mapLabel) =>
         new(id.ToString("x32"), occurredAtUtc, name, text, mapCode, mapLabel);
 
-    private static DashboardSnapshot HybridSnapshot(string sessionId, string mapCode)
+    private static DashboardSnapshot HybridSnapshot(
+        string sessionId,
+        string mapCode,
+        IReadOnlyList<LiveEvent>? events = null)
     {
         var now = new DateTimeOffset(2026, 8, 18, 22, 0, 0, TimeSpan.Zero);
         var server = new ServerState(
@@ -132,7 +157,7 @@ public sealed class PlayerChatViewModelTests
             MapProvenance = DataProvenance.LocalFile,
             SessionProvenance = DataProvenance.LocalFile
         };
-        return new DashboardSnapshot(server, [], [], [], [])
+        return new DashboardSnapshot(server, [], [], events ?? [], [])
         {
             DataContext = new SnapshotDataContext(
                 ControlCenterDataMode.HybridLocal,
@@ -148,6 +173,14 @@ public sealed class PlayerChatViewModelTests
                 [])
         };
     }
+
+    private static LiveEvent ConnectionEvent(string title, string details, TimeSpan elapsed) =>
+        new(DateTimeOffset.UnixEpoch, "JOUEURS", title, details, EventSeverity.Information)
+        {
+            SessionElapsed = elapsed,
+            Provenance = DataProvenance.LocalFile,
+            SourceLabel = "connections.log"
+        };
 
     private sealed class QueueChatReader(params PlayerChatReadResult[] results) : IPlayerChatLogReader
     {

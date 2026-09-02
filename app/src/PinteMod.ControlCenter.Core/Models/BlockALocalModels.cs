@@ -23,6 +23,17 @@ public sealed record BanServiceStatusSnapshot(
     int ActiveBans,
     string PrivacyMode);
 
+public sealed record ActiveBan(
+    string DisplayName,
+    string Duration,
+    string ExpiresLabel,
+    string Reason,
+    DateTimeOffset CreatedAtUtc);
+
+public sealed record ActiveBanSnapshot(
+    IReadOnlyList<ActiveBan> Bans,
+    DateTimeOffset UpdatedAtUtc);
+
 public sealed record LocalPlayerMetadata(
     string Xuid,
     string? DisplayName,
