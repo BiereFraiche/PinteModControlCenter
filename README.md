@@ -1,8 +1,8 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.4.** **Start** proposes a protected first RCON before the initial launch, while keeping a deliberate “start without RCON” choice. A successful launch opens the Control Center automatically. The [v2.4.5-rc28 candidate](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc28) is awaiting the final field recipe only.
+> **Current stable release: v2.4.5.** **Start** proposes a protected first RCON before the initial launch, while keeping a deliberate “start without RCON” choice. A successful launch opens the Control Center automatically.
 
-See the [v2.4.4 status](docs/STATUS_V2.4.4.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+See the [v2.4.5 release notes](docs/RELEASE_NOTES_v2.4.5.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
 
 For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
 
@@ -13,17 +13,17 @@ For a legally obtained BOIII/Ezz base and PinteMod installation through the Cont
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-625%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
-[![Release](https://img.shields.io/badge/release-v2.4.4-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4)
+[![Release](https://img.shields.io/badge/release-v2.4.5-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
 
 PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
 
-> **Current stable release:** v2.4.4.
-> The **v2.4.5-rc28** candidate can completely disable a previously installed Agent, including its Windows recovery trigger and its server queues. It remains a prerelease until the real BOIII field recipe succeeds.
+> **Current stable release:** v2.4.5.
+> The server-vierge recipe has been validated: install PinteMod, define or replace RCON safely, start BOIII, then verify PinteMod health.
 > The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
 
-[Download stable v2.4.4](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.4) · [Test candidate v2.4.5-rc28](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5-rc28)
+[Download stable v2.4.5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
 
 ## v2.4.4 — stable
 
