@@ -630,13 +630,16 @@ public sealed class ServerManagerViewModel : ObservableObject
     private readonly ManagedServerStopService _stopService;
     private readonly IBoiiiRconBootstrapService _rconBootstrapService;
     private readonly GitHubUpdateCheckService _githubUpdateService = new();
+    private readonly GitHubControlCenterUpdateService _githubInstaller = new();
     private OperatorWorkspaceConfiguration _workspaceConfiguration;
     private ServerManagerProfileViewModel? _selectedProfile;
     private string _statusMessage = "Sélectionnez un serveur ou ajoutez-en un.";
     private bool _isBusy;
     private bool _isAdvancedMode;
     private bool _isGitHubCheckBusy;
+    private bool _isGitHubUpdateBusy;
     private bool _githubUpdateAvailable;
+    private GitHubUpdateCheckResult? _githubUpdate;
     private string? _githubLatestVersion;
     private string _githubUpdateStatus = "GitHub : vérification en attente…";
     private bool _keepManagerOpenAfterControlCenter;
@@ -815,11 +818,35 @@ public sealed class ServerManagerViewModel : ObservableObject
         private set => SetProperty(ref _isGitHubCheckBusy, value);
     }
 
+    public bool IsGitHubUpdateBusy
+    {
+        get => _isGitHubUpdateBusy;
+        private set
+        {
+            if (SetProperty(ref _isGitHubUpdateBusy, value))
+            {
+                OnPropertyChanged(nameof(CanInstallGitHubUpdate));
+            }
+        }
+    }
+
     public bool GitHubUpdateAvailable
     {
         get => _githubUpdateAvailable;
-        private set => SetProperty(ref _githubUpdateAvailable, value);
+        private set
+        {
+            if (SetProperty(ref _githubUpdateAvailable, value))
+            {
+                OnPropertyChanged(nameof(CanInstallGitHubUpdate));
+            }
+        }
     }
+
+    public bool CanInstallGitHubUpdate =>
+        GitHubUpdateAvailable &&
+        _githubUpdate?.DownloadUrl is not null &&
+        _githubUpdate?.Sha256 is not null &&
+        !IsGitHubUpdateBusy;
 
     public string GitHubUpdateStatus
     {
@@ -836,6 +863,7 @@ public sealed class ServerManagerViewModel : ObservableObject
         {
             var result = await _githubUpdateService.CheckAsync(cancellationToken);
             GitHubUpdateAvailable = result.UpdateAvailable;
+            _githubUpdate = result;
             _githubLatestVersion = result.LatestVersion;
             GitHubUpdateStatus = result.Message;
             RefreshUpdateAttention();
@@ -848,6 +876,31 @@ public sealed class ServerManagerViewModel : ObservableObject
         finally
         {
             IsGitHubCheckBusy = false;
+        }
+    }
+
+    public async Task<bool> InstallGitHubUpdateAsync(CancellationToken cancellationToken = default)
+    {
+        if (!CanInstallGitHubUpdate || _githubUpdate is null)
+        {
+            GitHubUpdateStatus = "GitHub : aucune mise à jour installable n’est prête.";
+            return false;
+        }
+
+        IsGitHubUpdateBusy = true;
+        GitHubUpdateStatus = $"GitHub : téléchargement sécurisé de {_githubUpdate.LatestVersion}…";
+        try
+        {
+            var result = await _githubInstaller.DownloadAndStageAsync(
+                _githubUpdate,
+                Environment.ProcessId,
+                cancellationToken);
+            GitHubUpdateStatus = result.Message;
+            return result.RestartScheduled;
+        }
+        finally
+        {
+            IsGitHubUpdateBusy = false;
         }
     }
 

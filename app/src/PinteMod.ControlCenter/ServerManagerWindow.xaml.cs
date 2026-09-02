@@ -34,6 +34,14 @@ public partial class ServerManagerWindow : Window
         await ViewModel.CheckGitHubUpdateAsync(_lifetime.Token);
     }
 
+    private async void InstallGitHubUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        if (await ViewModel.InstallGitHubUpdateAsync(_lifetime.Token))
+        {
+            Close();
+        }
+    }
+
     private async void KeepManagerOpen_Click(object sender, RoutedEventArgs e)
     {
         await RunAsync(() => ViewModel.SetKeepManagerOpenAfterControlCenterAsync(

@@ -4,13 +4,13 @@ PinteMod Control Center is the simple Windows app for creating, starting and man
 
 It is made for players who want a working server without having to edit configuration files by hand.
 
-[![Version](https://img.shields.io/badge/stable-v2.4.7-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.7)
+[![Version](https://img.shields.io/badge/stable-v2.4.8-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.8)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![Tests](https://img.shields.io/badge/tests-637%20passing-24C875)
 
-**[Download PinteMod Control Center v2.4.7](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.7/PinteMod.ControlCenter.exe)**
+**[Download PinteMod Control Center v2.4.8](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.8/PinteMod.ControlCenter.exe)**
 
-[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.7.md)
+[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.8.md)
 
 ![PinteMod Control Center interface](design/pintemod-control-center-reference.png)
 
@@ -100,7 +100,7 @@ RCON is the private password that lets the Control Center request supported BOII
 
 ## Technical information
 
-The current stable release is **v2.4.7**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
+The current stable release is **v2.4.8**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
 
 | Check | Status |
 |---|---|

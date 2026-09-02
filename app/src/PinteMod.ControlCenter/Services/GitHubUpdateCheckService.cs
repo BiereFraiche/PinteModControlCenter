@@ -22,7 +22,10 @@ internal sealed record GitHubUpdateCheckResult(
     string Message,
     string CurrentVersion,
     string? LatestVersion,
-    string? ReleaseUrl)
+    string? ReleaseUrl,
+    string? DownloadUrl = null,
+    string? Sha256 = null,
+    long? DownloadSize = null)
 {
     public bool UpdateAvailable => State == GitHubUpdateState.UpdateAvailable;
 }
@@ -68,9 +71,10 @@ internal sealed partial class GitHubUpdateCheckService
                 var tag = GetString(release, "tag_name");
                 var name = GetString(release, "name");
                 var url = GetString(release, "html_url");
-                var assetNames = release.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array
-                    ? assets.EnumerateArray().Select(asset => GetString(asset, "name")).Where(value => !string.IsNullOrWhiteSpace(value)).ToArray()
+                var assets = release.TryGetProperty("assets", out var assetArray) && assetArray.ValueKind == JsonValueKind.Array
+                    ? assetArray.EnumerateArray().Select(ReleaseAsset.TryCreate).Where(asset => asset is not null).Cast<ReleaseAsset>().ToArray()
                     : [];
+                var assetNames = assets.Select(asset => asset.Name).ToArray();
 
                 var matchingAssets = assetNames.Where(ContainsControlCenter).ToArray();
                 var controlCenterRelease = matchingAssets.Length > 0 || ContainsControlCenter(tag) || ContainsControlCenter(name);
@@ -83,7 +87,17 @@ internal sealed partial class GitHubUpdateCheckService
                     ?? new[] { tag, name }.Select(TryExtractVersion).FirstOrDefault(version => version is not null);
                 if (versionText is null || !ReleaseVersion.TryParse(versionText, out var parsed)) continue;
 
-                var candidate = new ReleaseCandidate(versionText, parsed, url);
+                var executable = assets.FirstOrDefault(asset => string.Equals(
+                    asset.Name,
+                    "PinteMod.ControlCenter.exe",
+                    StringComparison.OrdinalIgnoreCase));
+                var candidate = new ReleaseCandidate(
+                    versionText,
+                    parsed,
+                    url,
+                    executable?.DownloadUrl,
+                    executable?.Sha256,
+                    executable?.Size);
                 if (latest is null || candidate.Version.CompareTo(latest.Version) > 0)
                 {
                     latest = candidate;
@@ -107,7 +121,10 @@ internal sealed partial class GitHubUpdateCheckService
                     $"GitHub : version publique {latest.VersionText} détectée, comparaison locale impossible.",
                     current,
                     latest.VersionText,
-                    latest.ReleaseUrl);
+                    latest.ReleaseUrl,
+                    latest.DownloadUrl,
+                    latest.Sha256,
+                    latest.DownloadSize);
             }
 
             var comparison = latest.Version.CompareTo(currentVersion);
@@ -118,7 +135,10 @@ internal sealed partial class GitHubUpdateCheckService
                     $"Mise à jour publique disponible sur GitHub : {latest.VersionText}.",
                     current,
                     latest.VersionText,
-                    latest.ReleaseUrl);
+                    latest.ReleaseUrl,
+                    latest.DownloadUrl,
+                    latest.Sha256,
+                    latest.DownloadSize);
             }
 
             if (comparison == 0)
@@ -128,7 +148,10 @@ internal sealed partial class GitHubUpdateCheckService
                     $"GitHub : vous utilisez la dernière version publique ({latest.VersionText}).",
                     current,
                     latest.VersionText,
-                    latest.ReleaseUrl);
+                    latest.ReleaseUrl,
+                    latest.DownloadUrl,
+                    latest.Sha256,
+                    latest.DownloadSize);
             }
 
             return new GitHubUpdateCheckResult(
@@ -136,7 +159,10 @@ internal sealed partial class GitHubUpdateCheckService
                 $"GitHub : votre version locale ({current}) est plus récente que la version publique ({latest.VersionText}).",
                 current,
                 latest.VersionText,
-                latest.ReleaseUrl);
+                latest.ReleaseUrl,
+                latest.DownloadUrl,
+                latest.Sha256,
+                latest.DownloadSize);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -207,7 +233,32 @@ internal sealed partial class GitHubUpdateCheckService
         null,
         null);
 
-    private sealed record ReleaseCandidate(string VersionText, ReleaseVersion Version, string? ReleaseUrl);
+    private sealed record ReleaseCandidate(
+        string VersionText,
+        ReleaseVersion Version,
+        string? ReleaseUrl,
+        string? DownloadUrl,
+        string? Sha256,
+        long? DownloadSize);
+
+    private sealed record ReleaseAsset(string Name, string DownloadUrl, string? Sha256, long? Size)
+    {
+        public static ReleaseAsset? TryCreate(JsonElement asset)
+        {
+            var name = GetString(asset, "name");
+            var downloadUrl = GetString(asset, "browser_download_url");
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(downloadUrl)) return null;
+
+            var digest = GetString(asset, "digest");
+            var sha256 = digest?.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) == true
+                ? digest["sha256:".Length..]
+                : null;
+            long? size = asset.TryGetProperty("size", out var sizeValue) && sizeValue.TryGetInt64(out var parsedSize)
+                ? parsedSize
+                : null;
+            return new ReleaseAsset(name, downloadUrl, sha256, size);
+        }
+    }
 
     internal sealed record ReleaseVersion(int Major, int Minor, int Patch, string? PreRelease) : IComparable<ReleaseVersion>
     {

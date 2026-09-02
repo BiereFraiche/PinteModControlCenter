@@ -4,13 +4,13 @@ PinteMod Control Center est l’application Windows simple pour créer, lancer e
 
 Elle est pensée pour les joueurs qui veulent un serveur fonctionnel sans devoir modifier des fichiers de configuration à la main.
 
-[![Version](https://img.shields.io/badge/stable-v2.4.7-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.7)
+[![Version](https://img.shields.io/badge/stable-v2.4.8-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.8)
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
 ![Tests](https://img.shields.io/badge/tests-637%20réussis-24C875)
 
-**[Télécharger PinteMod Control Center v2.4.7](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.7/PinteMod.ControlCenter.exe)**
+**[Télécharger PinteMod Control Center v2.4.8](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.8/PinteMod.ControlCenter.exe)**
 
-[English documentation](README.md) · [Notes de version](docs/RELEASE_NOTES_v2.4.7.md)
+[English documentation](README.md) · [Notes de version](docs/RELEASE_NOTES_v2.4.8.md)
 
 ![Interface de PinteMod Control Center](design/pintemod-control-center-reference.png)
 
@@ -100,7 +100,7 @@ Le RCON est le mot de passe privé qui permet au Control Center de demander les 
 
 ## Informations techniques
 
-La version stable actuelle est la **v2.4.7**. Le parcours serveur vierge a été validé sur le terrain : installation PinteMod, premier RCON ou remplacement confirmé, démarrage BOIII et contrôle de santé.
+La version stable actuelle est la **v2.4.8**. Le parcours serveur vierge a été validé sur le terrain : installation PinteMod, premier RCON ou remplacement confirmé, démarrage BOIII et contrôle de santé.
 
 | Contrôle | État |
 |---|---|
