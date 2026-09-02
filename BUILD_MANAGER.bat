@@ -16,7 +16,7 @@ set "OUT_FOLDER_ZIP=%OUTROOT%\PinteMod.ControlCenter-folder-win-x64.zip"
 set "OUT_HASHES=%OUTROOT%\SHA256SUMS.txt"
 set "OUT_SELFTEST=%OUTROOT%\SELF-TEST.txt"
 set "OUT_SELFTEST_FOLDER_TEMP=%OUTROOT%\SELF-TEST-FOLDER.tmp.txt"
-set "PACKAGER=%APP%\packaging\Build-PreviewPackages.ps1"
+set "PACKAGER=%APP%\packaging\Build-ReleasePackages.ps1"
 
 echo ============================================================
 echo  PinteMod Control Center - VERSION STABLE v2.4.5

@@ -61,7 +61,7 @@ Sans argument, l’application reste entièrement simulée.
 
 ## Paquets stables Windows x64
 
-Depuis la racine du dépôt, double-cliquer `BUILD_MANAGER_PREVIEW.bat`. Le workflow produit :
+Depuis la racine du dépôt, double-cliquer `BUILD_MANAGER.bat`. Le workflow produit :
 
 ```text
 app\artifacts\release-v2.4.5-win-x64\single-exe\PinteMod.ControlCenter.exe

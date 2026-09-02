@@ -112,7 +112,7 @@ L’Agent distant optionnel n’est jamais nécessaire pour un serveur local. S�
 
 - [Documentation technique et opérateur](app/README.md)
 - [Guide serveur vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md)
-- [Plan de test final](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt)
+- [Plan de test final](docs/RECETTE_FINALE_FR.md)
 - [Guide de déploiement VM](docs/DEPLOIEMENT_VM_FR.md)
 - [Projet PinteMod](https://github.com/BiereFraiche/PinteMod)
 - [Politique de sécurité](SECURITY.md)
@@ -120,7 +120,7 @@ L’Agent distant optionnel n’est jamais nécessaire pour un serveur local. S�
 Pour compiler depuis les sources, Windows 10/11 et le SDK .NET 8 sont nécessaires :
 
 ```powershell
-.\BUILD_MANAGER_PREVIEW.bat
+.\BUILD_MANAGER.bat
 ```
 
 Cette commande lance les compilations Debug et Release, les tests, la création des paquets et l’auto-diagnostic hors ligne. Elle ne démarre pas BOIII et n’envoie aucune commande RCON.

@@ -112,7 +112,7 @@ The optional Remote Agent is never required for a local server. If it was explic
 
 - [Technical and operator documentation](app/README.md)
 - [Blank server guide (French)](docs/SERVEUR_BOIII_DEMARRAGE_FR.md)
-- [Final test plan (French)](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt)
+- [Final test plan (French)](docs/RECETTE_FINALE_FR.md)
 - [VM deployment guide (French)](docs/DEPLOIEMENT_VM_FR.md)
 - [PinteMod project](https://github.com/BiereFraiche/PinteMod)
 - [Security policy](SECURITY.md)
@@ -120,7 +120,7 @@ The optional Remote Agent is never required for a local server. If it was explic
 To build from source, use Windows 10/11 with the .NET 8 SDK:
 
 ```powershell
-.\BUILD_MANAGER_PREVIEW.bat
+.\BUILD_MANAGER.bat
 ```
 
 This performs the Debug and Release builds, both test runs, packaging and offline self-test. It does not start a BOIII server or send an RCON command.
