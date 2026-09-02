@@ -80,6 +80,32 @@ public sealed class BoiiiRconBootstrapServiceTests
     }
 
     [TestMethod]
+    public async Task ReplaceAsync_PinteModServer_RepairsMissingPrivateSecrets()
+    {
+        using var directory = new TemporaryServerDirectory();
+        directory.Create("set ServerFilename=server_zm.cfg\r\n");
+        directory.AddPinteModFiles();
+        var service = new BoiiiRconBootstrapService(async (path, secret, cancellationToken) =>
+        {
+            await File.WriteAllTextAsync(path, "protected-" + secret, cancellationToken);
+            return true;
+        });
+        Assert.IsTrue((await service.InitializeAsync(directory.Root, "OldRcon-2026")).Success);
+        File.Delete(Path.Combine(directory.Root, "zone", "pintemod_server_secrets.cfg"));
+        File.Delete(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt"));
+
+        var result = await service.ReplaceAsync(directory.Root, "NewRcon-2026");
+
+        Assert.IsTrue(result.Success, result.Message);
+        StringAssert.Contains(result.Message, "fichiers secrets manquants");
+        var privateConfig = await File.ReadAllTextAsync(Path.Combine(directory.Root, "zone", "pintemod_server_secrets.cfg"));
+        StringAssert.Contains(privateConfig, "set rcon_password \"NewRcon-2026\"");
+        Assert.AreEqual(
+            "protected-NewRcon-2026",
+            await File.ReadAllTextAsync(Path.Combine(directory.Root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt")));
+    }
+
+    [TestMethod]
     public async Task HasConfiguredRconAsync_ReturnsOnlyDirectivePresence()
     {
         using var directory = new TemporaryServerDirectory();

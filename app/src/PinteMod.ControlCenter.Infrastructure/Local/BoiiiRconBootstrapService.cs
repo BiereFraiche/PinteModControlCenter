@@ -221,13 +221,15 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
         var zoneRoot = Path.GetDirectoryName(serverConfigPath)!;
         var localSecretsPath = Path.Combine(zoneRoot, "pintemod_server_secrets.cfg");
         var bridgeSecretPath = Path.Combine(root, "boiii", "tools", "PinteMod_GeoIP_Bridge.secret.txt");
-        if (!File.Exists(localSecretsPath) || !File.Exists(bridgeSecretPath))
-        {
-            return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : les fichiers secrets PinteMod attendus sont incomplets.");
-        }
-
-        var localSecrets = await File.ReadAllTextAsync(localSecretsPath, cancellationToken).ConfigureAwait(false);
-        if (!ExistingRconLineRegex.IsMatch(localSecrets))
+        var localSecretsExisted = File.Exists(localSecretsPath);
+        var bridgeSecretExisted = File.Exists(bridgeSecretPath);
+        var localSecrets = localSecretsExisted
+            ? await File.ReadAllTextAsync(localSecretsPath, cancellationToken).ConfigureAwait(false)
+            : "// PinteMod local server secrets - repaired locally\r\n" +
+              "// Keep this file private and never upload it to GitHub.\r\n" +
+              "set rcon_password \"" + secret + "\"\r\n" +
+              "set g_password \"\"\r\n";
+        if (localSecretsExisted && !ExistingRconLineRegex.IsMatch(localSecrets))
         {
             return new BoiiiRconBootstrapResult(false, "Remplacement RCON refusé : le fichier PinteMod ne contient pas de directive RCON reconnue.");
         }
@@ -235,11 +237,12 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
         var localTemporary = localSecretsPath + ".pintemod-controlcenter.tmp";
         var bridgeTemporary = bridgeSecretPath + ".pintemod-controlcenter.tmp";
         var bridgeBackup = bridgeSecretPath + ".pintemod-controlcenter.replace-backup";
+        var bridgeApplied = false;
         try
         {
             await File.WriteAllTextAsync(
                 localTemporary,
-                ReplaceRconDirective(localSecrets, secret),
+                localSecretsExisted ? ReplaceRconDirective(localSecrets, secret) : localSecrets,
                 new UTF8Encoding(false),
                 cancellationToken).ConfigureAwait(false);
             if (!await _writeDpapiSecretAsync(bridgeTemporary, secret, cancellationToken).ConfigureAwait(false))
@@ -247,17 +250,26 @@ public sealed class BoiiiRconBootstrapService : IBoiiiRconBootstrapService
                 return new BoiiiRconBootstrapResult(false, "Remplacement RCON impossible : Windows n’a pas pu protéger le nouveau secret GeoIP PinteMod.");
             }
 
-            File.Move(bridgeSecretPath, bridgeBackup, overwrite: true);
+            if (bridgeSecretExisted)
+            {
+                File.Move(bridgeSecretPath, bridgeBackup, overwrite: true);
+            }
             File.Move(bridgeTemporary, bridgeSecretPath, overwrite: false);
+            bridgeApplied = true;
             File.Move(localTemporary, localSecretsPath, overwrite: true);
             TryDelete(bridgeBackup);
-            return new BoiiiRconBootstrapResult(true, "RCON PinteMod remplacé et bridge GeoIP synchronisé. L’ancienne valeur reste masquée ; redémarrez le serveur.");
+            return new BoiiiRconBootstrapResult(
+                true,
+                localSecretsExisted && bridgeSecretExisted
+                    ? "RCON PinteMod remplacé et bridge GeoIP synchronisé. L’ancienne valeur reste masquée ; redémarrez le serveur."
+                    : "RCON PinteMod créé dans les fichiers secrets manquants et bridge GeoIP synchronisé. Redémarrez le serveur.");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             try
             {
                 if (File.Exists(bridgeBackup)) File.Move(bridgeBackup, bridgeSecretPath, overwrite: true);
+                else if (!bridgeSecretExisted && bridgeApplied) TryDelete(bridgeSecretPath);
             }
             catch (Exception rollbackException) when (rollbackException is IOException or UnauthorizedAccessException)
             {
