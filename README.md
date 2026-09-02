@@ -6,12 +6,18 @@ See the [v2.4.5 release notes](docs/RELEASE_NOTES_v2.4.5.md), [French test plan]
 
 For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
 
+## Base serveur BOIII/Ezz vierge
+
+Une base serveur BOIII/Ezz vierge, prête à être configurée, est disponible ici : [dossier Mega — serveur vierge](https://mega.nz/folder/MYsTGa6I#gJviuei7G6XuFicNy_L9BQ).
+
+Après extraction, ouvrez le dossier du serveur dans PinteMod Control Center : l’assistant peut installer PinteMod, définir le RCON puis démarrer et contrôler la santé du serveur. Utilisez uniquement une base obtenue et utilisée conformément aux droits applicables.
+
 [Documentation française](README_FR.md)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
-![Tests](https://img.shields.io/badge/tests-625%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-629%20passing-24C875)
 ![Mode](https://img.shields.io/badge/default-simulation-F5A623)
 [![Release](https://img.shields.io/badge/release-v2.4.5-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
 
@@ -25,19 +31,19 @@ Created and maintained by **BiereFraiche**, with development assistance from Cod
 
 [Download stable v2.4.5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
 
-## v2.4.4 — stable
+## v2.4.5 — stable
 
-This release consolidates generation 4B1 after validation of Agent, RCON and PinteMod repair flows:
+This release finalizes the validated clean-server workflow: PinteMod installation, protected RCON setup or replacement, BOIII startup and PinteMod health check.
 
-| Item | v2.4.4 status |
+| Item | v2.4.5 status |
 |---|---|
-| Product version | `2.4.4` |
+| Product version | `2.4.5` |
 | Build | Debug and Release, 0 warnings, 0 errors |
-| Automated tests | 616/616 passing in both configurations |
+| Automated tests | 629/629 passing in both configurations |
 | Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |
-| Field validation | Server3 and fixed-PC/laptop Agent validated; non-overwriting module repair covered by test |
+| Field validation | Clean BOIII server: install, RCON, start and health check validated |
 
-The release adds the eight-server Manager, adaptive BOIII/PinteMod/third-party GSC support, local chat history, a recoverable SMB Agent and dual-format packaging. Software-rendering startup supports incompatible GPUs/remote-control sessions and a standalone Agent beside the portable-folder application prevents Agent activation from depending on the folder's DLLs.
+The release includes the multi-server Manager, adaptive BOIII/PinteMod support, local chat history and dual-format packaging. The optional remote Agent is explicit and can be completely disabled from the Manager; it is never required for a local server.
 
 Build and audit every deliverable in one pass on Windows:
 
