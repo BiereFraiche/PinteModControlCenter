@@ -231,6 +231,8 @@
                     </Grid>
                     <TextBlock Text="{Binding RconSecretStatus}" Foreground="{DynamicResource AccentBrightBrush}"
                                FontSize="9" FontWeight="Bold" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding RconResponse}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap" />
                     <Button Content="CRÉER LE PREMIER RCON (SERVEUR VIERGE)" Click="InitializeFirstRcon_Click"
                             Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Padding="12,7" Margin="0,9,0,0"
                             ToolTip="Serveur arrêté requis. Écrit rcon_password une seule fois dans le .cfg explicitement déclaré par Server.bat, puis protège le même secret localement." />
