@@ -89,4 +89,31 @@ public partial class SettingsView : UserControl
 
         await viewModel.UpdateServerPortAsync();
     }
+
+    private void RemovePublicChatTip_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is SettingsViewModel viewModel && sender is FrameworkElement { Tag: PublicChatTipItemViewModel tip })
+        {
+            viewModel.RemovePublicChatTip(tip);
+        }
+    }
+
+    private async void SavePublicChatTips_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel viewModel)
+        {
+            return;
+        }
+
+        var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+            "Enregistrer les messages automatiques dans ce serveur ?\n\nLe serveur doit être arrêté. Le Control Center modifie uniquement le bloc dédié des réglages PinteMod. Si le module officiel de messages est ancien, il sera mis à jour avec une sauvegarde locale.",
+            "Enregistrer les messages automatiques",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+        if (answer == MessageBoxResult.Yes)
+        {
+            await viewModel.SavePublicChatTipsAsync();
+        }
+    }
 }

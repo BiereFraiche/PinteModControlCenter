@@ -85,7 +85,7 @@ public sealed class GitHubUpdateCheckServiceTests
     [TestMethod]
     public void OfficialRepository_IsPinned()
     {
-        Assert.AreEqual("BiereFraiche/PinteMod", GitHubUpdateCheckService.Repository);
+        Assert.AreEqual("BiereFraiche/PinteModControlCenter", GitHubUpdateCheckService.Repository);
     }
 
     [TestMethod]

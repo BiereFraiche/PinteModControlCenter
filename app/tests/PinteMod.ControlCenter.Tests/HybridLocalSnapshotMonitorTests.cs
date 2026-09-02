@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PinteMod.ControlCenter.Core.Contracts;
 using PinteMod.ControlCenter.Core.Models;
@@ -76,6 +77,33 @@ public sealed class HybridLocalSnapshotMonitorTests
         Assert.AreNotSame(callingContext, store.ObservedSynchronizationContext);
     }
 
+    [TestMethod]
+    public async Task Monitor_TransientRuntimeReadFailure_DoesNotStopAutomaticRefresh()
+    {
+        var snapshot = SimulatedControlCenterDataProvider.CreateSnapshot(SimulationScenario.Healthy);
+        var store = new FlakySnapshotStore(snapshot);
+        var monitor = new HybridLocalSnapshotMonitor(store, TimeSpan.FromMilliseconds(5));
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var callbacks = 0;
+
+        try
+        {
+            await monitor.RunAsync((_, _) =>
+            {
+                callbacks++;
+                cancellation.Cancel();
+                return Task.CompletedTask;
+            }, cancellation.Token);
+            Assert.Fail("Une annulation était attendue.");
+        }
+        catch (OperationCanceledException)
+        {
+        }
+
+        Assert.AreEqual(2, store.RefreshCount);
+        Assert.AreEqual(1, callbacks);
+    }
+
     private sealed class SlowSnapshotStore(DashboardSnapshot snapshot) : IControlCenterSnapshotStore
     {
         private int _concurrency;
@@ -99,6 +127,26 @@ public sealed class HybridLocalSnapshotMonitorTests
             {
                 Interlocked.Decrement(ref _concurrency);
             }
+        }
+    }
+
+    private sealed class FlakySnapshotStore(DashboardSnapshot snapshot) : IControlCenterSnapshotStore
+    {
+        public int RefreshCount { get; private set; }
+
+        public DashboardSnapshot? Current { get; private set; } = snapshot;
+
+        public Task<DashboardSnapshot> GetSnapshotAsync(CancellationToken cancellationToken = default) => Task.FromResult(Current!);
+
+        public Task<DashboardSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
+        {
+            RefreshCount++;
+            if (RefreshCount == 1)
+            {
+                throw new IOException("Le fichier runtime est temporairement remplacé.");
+            }
+
+            return Task.FromResult(Current!);
         }
     }
 }

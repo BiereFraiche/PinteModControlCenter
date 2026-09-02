@@ -15,6 +15,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly IRconDiagnosticService? _rconDiagnosticService;
     private readonly IRconSecretStore? _rconSecretStore;
     private readonly IBoiiiRconBootstrapService? _rconBootstrapService;
+    private readonly IPublicChatTipsConfigurationService? _publicChatTipsConfigurationService;
     private readonly IOperatorActivityStore? _operatorActivityStore;
     private readonly IOperatorRconOperationCoordinator _rconOperations;
     private readonly IMapCatalogService? _mapCatalogService;
@@ -35,6 +36,14 @@ public sealed class SettingsViewModel : PageViewModel
     private string _rconPortText;
     private string _serverPortUpdateStatus = "NON MODIFIÉ";
     private string _serverPortUpdateMessage = "Le port renseigné peut être appliqué au fichier serveur déclaré par Server.bat.";
+    private bool _publicChatTipsEnabled = true;
+    private string _publicChatTipsFirstDelayText = "120";
+    private string _publicChatTipsMinimumDelayText = "240";
+    private string _publicChatTipsMaximumDelayText = "420";
+    private string _newPublicChatTipText = string.Empty;
+    private string _publicChatTipsStatus = "NON CHARGÉ";
+    private string _publicChatTipsMessage = "Sélectionnez un serveur PinteMod pour gérer ses messages automatiques.";
+    private ServiceHealth _publicChatTipsHealth = ServiceHealth.Unknown;
     private string _rconSecretStatus = "NON CONFIGURÉ";
     private string _rconTestStatus = "NON TESTÉ";
     private string _rconResponse = "Aucune commande RCON envoyée.";
@@ -76,7 +85,8 @@ public sealed class SettingsViewModel : PageViewModel
         ServerIntegrationProfile? integrationProfile = null,
         bool allowPinteModDiagnostics = true,
         IControlCenterSelfTestService? selfTestService = null,
-        IBoiiiRconBootstrapService? rconBootstrapService = null)
+        IBoiiiRconBootstrapService? rconBootstrapService = null,
+        IPublicChatTipsConfigurationService? publicChatTipsConfigurationService = null)
         : base("Paramètres", "Configuration opérateur locale ou LAN · diagnostics RCON manuels")
     {
         _localDataSourceProbe = localDataSourceProbe;
@@ -84,6 +94,7 @@ public sealed class SettingsViewModel : PageViewModel
         _rconDiagnosticService = rconDiagnosticService;
         _rconSecretStore = rconSecretStore;
         _rconBootstrapService = rconBootstrapService;
+        _publicChatTipsConfigurationService = publicChatTipsConfigurationService;
         _operatorActivityStore = operatorActivityStore;
         _rconOperations = rconOperations ?? new OperatorRconOperationCoordinator();
         _mapCatalogService = mapCatalogService;
@@ -125,14 +136,14 @@ public sealed class SettingsViewModel : PageViewModel
                 ManagedServerIntegrationKind.PinteMod => "MODE PINTE MOD NON OBSERVÉ",
                 _ => "MODE SERVEUR RÉEL NON DÉTECTÉ"
             }
-            : dataMode == ControlCenterDataMode.HybridLocal ? "MODE HYBRIDE LOCAL" : "MODE SIMULATION";
+            : dataMode == ControlCenterDataMode.HybridLocal ? "SERVEUR LOCAL" : "MODE SIMULATION";
         ModeShortLabel = adaptiveLimited
             ? "ADP"
-            : dataMode == ControlCenterDataMode.HybridLocal ? "HYB" : "SIM";
+            : dataMode == ControlCenterDataMode.HybridLocal ? "LOC" : "SIM";
         ModeDescription = adaptiveLimited
             ? "Profil serveur réel · seules les capacités prouvées sont activées · aucune donnée de démonstration ni commande tierce devinée"
             : dataMode == ControlCenterDataMode.HybridLocal
-                ? "Lecture locale read-only · diagnostics RCON sur action explicite"
+                ? "Données du serveur actualisées automatiquement · actions RCON uniquement sur demande"
                 : "Données simulées · diagnostics RCON sur action explicite";
         ServerRootDisplay = FormatServerRoot(serverRoot);
         DataScope = adaptiveLimited
@@ -209,6 +220,13 @@ public sealed class SettingsViewModel : PageViewModel
             RemoveManualMapAsync,
             () => CanRemoveManualMap,
             _ => SetMapCatalogFailure("La carte custom n’a pas pu être retirée."));
+        AddPublicChatTipCommand = new AsyncRelayCommand(
+            () =>
+            {
+                AddPublicChatTip();
+                return Task.CompletedTask;
+            },
+            () => CanAddPublicChatTip);
     }
 
     public IReadOnlyList<string> OperatorModes { get; } = ["LOCAL", "LAN"];
@@ -257,7 +275,68 @@ public sealed class SettingsViewModel : PageViewModel
 
     public AsyncRelayCommand RemoveManualMapCommand { get; }
 
+    public AsyncRelayCommand AddPublicChatTipCommand { get; }
+
     public ObservableCollection<MapCatalogItemViewModel> MapCatalogEntries { get; } = [];
+
+    public ObservableCollection<PublicChatTipItemViewModel> PublicChatTips { get; } = [];
+
+    public bool PublicChatTipsEnabled
+    {
+        get => _publicChatTipsEnabled;
+        set => SetProperty(ref _publicChatTipsEnabled, value);
+    }
+
+    public string PublicChatTipsFirstDelayText
+    {
+        get => _publicChatTipsFirstDelayText;
+        set => SetProperty(ref _publicChatTipsFirstDelayText, value ?? string.Empty);
+    }
+
+    public string PublicChatTipsMinimumDelayText
+    {
+        get => _publicChatTipsMinimumDelayText;
+        set => SetProperty(ref _publicChatTipsMinimumDelayText, value ?? string.Empty);
+    }
+
+    public string PublicChatTipsMaximumDelayText
+    {
+        get => _publicChatTipsMaximumDelayText;
+        set => SetProperty(ref _publicChatTipsMaximumDelayText, value ?? string.Empty);
+    }
+
+    public string NewPublicChatTipText
+    {
+        get => _newPublicChatTipText;
+        set
+        {
+            if (SetProperty(ref _newPublicChatTipText, value ?? string.Empty))
+            {
+                OnPropertyChanged(nameof(CanAddPublicChatTip));
+                AddPublicChatTipCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool CanAddPublicChatTip => PublicChatTips.Count < 12 && NewPublicChatTipText.Trim().Length >= 3;
+
+    public string PublicChatTipsStatus
+    {
+        get => _publicChatTipsStatus;
+        private set => SetProperty(ref _publicChatTipsStatus, value);
+    }
+
+    public string PublicChatTipsMessage
+    {
+        get => _publicChatTipsMessage;
+        private set => SetProperty(ref _publicChatTipsMessage, value);
+    }
+
+    public ServiceHealth PublicChatTipsHealth
+    {
+        get => _publicChatTipsHealth;
+        private set => SetProperty(ref _publicChatTipsHealth, value);
+    }
 
     public string MapRotationLine
     {
@@ -641,6 +720,114 @@ public sealed class SettingsViewModel : PageViewModel
         }
 
         await RefreshMapCatalogAsync(cancellationToken);
+        await LoadPublicChatTipsAsync(cancellationToken);
+    }
+
+    public void RemovePublicChatTip(PublicChatTipItemViewModel? tip)
+    {
+        if (tip is null)
+        {
+            return;
+        }
+
+        PublicChatTips.Remove(tip);
+        OnPropertyChanged(nameof(CanAddPublicChatTip));
+        AddPublicChatTipCommand.NotifyCanExecuteChanged();
+    }
+
+    public async Task SavePublicChatTipsAsync(CancellationToken cancellationToken = default)
+    {
+        if (_publicChatTipsConfigurationService is null)
+        {
+            PublicChatTipsStatus = "INDISPONIBLE";
+            PublicChatTipsMessage = "Cette installation du Control Center ne peut pas modifier les messages automatiques.";
+            PublicChatTipsHealth = ServiceHealth.Error;
+            return;
+        }
+
+        if (!TryBuildPublicChatTipsConfiguration(out var configuration, out var validationMessage))
+        {
+            PublicChatTipsStatus = "À CORRIGER";
+            PublicChatTipsMessage = validationMessage;
+            PublicChatTipsHealth = ServiceHealth.Warning;
+            return;
+        }
+
+        var result = await _publicChatTipsConfigurationService
+            .SaveAsync(OperatorServerRoot, configuration, cancellationToken)
+            .ConfigureAwait(true);
+        PublicChatTipsStatus = result.Success ? "ENREGISTRÉ" : "NON ENREGISTRÉ";
+        PublicChatTipsMessage = result.Message;
+        PublicChatTipsHealth = result.Success ? ServiceHealth.Healthy : ServiceHealth.Error;
+    }
+
+    private async Task LoadPublicChatTipsAsync(CancellationToken cancellationToken)
+    {
+        if (_publicChatTipsConfigurationService is null || string.IsNullOrWhiteSpace(OperatorServerRoot))
+        {
+            return;
+        }
+
+        var result = await _publicChatTipsConfigurationService
+            .LoadAsync(OperatorServerRoot, cancellationToken)
+            .ConfigureAwait(true);
+        PublicChatTipsStatus = result.Supported
+            ? "PRÊT"
+            : result.UpgradeAvailable ? "MISE À JOUR REQUISE" : "INDISPONIBLE";
+        PublicChatTipsMessage = result.Message;
+        PublicChatTipsHealth = result.Supported ? ServiceHealth.Healthy : result.UpgradeAvailable ? ServiceHealth.Warning : ServiceHealth.Unknown;
+        ApplyPublicChatTipsConfiguration(result.Configuration);
+    }
+
+    private void AddPublicChatTip()
+    {
+        var text = NewPublicChatTipText.Trim();
+        if (text.Length < 3 || PublicChatTips.Count >= 12)
+        {
+            return;
+        }
+
+        PublicChatTips.Add(new PublicChatTipItemViewModel(text));
+        NewPublicChatTipText = string.Empty;
+        OnPropertyChanged(nameof(CanAddPublicChatTip));
+        AddPublicChatTipCommand.NotifyCanExecuteChanged();
+    }
+
+    private void ApplyPublicChatTipsConfiguration(PublicChatTipsConfiguration configuration)
+    {
+        PublicChatTipsEnabled = configuration.Enabled;
+        PublicChatTipsFirstDelayText = configuration.FirstDelaySeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        PublicChatTipsMinimumDelayText = configuration.MinimumDelaySeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        PublicChatTipsMaximumDelayText = configuration.MaximumDelaySeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        PublicChatTips.Clear();
+        foreach (var message in configuration.Messages)
+        {
+            PublicChatTips.Add(new PublicChatTipItemViewModel(message));
+        }
+
+        OnPropertyChanged(nameof(CanAddPublicChatTip));
+        AddPublicChatTipCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool TryBuildPublicChatTipsConfiguration(out PublicChatTipsConfiguration configuration, out string message)
+    {
+        if (!int.TryParse(PublicChatTipsFirstDelayText, out var firstDelay) ||
+            !int.TryParse(PublicChatTipsMinimumDelayText, out var minimumDelay) ||
+            !int.TryParse(PublicChatTipsMaximumDelayText, out var maximumDelay))
+        {
+            configuration = PublicChatTipsConfiguration.Default;
+            message = "Entrez des délais en secondes (nombres entiers).";
+            return false;
+        }
+
+        configuration = new PublicChatTipsConfiguration(
+            PublicChatTipsEnabled,
+            firstDelay,
+            minimumDelay,
+            maximumDelay,
+            PublicChatTips.Select(tip => tip.Text).ToArray());
+        message = string.Empty;
+        return true;
     }
 
     private async Task ImportMapRotationAsync()

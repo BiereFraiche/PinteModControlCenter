@@ -213,7 +213,9 @@ public sealed class ShellViewModel : ObservableObject
     public Task ApplyCurrentSnapshotAsync(CancellationToken cancellationToken = default)
     {
         GlobalErrorMessage = null;
-        return InitializePagesAsync(cancellationToken);
+        // Settings contain static configuration and embedded-payload checks. They
+        // do not need to be reloaded every two seconds with live player data.
+        return InitializePagesAsync(cancellationToken, includeSettings: false);
     }
 
     private async Task RefreshAllAsync()
@@ -223,10 +225,15 @@ public sealed class ShellViewModel : ObservableObject
         await InitializePagesAsync();
     }
 
-    private async Task InitializePagesAsync(CancellationToken cancellationToken = default)
+    private async Task InitializePagesAsync(CancellationToken cancellationToken = default, bool includeSettings = true)
     {
         foreach (var item in NavigationItems)
         {
+            if (!includeSettings && ReferenceEquals(item.Page, _settings))
+            {
+                continue;
+            }
+
             await item.Page.InitializeAsync(cancellationToken);
         }
     }

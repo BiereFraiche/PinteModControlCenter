@@ -29,8 +29,8 @@ internal sealed record GitHubUpdateCheckResult(
 
 internal sealed partial class GitHubUpdateCheckService
 {
-    internal const string Repository = "BiereFraiche/PinteMod";
-    private const string ReleasesEndpoint = "https://api.github.com/repos/BiereFraiche/PinteMod/releases?per_page=20";
+    internal const string Repository = "BiereFraiche/PinteModControlCenter";
+    private const string ReleasesEndpoint = "https://api.github.com/repos/BiereFraiche/PinteModControlCenter/releases?per_page=20";
 
     public async Task<GitHubUpdateCheckResult> CheckAsync(CancellationToken cancellationToken = default)
     {
@@ -76,9 +76,7 @@ internal sealed partial class GitHubUpdateCheckService
                 var controlCenterRelease = matchingAssets.Length > 0 || ContainsControlCenter(tag) || ContainsControlCenter(name);
                 if (!controlCenterRelease) continue;
 
-                // Prefer the version embedded in a Control Center asset. This avoids
-                // confusing a general PinteMod release tag with the Control Center
-                // version when both are ever published in the same GitHub release.
+                // Prefer the version embedded in the Control Center asset.
                 var versionText = matchingAssets
                     .Select(TryExtractVersion)
                     .FirstOrDefault(version => version is not null)

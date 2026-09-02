@@ -43,7 +43,7 @@ public sealed class HybridControlCenterDataProvider(
             Services = services,
             DataContext = new SnapshotDataContext(
                 ControlCenterDataMode.HybridLocal,
-                "MODE HYBRIDE LOCAL",
+                "SERVEUR LOCAL",
                 options.ServerRoot,
                 session.Metadata,
                 ["Manche", "Durée", "Ranked", "Serveur BOIII", "Joueurs", "Événements", "Records"])

@@ -4,13 +4,13 @@ PinteMod Control Center est l’application Windows simple pour créer, lancer e
 
 Elle est pensée pour les joueurs qui veulent un serveur fonctionnel sans devoir modifier des fichiers de configuration à la main.
 
-[![Version](https://img.shields.io/badge/stable-v2.4.5-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
+[![Version](https://img.shields.io/badge/stable-v2.4.6-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.6)
 ![Windows](https://img.shields.io/badge/plateforme-Windows-0078D4)
-![Tests](https://img.shields.io/badge/tests-629%20réussis-24C875)
+![Tests](https://img.shields.io/badge/tests-636%20réussis-24C875)
 
-**[Télécharger PinteMod Control Center v2.4.5](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.5/PinteMod.ControlCenter.exe)**
+**[Télécharger PinteMod Control Center v2.4.6](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.6/PinteMod.ControlCenter.exe)**
 
-[English documentation](README.md) · [Notes de version](docs/RELEASE_NOTES_v2.4.5.md)
+[English documentation](README.md) · [Notes de version](docs/RELEASE_NOTES_v2.4.6.md)
 
 ![Interface de PinteMod Control Center](design/pintemod-control-center-reference.png)
 
@@ -22,6 +22,8 @@ Le Control Center rassemble les tâches importantes du serveur dans une seule in
 - définir le premier mot de passe RCON, ou le remplacer si besoin ;
 - démarrer et arrêter chaque serveur depuis le même endroit ;
 - voir la carte, la manche, le nombre de joueurs et l’état des services PinteMod ;
+- actualiser automatiquement les données du serveur tant que l’application est ouverte ;
+- modifier le port BOIII, le RCON et les messages publics récurrents dans Paramètres ;
 - consulter les joueurs, records, logs et l’historique du chat local ;
 - gérer plusieurs serveurs avec des onglets séparés ;
 - utiliser des actions serveur et de modération guidées, seulement lorsqu’elles sont compatibles et confirmées.
@@ -97,13 +99,13 @@ Le RCON est le mot de passe privé qui permet au Control Center de demander les 
 
 ## Informations techniques
 
-La version stable actuelle est la **v2.4.5**. Le parcours serveur vierge a été validé sur le terrain : installation PinteMod, premier RCON ou remplacement confirmé, démarrage BOIII et contrôle de santé.
+La version stable actuelle est la **v2.4.6**. Le parcours serveur vierge a été validé sur le terrain : installation PinteMod, premier RCON ou remplacement confirmé, démarrage BOIII et contrôle de santé.
 
 | Contrôle | État |
 |---|---|
 | Compilation Debug | PASS — 0 avertissement, 0 erreur |
 | Compilation Release | PASS — 0 avertissement, 0 erreur |
-| Tests automatisés | PASS — 629/629 dans les deux configurations |
+| Tests automatisés | PASS — 636/636 en Debug |
 | Paquets Windows | EXE autonome, dossier portable, ZIP, SHA-256 et auto-diagnostic hors ligne |
 
 L’Agent distant optionnel n’est jamais nécessaire pour un serveur local. S’il a été activé volontairement pour le LAN, il peut être désactivé complètement depuis le Gestionnaire.

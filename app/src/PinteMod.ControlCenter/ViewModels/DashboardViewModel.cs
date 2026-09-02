@@ -236,7 +236,7 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
     {
         { RuntimeValuesInferred: true } => "INFÉRÉ DEPUIS LES LOGS",
         not null when LocalObservation.RuntimeSnapshot.Metadata.ReadStatus == LocalReadStatus.Success &&
-                      LocalObservation.RuntimeSnapshot.Metadata.Freshness == DataFreshness.Fresh => "RUNTIME PINTE MOD LOCAL",
+                      LocalObservation.RuntimeSnapshot.Metadata.Freshness == DataFreshness.Fresh => "MISE À JOUR AUTOMATIQUE",
         not null when Server.SessionProvenance == DataProvenance.Unavailable => "DONNÉE INDISPONIBLE",
         _ => "DONNÉE SIMULÉE"
     };
@@ -334,12 +334,12 @@ public sealed class DashboardViewModel : PlayerActionsViewModelBase
     public string SessionProvenance => DisplayText.Provenance(SnapshotContext.SessionSource.Provenance);
 
     public string DeclaredVersionLabel => Server is null
-        ? "Version déclarée : —"
+        ? "PINTE MOD : —"
         : Server.SessionProvenance is DataProvenance.LocalFile or DataProvenance.MemoryCache
-            ? $"Version déclarée : {Server.PinteModVersion} · ne prouve pas l’état de santé"
+            ? $"PINTE MOD v{Server.PinteModVersion}"
             : Server.SessionProvenance == DataProvenance.Unavailable
-                ? "Version PinteMod : non disponible"
-                : $"Version simulée : {Server.PinteModVersion}";
+                ? "PINTE MOD : non détecté"
+                : $"PINTE MOD v{Server.PinteModVersion}";
 
     public string ServicesSourceLabel => SnapshotContext.Mode == ControlCenterDataMode.HybridLocal
         ? SnapshotContext.SessionSource.Provenance == DataProvenance.Unavailable

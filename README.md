@@ -4,13 +4,13 @@ PinteMod Control Center is the simple Windows app for creating, starting and man
 
 It is made for players who want a working server without having to edit configuration files by hand.
 
-[![Version](https://img.shields.io/badge/stable-v2.4.5-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
+[![Version](https://img.shields.io/badge/stable-v2.4.6-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.6)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
-![Tests](https://img.shields.io/badge/tests-629%20passing-24C875)
+![Tests](https://img.shields.io/badge/tests-636%20passing-24C875)
 
-**[Download PinteMod Control Center v2.4.5](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.5/PinteMod.ControlCenter.exe)**
+**[Download PinteMod Control Center v2.4.6](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.6/PinteMod.ControlCenter.exe)**
 
-[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.5.md)
+[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.6.md)
 
 ![PinteMod Control Center interface](design/pintemod-control-center-reference.png)
 
@@ -22,6 +22,8 @@ The Control Center brings the important server tasks into one clear interface:
 - set up the first RCON password safely, or replace it when needed;
 - start and stop each configured server from the same place;
 - see the map, round, player count and PinteMod service health;
+- automatically refresh live server data while it is open;
+- change the BOIII port, RCON password and recurring public chat tips in Settings;
 - access player information, records, logs and local chat history;
 - manage several servers through separate tabs;
 - use guided server and moderation actions only when they are supported and confirmed.
@@ -97,13 +99,13 @@ RCON is the private password that lets the Control Center request supported BOII
 
 ## Technical information
 
-The current stable release is **v2.4.5**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
+The current stable release is **v2.4.6**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
 
 | Check | Status |
 |---|---|
 | Debug build | PASS — 0 warnings, 0 errors |
 | Release build | PASS — 0 warnings, 0 errors |
-| Automated tests | PASS — 629/629 in both configurations |
+| Automated tests | PASS — 636/636 in Debug |
 | Windows packages | Standalone EXE, portable folder, ZIP files, SHA-256 and offline self-test |
 
 The optional Remote Agent is never required for a local server. If it was explicitly enabled for LAN use, it can be fully disabled from the Manager.

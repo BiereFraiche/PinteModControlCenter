@@ -279,7 +279,8 @@ public sealed class ServerRuntimeContext : IDisposable
             allowPinteModDiagnostics: string.IsNullOrWhiteSpace(integrationRoot) ||
                                      integrationProfile.SupportsPinteModClosedCommands,
             selfTestService: new ControlCenterSelfTestService(),
-            rconBootstrapService: new BoiiiRconBootstrapService());
+            rconBootstrapService: new BoiiiRconBootstrapService(),
+            publicChatTipsConfigurationService: new PinteModPublicChatTipsConfigurationService());
         var managedRuntimeProbe = new ManagedServerRuntimeProbe();
         bool ProbeManagedServerRunning()
         {

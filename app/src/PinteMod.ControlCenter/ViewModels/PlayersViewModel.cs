@@ -66,7 +66,7 @@ public sealed class PlayersViewModel : PlayerActionsViewModelBase
             ? snapshot.DataContext.SessionSource.Provenance == DataProvenance.Unavailable
                 ? "Aucune source joueur structurée n’est prouvée pour ce serveur · actions verrouillées."
                 : _runtimePlayersAvailable
-                    ? $"Runtime PinteMod local · {snapshot.Players.Count} joueur(s) · identité XUID abrégée · vie, points et inventaire observables"
+                    ? $"Actualisation automatique · {snapshot.Players.Count} joueur(s) · identité XUID abrégée · vie, points et inventaire observables"
                     : $"Présence locale de repli · {snapshot.Players.Count} joueur(s) · identité XUID abrégée · détails runtime indisponibles"
             : "Présence et fiches entièrement simulées";
         OnPropertyChanged(nameof(AlivePlayerCountDisplay));

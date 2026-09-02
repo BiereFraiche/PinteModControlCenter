@@ -26,7 +26,7 @@ public sealed class PlayerWeaponActionsViewModelTests
         Assert.IsFalse(viewModel.WeaponOptions.Any(option => option.Key == "wunderwaffe"));
         Assert.IsFalse(viewModel.WeaponOptions.Any(option => option.Key == "rg"));
         StringAssert.Contains(viewModel.WeaponCatalogStatus, "zm_zod");
-        StringAssert.Contains(viewModel.SourceSummary, "Runtime PinteMod local");
+        StringAssert.Contains(viewModel.SourceSummary, "Actualisation automatique");
         Assert.AreEqual("1", viewModel.AlivePlayerCountDisplay);
     }
 

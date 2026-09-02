@@ -527,6 +527,27 @@ public sealed class EmbeddedServerPayloadService
             skipped);
     }
 
+    internal async Task<byte[]> ReadPinteModPayloadFileAsync(
+        string relativePath,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        if (normalized.Contains("../", StringComparison.Ordinal) || normalized.StartsWith("/", StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("Entrée de payload hors racine refusée.");
+        }
+
+        await using var resource = OpenResource(PinteModResourceSuffix);
+        using var archive = new ZipArchive(resource, ZipArchiveMode.Read, leaveOpen: false);
+        var entry = archive.GetEntry(normalized)
+                    ?? throw new InvalidOperationException($"Payload PinteMod incomplet : {normalized} absent.");
+        await using var source = entry.Open();
+        using var memory = new MemoryStream();
+        await source.CopyToAsync(memory, cancellationToken).ConfigureAwait(false);
+        return memory.ToArray();
+    }
+
     private static string ValidateServerRoot(string serverRoot)
     {
         if (string.IsNullOrWhiteSpace(serverRoot) || !Directory.Exists(serverRoot))

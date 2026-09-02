@@ -63,6 +63,87 @@
 
             <Border Style="{StaticResource CardStyle}" Margin="4">
                 <StackPanel>
+                    <Grid>
+                        <TextBlock Text="MESSAGES AUTOMATIQUES DU CHAT" Style="{StaticResource SectionTitleStyle}" />
+                        <Border HorizontalAlignment="Right" Background="{DynamicResource AccentSoftBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="4" Padding="7,3">
+                            <TextBlock Text="PINTE MOD" Foreground="{DynamicResource AccentBrightBrush}" FontSize="9" FontWeight="Bold" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="Affiche de temps en temps un rappel dans le chat BOIII : votekick, votes, records, règles du serveur…"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,7,0,0" TextWrapping="Wrap" />
+                    <TextBlock Text="La durée d’affichage d’une ligne de chat est décidée par BOIII. Ici, vous choisissez le moment et la fréquence des messages."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,5,0,12" TextWrapping="Wrap" />
+
+                    <CheckBox Content="ACTIVER LES MESSAGES AUTOMATIQUES" IsChecked="{Binding PublicChatTipsEnabled, Mode=TwoWay}"
+                              FontSize="10" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="PREMIER MESSAGE (S)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding PublicChatTipsFirstDelayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="RÉCURRENCE MIN. (S)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding PublicChatTipsMinimumDelayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="RÉCURRENCE MAX. (S)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" />
+                            <TextBox Text="{Binding PublicChatTipsMaximumDelayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="Mettez la même valeur au minimum et au maximum pour une fréquence fixe. Minimum : 60 secondes."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,7,0,12" TextWrapping="Wrap" />
+
+                    <TextBlock Text="VOS MESSAGES" Style="{StaticResource EyebrowTextStyle}" />
+                    <ItemsControl ItemsSource="{Binding PublicChatTips}" Margin="0,7,0,4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,7">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="180" />
+                                    <Button Grid.Column="1" Content="RETIRER" Click="RemovePublicChatTip_Click"
+                                            Tag="{Binding}" Style="{StaticResource DangerButtonStyle}"
+                                            Padding="10,6" Margin="8,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding NewPublicChatTipText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 MaxLength="180" ToolTip="Exemple : Un joueur troll ? Lancez un votekick depuis .menu." />
+                        <Button Grid.Column="1" Content="AJOUTER" Command="{Binding AddPublicChatTipCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" Padding="12,7" Margin="8,0,0,0" />
+                    </Grid>
+                    <TextBlock Text="Jusqu’à 12 messages, 180 caractères chacun. Le préfixe PinteMod est ajouté automatiquement dans le chat."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,7,0,0" TextWrapping="Wrap" />
+                    <Button Content="ENREGISTRER LES MESSAGES SUR CE SERVEUR" Click="SavePublicChatTips_Click"
+                            Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Padding="12,7" Margin="0,12,0,0"
+                            ToolTip="Serveur arrêté requis. Met à jour uniquement le bloc Messages automatiques de PinteMod." />
+                    <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,10,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding PublicChatTipsStatus}" Foreground="{Binding PublicChatTipsHealth, Converter={StaticResource StatusBrushConverter}}"
+                                       FontSize="10" FontWeight="Bold" />
+                            <TextBlock Text="{Binding PublicChatTipsMessage}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="4">
+                <StackPanel>
                     <TextBlock Text="INTERFACE" Style="{StaticResource SectionTitleStyle}" />
                     <TextBlock Text="Actualisation hybride active ; les autres préférences restent à venir."
                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,5,0,18" />
