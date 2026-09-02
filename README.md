@@ -1,253 +1,128 @@
 # PinteMod Control Center
 
-> **Current stable release: v2.4.5.** **Start** proposes a protected first RCON before the initial launch, while keeping a deliberate “start without RCON” choice. A successful launch opens the Control Center automatically.
+PinteMod Control Center is the simple Windows app for creating, starting and managing a **Call of Duty: Black Ops III Zombies** server with [PinteMod](https://github.com/BiereFraiche/PinteMod).
 
-See the [v2.4.5 release notes](docs/RELEASE_NOTES_v2.4.5.md), [French test plan](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt) and [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
+It is made for players who want a working server without having to edit configuration files by hand.
 
-For a legally obtained BOIII/Ezz base and PinteMod installation through the Control Center, see the [French clean-server guide](docs/SERVEUR_BOIII_DEMARRAGE_FR.md). This repository does not redistribute BOIII servers or game archives.
-
-## Base serveur BOIII/Ezz vierge
-
-Une base serveur BOIII/Ezz vierge, prête à être configurée, est disponible ici : [dossier Mega — serveur vierge](https://mega.nz/folder/MYsTGa6I#gJviuei7G6XuFicNy_L9BQ).
-
-Après extraction, ouvrez le dossier du serveur dans PinteMod Control Center : l’assistant peut installer PinteMod, définir le RCON puis démarrer et contrôler la santé du serveur. Utilisez uniquement une base obtenue et utilisée conformément aux droits applicables.
-
-[Documentation française](README_FR.md)
-
-[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![Version](https://img.shields.io/badge/stable-v2.4.5-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
-![WPF](https://img.shields.io/badge/UI-WPF-0A84FF)
 ![Tests](https://img.shields.io/badge/tests-629%20passing-24C875)
-![Mode](https://img.shields.io/badge/default-simulation-F5A623)
-[![Release](https://img.shields.io/badge/release-v2.4.5-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
 
-PinteMod Control Center is a local Windows operator application for observing and administering a **Call of Duty: Black Ops III Zombies** dedicated server running [PinteMod](https://github.com/BiereFraiche/PinteMod) on BOIII/Ezz.
+**[Download PinteMod Control Center v2.4.5](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.5/PinteMod.ControlCenter.exe)**
+
+[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.5.md)
+
+![PinteMod Control Center interface](design/pintemod-control-center-reference.png)
+
+## What is it for?
+
+The Control Center brings the important server tasks into one clear interface:
+
+- install or repair PinteMod on a compatible BOIII/Ezz server folder;
+- set up the first RCON password safely, or replace it when needed;
+- start and stop each configured server from the same place;
+- see the map, round, player count and PinteMod service health;
+- access player information, records, logs and local chat history;
+- manage several servers through separate tabs;
+- use guided server and moderation actions only when they are supported and confirmed.
+
+It stays local-first: no account, no cloud service and no new incoming network port.
+
+## Start a server — step by step
+
+You only need Windows, a BOIII/Ezz server folder and the Control Center.
+
+### 1. Get a blank server base
+
+If you need a ready-to-configure blank BOIII/Ezz server base, the community download is here:
+
+**[Download the blank BOIII/Ezz server base from Mega](https://mega.nz/folder/MYsTGa6I#gJviuei7G6XuFicNy_L9BQ)**
+
+Extract it somewhere simple, for example `E:\Games\BOIII\MyServer`. Use and obtain BOIII/Ezz only according to the applicable rights and licences.
+
+### 2. Open the Control Center
+
+Download the EXE above, place it wherever you like and launch it. No installation is required.
+
+### 3. Add your server
+
+Click **+ Server**, then select the server folder: it is the folder that directly contains `boiii` and your launcher, usually `Server.bat`.
+
+Click **Analyse**. The Control Center tells you whether PinteMod is already installed or whether it can prepare the server.
+
+### 4. Install PinteMod
+
+For a blank server, click **Install PinteMod** and let the operation finish. Existing player data and third-party scripts are not overwritten by the normal repair flow.
+
+### 5. Set your first RCON password
+
+Before the first launch, the Control Center can ask for an RCON password. Choose one, keep it private, then confirm: the application writes the required server configuration for you.
+
+You may also start without RCON, but the health check and administration controls will be unavailable until you configure it in **Settings**.
+
+### 6. Start and check the server
+
+Click **Start server**. Once BOIII is running, open the dashboard and use **PinteMod health check**. A healthy installation reports PinteMod, Supervisor, Ban Service and GeoIP Bridge as connected.
+
+That is it: your server is ready to play.
+
+## Why use it?
+
+PinteMod Control Center is designed to make a multi-feature server approachable:
+
+- a guided first setup instead of manual configuration edits;
+- a dashboard that shows whether the server is actually healthy;
+- multiple servers in one application, without mixing their settings;
+- tools for players, records, chat, maps and logs in one place;
+- safe-by-default controls: sensitive operations require a deliberate action and confirmation;
+- optional LAN data access for a separate operator PC, without exposing a control port to the Internet.
+
+## Common questions
+
+### Does it include BOIII or Black Ops III?
+
+No. The Control Center is an independent management application. It does not include the game, BOIII/Ezz executables, maps or proprietary game assets.
+
+### Does it require administrator permissions?
+
+No. If Windows asks for elevation when the server starts, that request comes from `boiii.exe` or its Windows compatibility settings. See the [BOIII elevation note](docs/SERVEUR_BOIII_DEMARRAGE_FR.md#préparer-une-base-saine).
+
+### Can I use it on a second PC or VM?
+
+Yes. The recommended approach is an existing secured hypervisor console or RDP/VPN setup. The Control Center itself does not expose a web server or an incoming remote-control port. See the [French VM guide](docs/DEPLOIEMENT_VM_FR.md).
+
+### What is RCON?
+
+RCON is the private password that lets the Control Center request supported BOIII checks and actions. Never share it. If you need to change it, use **Settings → Replace server RCON** while the server is stopped.
+
+## Technical information
+
+The current stable release is **v2.4.5**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
+
+| Check | Status |
+|---|---|
+| Debug build | PASS — 0 warnings, 0 errors |
+| Release build | PASS — 0 warnings, 0 errors |
+| Automated tests | PASS — 629/629 in both configurations |
+| Windows packages | Standalone EXE, portable folder, ZIP files, SHA-256 and offline self-test |
+
+The optional Remote Agent is never required for a local server. If it was explicitly enabled for LAN use, it can be fully disabled from the Manager.
+
+### For advanced users and contributors
+
+- [Technical and operator documentation](app/README.md)
+- [Blank server guide (French)](docs/SERVEUR_BOIII_DEMARRAGE_FR.md)
+- [Final test plan (French)](PREVIEW_INTEGRATION4B1_FIX17_TEST_FR.txt)
+- [VM deployment guide (French)](docs/DEPLOIEMENT_VM_FR.md)
+- [PinteMod project](https://github.com/BiereFraiche/PinteMod)
+- [Security policy](SECURITY.md)
+
+To build from source, use Windows 10/11 with the .NET 8 SDK:
+
+```powershell
+.\BUILD_MANAGER_PREVIEW.bat
+```
+
+This performs the Debug and Release builds, both test runs, packaging and offline self-test. It does not start a BOIII server or send an RCON command.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.
-
-> **Current stable release:** v2.4.5.
-> The server-vierge recipe has been validated: install PinteMod, define or replace RCON safely, start BOIII, then verify PinteMod health.
-> The application starts in fully simulated mode unless an operator explicitly enables a local or read-only LAN data source.
-
-[Download stable v2.4.5](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.5)
-
-## v2.4.5 — stable
-
-This release finalizes the validated clean-server workflow: PinteMod installation, protected RCON setup or replacement, BOIII startup and PinteMod health check.
-
-| Item | v2.4.5 status |
-|---|---|
-| Product version | `2.4.5` |
-| Build | Debug and Release, 0 warnings, 0 errors |
-| Automated tests | 629/629 passing in both configurations |
-| Distribution | Standalone EXE + portable folder + ZIP files + SHA-256 + anonymized self-test report |
-| Field validation | Clean BOIII server: install, RCON, start and health check validated |
-
-The release includes the multi-server Manager, adaptive BOIII/PinteMod support, local chat history and dual-format packaging. The optional remote Agent is explicit and can be completely disabled from the Manager; it is never required for a local server.
-
-Build and audit every deliverable in one pass on Windows:
-
-```powershell
-.\BUILD_MANAGER_PREVIEW.bat
-```
-
-The Control Center can run in a Windows VM and be viewed from another PC through the hypervisor console or RDP behind a secured VPN/gateway. It adds no web server or remote-control port. See the [French VM deployment guide](docs/DEPLOIEMENT_VM_FR.md).
-
-### BOIII elevation prompt
-
-The Control Center never requests administrator elevation. If Windows shows a UAC prompt for `boiii.exe`, it comes from BOIII or its Windows compatibility settings. For unattended local or remote starts, open **Properties → Compatibility** on `boiii.exe` once and clear **Run this program as an administrator**, including the all-users setting if present. Keep the server outside `Program Files`, for example under `E:\Games`.
-
-![Validated PinteMod Control Center design direction](design/pintemod-control-center-reference.png)
-
-## Highlights
-
-- dark, responsive WPF dashboard designed for 1920×1080 and smaller windows;
-- up to eight isolated server tabs, each with its own data source, RCON context and visual accent;
-- current map/session, service health, players, events and operator status;
-- local read-only Ranks, round records and official Easter Egg Records;
-- structured Live Console with filters, search, pause, auto-scroll and neutralized copy;
-- explicit Local or LAN `PinteModData` source, with no automatic server discovery;
-- manual, allowlisted BOIII RCON diagnostics;
-- Community Soft Pause v0.3 observation plus confirmed Pause/Resume controls;
-- confirmed server actions for rounds, power, Pack-a-Punch, music, passages, zombies and power-up lifetime;
-- contract-backed restart-map, boss spawn and public-server-name controls when PinteMod publishes fresh compatible capabilities;
-- ephemeral BOIII connection-password control, restricted to a loopback RCON endpoint and never persisted or displayed;
-- XUID-targeted player assistance, inventory grants, power-ups, moderation and roles;
-- local read-only moderation history;
-- hybrid map catalogue combining official maps, an explicitly pasted rotation, local custom entries and the currently observed map;
-- shared mutation lock, human confirmation, conservative UDP delivery semantics and no automatic retry.
-
-## Vision: Adaptive BOIII Core
-
-The stable v2.2.0 is the foundation, not the finish line. The next research and development track aims to make the Control Center **useful with native BOIII alone** and progressively richer when trusted capabilities are available:
-
-- a **Capability Engine** so the interface reacts to evidence, provenance and freshness instead of assuming that one server package provides everything;
-- an adaptive path from Simulation to native BOIII, an explicitly imported GSC catalogue, an optional first-party Control Center Bridge, and the full PinteMod experience;
-- a conservative **read-only GSC analyzer** that discovers review candidates without compiling, executing or modifying third-party scripts;
-- a future versioned Bridge owned by the Control Center, installed only with explicit consent and never merged into third-party GSC files;
-- an adaptive first-party UI with no plugin system, no raw RCON, no cloud dependency and no new inbound port.
-
-This work is a phased roadmap, not a feature claim for v2.2.0. Security, explicit configuration and verifiable results remain the priority.
-
-**[Explore the public v2.3 vision →](docs/V2.3_VISION.md)**
-
-## Safety model
-
-The Control Center is deliberately local-first:
-
-- no web server, account system, cloud service or inbound port;
-- VM access may use an existing hypervisor console or RDP behind a secured VPN/gateway; the application itself does not expose remote-control functionality;
-- no network discovery or broadcast;
-- RCON only after an explicit operator action and only to numeric loopback/private/link-local addresses;
-- the RCON secret is protected with Windows DPAPI `CurrentUser` and is never displayed again;
-- players are targeted internally by stable `BOIII_XUID`, never by display name alone;
-- no free-form UI text is converted into a server command;
-- every real command comes from a closed allowlist;
-- destructive actions require confirmation;
-- no automatic retry after a mutation that may have reached BOIII;
-- no direct Control Center writes inside PinteMod runtime data;
-- temporary, backup, stale and partial files are handled conservatively;
-- full XUIDs, IP addresses, GUIDs and filesystem paths are neutralized before display or clipboard copy;
-- closing or crashing the Control Center never stops BOIII.
-
-Ban, Mute and Role commands may ask PinteMod itself to perform its normal administrative persistence after explicit confirmation. The Control Center does not edit those files directly.
-
-## Current data modes
-
-### Simulation — default
-
-Launching without configuration uses realistic simulated data. Simulation actions keep `CommandSent = false` and never contact a server.
-
-### Hybrid local read-only
-
-Hybrid mode overlays approved local PinteMod sources onto the simulated baseline. It can be enabled from **Settings** or explicitly with:
-
-```powershell
-PinteMod.ControlCenter.exe --data-mode=hybrid-local --server-root="C:\Servers\UnrankedServer"
-```
-
-The root must be absolute and explicit. The application never searches for an installation and never selects `server-sandbox/` automatically.
-
-For a separate operator PC, the recommended source is a read-only share containing only:
-
-```text
-boiii/scriptdata/pintemod/
-```
-
-Do not share the whole game/server directory and never expose SMB or BOIII RCON to the Internet.
-
-## Architecture
-
-```text
-app/
-├── src/
-│   ├── PinteMod.ControlCenter/                WPF presentation and ViewModels
-│   ├── PinteMod.ControlCenter.Core/           models, contracts and validation
-│   └── PinteMod.ControlCenter.Infrastructure/ local readers, simulation and RCON
-├── tests/PinteMod.ControlCenter.Tests/        MSTest regression suite
-├── packaging/                                 portable-package documentation
-└── PinteMod.ControlCenter.sln
-```
-
-Dependencies flow toward Core. WPF ViewModels are constructor-injected and testable. Local readers and RCON services implement narrow interfaces and can be replaced without coupling domain models to WPF.
-
-## Build and test
-
-Requirements:
-
-- Windows 10/11;
-- .NET 8 SDK.
-
-```powershell
-dotnet restore .\app\PinteMod.ControlCenter.sln --configfile .\app\NuGet.Config
-dotnet build .\app\PinteMod.ControlCenter.sln -c Debug --no-restore
-dotnet test .\app\PinteMod.ControlCenter.sln -c Debug --no-build --no-restore
-dotnet build .\app\PinteMod.ControlCenter.sln -c Release --no-restore
-dotnet test .\app\PinteMod.ControlCenter.sln -c Release --no-build --no-restore
-```
-
-Run from source:
-
-```powershell
-dotnet run --project .\app\src\PinteMod.ControlCenter\PinteMod.ControlCenter.csproj -c Debug
-```
-
-To build, test, publish and audit both Preview formats automatically:
-
-```powershell
-.\BUILD_MANAGER_PREVIEW.bat
-```
-
-Outputs are written to `app/artifacts/release-v<version>-win-x64/`: standalone EXE, self-contained folder, both ZIP files, `SHA256SUMS.txt` and `SELF-TEST.txt`.
-
-The same offline check can be run from either distribution:
-
-```powershell
-.\PinteMod.ControlCenter.exe --self-test --self-test-report="C:\Temp\PinteMod-self-test.txt"
-```
-
-Exit code `0` and `RESULTAT=PASS` mean that the local package passed. The report contains no server profile, secret, machine name, user name or private path.
-
-The `dotnet` build and test commands do not launch a BOIII server, BAT file or external tool. The Preview script only invokes local build, test, compression and audit tooling.
-
-## Real and simulated controls
-
-Stable, audited controls are enabled only when their targeting and verification rules are known. Restart Map, supported boss aliases, public hostname changes and clearing the connection password use closed PinteMod contracts with local correlated feedback. Setting the BOIII connection password is available only through an explicitly configured loopback RCON endpoint and the value remains ephemeral.
-
-Generic Change Map and generic events remain visibly simulated because no sufficiently safe, authoritative contract exists for them. A missing, stale or incompatible capability never becomes an available real action.
-
-Detailed future PinteMod requirements are documented in [`docs/PINTEMOD_REQUIREMENTS_NEXT.md`](docs/PINTEMOD_REQUIREMENTS_NEXT.md), including a dedicated heartbeat, authoritative runtime snapshot, map capabilities and structured mutation feedback.
-
-## Repository map
-
-- [`app/README.md`](app/README.md) — complete technical and operator documentation;
-- [`docs/CODEX_PROGRESS.md`](docs/CODEX_PROGRESS.md) — chronological implementation handoff;
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — architecture and security decisions;
-- [`docs/TODO.md`](docs/TODO.md) — remaining, blocked and validation work;
-- [`contracts/`](contracts/) — JSON contracts used during design;
-- [`design/`](design/) — validated visual direction;
-- [`reference/`](reference/) — frozen public PinteMod reference used for audits.
-
-Generated builds, portable archives, local settings, DPAPI secrets, server copies and runtime data are intentionally excluded from Git.
-
-## Validation status
-
-v2.4.2 automated validation:
-
-```text
-Debug build       PASS — 0 warnings, 0 errors
-Release build     PASS — 0 warnings, 0 errors
-Debug tests       PASS — 616/616
-Release tests     PASS — 616/616
-Packaged self-test PASS — RESULTAT=PASS, no server or network
-Single-EXE audit  PASS — one self-contained EXE, privacy audit passed
-Folder audit      PASS — archive and privacy audit passed
-Field validation  PASS — Server3 and fixed-PC/laptop Agent link
-```
-
-Public stable v2.2.0:
-
-PinteMod Control Center v2.2.0 has completed its automated and field validation:
-
-```text
-Debug build     PASS — 0 warnings, 0 errors
-Release build   PASS — 0 warnings, 0 errors
-Debug tests     PASS — 460/460
-Release tests   PASS — 460/460
-ZIP audit       PASS — no PDB, private build path, forbidden XUID, secret, server file or unsafe path
-Field checks    PASS — local reads, diagnostics, confirmed actions and net_password
-```
-
-The stable package is built from an identified Git commit, published as a self-contained Windows x64 archive and verified before release. Operational mutations remain manual, confirmed and protected by conservative delivery semantics.
-
-## Related project
-
-PinteMod server framework and stable v2.1.1 documentation:
-
-- <https://github.com/BiereFraiche/PinteMod>
-
-PinteMod Control Center is an independent operator UI. It does not include or replace BOIII, Black Ops III or proprietary game assets.
-
-## Security
-
-Read [`SECURITY.md`](SECURITY.md) before reporting a vulnerability or sharing diagnostic material. Never open an issue containing an RCON password, DPAPI file, full XUID, private IP, server path or runtime archive.
