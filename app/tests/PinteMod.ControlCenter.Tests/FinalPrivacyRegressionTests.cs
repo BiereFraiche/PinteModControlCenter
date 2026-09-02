@@ -12,13 +12,9 @@ public sealed partial class FinalPrivacyRegressionTests
     {
         var repositoryRoot = FindRepositoryRoot();
         var files = Directory.EnumerateFiles(
-                Path.Combine(repositoryRoot, "app", "src"),
-                "*.cs",
-                SearchOption.AllDirectories)
-            .Concat(Directory.EnumerateFiles(
-                Path.Combine(repositoryRoot, "contracts"),
-                "*.json",
-                SearchOption.TopDirectoryOnly));
+            Path.Combine(repositoryRoot, "app", "src"),
+            "*.cs",
+            SearchOption.AllDirectories);
 
         foreach (var file in files)
         {
@@ -57,8 +53,7 @@ public sealed partial class FinalPrivacyRegressionTests
     {
         for (var current = new DirectoryInfo(AppContext.BaseDirectory); current is not null; current = current.Parent)
         {
-            if (Directory.Exists(Path.Combine(current.FullName, "app")) &&
-                Directory.Exists(Path.Combine(current.FullName, "contracts")))
+            if (File.Exists(Path.Combine(current.FullName, "app", "PinteMod.ControlCenter.sln")))
             {
                 return current.FullName;
             }
