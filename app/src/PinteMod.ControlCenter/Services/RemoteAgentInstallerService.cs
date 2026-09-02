@@ -374,6 +374,69 @@ internal sealed class RemoteAgentInstallerService
             skipped);
     }
 
+    public async Task<ServerDeploymentResult> DisableAsync(CancellationToken cancellationToken = default)
+    {
+        var existing = await _store.LoadAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            using var run = Registry.CurrentUser.CreateSubKey(RunRegistryPath, writable: true);
+            run?.DeleteValue(RunValueName, throwOnMissingValue: false);
+        }
+        catch (Exception exception) when (exception is UnauthorizedAccessException or IOException)
+        {
+            return new ServerDeploymentResult(false, "L’Agent n’a pas pu être désactivé : le démarrage automatique Windows est inaccessible.", [], []);
+        }
+
+        RemoteAgentRecoveryTaskService.Remove(out _);
+        try
+        {
+            Directory.CreateDirectory(RemoteAgentConfigurationStore.GetAgentHome());
+            await File.WriteAllTextAsync(
+                RemoteAgentConfigurationStore.GetStopRequestPath(),
+                DateTimeOffset.UtcNow.ToString("O"),
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return new ServerDeploymentResult(false, "L’Agent n’a pas pu être arrêté : la demande d’arrêt locale est inaccessible.", [], []);
+        }
+
+        var stopped = await WaitForAgentStateAsync(expectedRunning: false, TimeSpan.FromSeconds(12), cancellationToken)
+            .ConfigureAwait(false);
+        if (!stopped)
+        {
+            return new ServerDeploymentResult(false, "L’Agent ne s’est pas arrêté. Terminez une fois PinteMod.ControlCenter dans le Gestionnaire des tâches : il ne redémarrera plus automatiquement.", [], []);
+        }
+
+        await _store.SaveAsync(new RemoteAgentConfiguration(RemoteAgentProtocol.SchemaVersion, []), cancellationToken)
+            .ConfigureAwait(false);
+        var removed = new List<string>();
+        var skipped = new List<string>();
+        foreach (var profile in existing.Profiles)
+        {
+            try
+            {
+                var root = Path.GetFullPath(profile.ServerRoot);
+                var queue = Path.Combine(root, RemoteAgentProtocol.QueueFolderName);
+                if (Directory.Exists(queue))
+                {
+                    Directory.Delete(queue, recursive: true);
+                    removed.Add(queue);
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+            {
+                skipped.Add("File d’attente Agent non supprimée pour un serveur local.");
+            }
+        }
+
+        return new ServerDeploymentResult(
+            true,
+            "Agent distant désactivé sur ce PC : démarrage automatique retiré, processus arrêté et files .pintemod-controlcenter supprimées.",
+            removed,
+            skipped);
+    }
+
 
     internal static bool IsAgentHostRunning()
     {

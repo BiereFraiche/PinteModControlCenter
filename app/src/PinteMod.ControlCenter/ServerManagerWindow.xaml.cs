@@ -376,6 +376,23 @@ public partial class ServerManagerWindow : Window
         });
     }
 
+    private async void DisableRemoteAgent_Click(object sender, RoutedEventArgs e)
+    {
+        var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+            "Désactiver complètement l’Agent distant sur ce PC ?\n\nLe démarrage automatique et la récupération Windows seront retirés. Les dossiers .pintemod-controlcenter créés par l’Agent seront supprimés. BOIII et PinteMod ne seront pas modifiés.",
+            "Désactiver l’Agent distant",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (answer != MessageBoxResult.Yes) return;
+
+        await RunAsync(async () =>
+        {
+            var result = await ViewModel.DisableRemoteAgentAsync(_lifetime.Token);
+            PinteMod.ControlCenter.Services.PinteModMessageBox.Show(result.Message, "Agent distant PinteMod", MessageBoxButton.OK,
+                result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        });
+    }
+
     private async void PairRemoteAgent_Click(object sender, RoutedEventArgs e)
     {
         await RunAsync(async () =>

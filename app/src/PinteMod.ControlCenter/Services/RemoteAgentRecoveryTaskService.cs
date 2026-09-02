@@ -125,6 +125,40 @@ internal static class RemoteAgentRecoveryTaskService
         }
     }
 
+    internal static bool Remove(out string diagnostic)
+    {
+        diagnostic = string.Empty;
+        try
+        {
+            var schedulerType = Type.GetTypeFromProgID("Schedule.Service");
+            if (schedulerType is null)
+            {
+                diagnostic = "Planificateur de tâches Windows indisponible.";
+                return false;
+            }
+
+            var serviceInstance = Activator.CreateInstance(schedulerType);
+            if (serviceInstance is null)
+            {
+                diagnostic = "Planificateur de tâches Windows indisponible.";
+                return false;
+            }
+
+            dynamic service = serviceInstance;
+            service.Connect();
+            dynamic root = service.GetFolder("\\");
+            root.DeleteTask(TaskName, 0);
+            diagnostic = "Auto-récupération Agent supprimée.";
+            return true;
+        }
+        catch (Exception)
+        {
+            // A missing task is already an acceptable disabled state.
+            diagnostic = "Auto-récupération Agent déjà absente ou non supprimable.";
+            return true;
+        }
+    }
+
     internal static bool ShouldSuppressAgentStartForUpdate()
     {
         var marker = RemoteAgentConfigurationStore.GetUpdateInProgressPath();

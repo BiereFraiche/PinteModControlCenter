@@ -1708,6 +1708,26 @@ public sealed class ServerManagerViewModel : ObservableObject
         }
     }
 
+    public async Task<ServerDeploymentResult> DisableRemoteAgentAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await _remoteAgentInstaller.DisableAsync(cancellationToken);
+            StatusMessage = result.Message;
+            return result;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            var result = new ServerDeploymentResult(false, RemoteAgentActivationDiagnostic.Describe(exception), [], []);
+            StatusMessage = result.Message;
+            return result;
+        }
+    }
+
     public async Task<ServerLaunchResult> UpdateSelectedRemoteAgentAsync(
         IProgress<RemoteAgentUpdateProgress>? progress = null,
         CancellationToken cancellationToken = default)

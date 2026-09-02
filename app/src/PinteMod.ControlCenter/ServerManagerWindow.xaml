@@ -402,6 +402,8 @@
                                     <WrapPanel Margin="0,12,0,0">
                                         <Button Content="ACTIVER / MAJ AGENT SUR CE PC" Style="{StaticResource SecondaryButtonStyle}"
                                                 IsEnabled="{Binding SelectedProfile.CanEnableRemoteAgentLocal}" Padding="11,7" Margin="0,0,8,8" Click="EnableRemoteAgent_Click" />
+                                        <Button Content="DÉSACTIVER L’AGENT SUR CE PC" Style="{StaticResource DangerButtonStyle}"
+                                                Padding="11,7" Margin="0,0,8,8" Click="DisableRemoteAgent_Click" />
                                         <Button Content="PAIRER CE PROFIL DISTANT" Style="{StaticResource SecondaryButtonStyle}"
                                                 IsEnabled="{Binding SelectedProfile.CanPairRemoteAgent}" Padding="11,7" Margin="0,0,8,8" Click="PairRemoteAgent_Click" />
                                         <Button Content="SYNCHRONISER LES DEUX PC" Style="{StaticResource SecondaryButtonStyle}"
