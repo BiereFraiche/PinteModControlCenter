@@ -69,9 +69,9 @@ jobs:
       - name: Package and audit both distributions
         if: matrix.configuration == 'Release'
         shell: pwsh
-        run: .\app\packaging\Build-PreviewPackages.ps1 -SingleDirectory .\app\artifacts\ci-single-exe -FolderDirectory .\app\artifacts\ci-folder -OutputRoot .\app\artifacts -RepositoryRoot $env:GITHUB_WORKSPACE -SelfTestReport .\app\artifacts\SELF-TEST.txt
+        run: .\app\packaging\Build-ReleasePackages.ps1 -SingleDirectory .\app\artifacts\ci-single-exe -FolderDirectory .\app\artifacts\ci-folder -OutputRoot .\app\artifacts -RepositoryRoot $env:GITHUB_WORKSPACE -SelfTestReport .\app\artifacts\SELF-TEST.txt
 
-      - name: Upload Preview packages
+      - name: Upload release packages
         if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v4
         with:
