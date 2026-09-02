@@ -1,39 +1,28 @@
-# Security policy
+# Security
 
-## Scope
+PinteMod Control Center is a local Windows application. It does not create an incoming control port, web server, account or cloud service.
 
-PinteMod Control Center handles local runtime observations and optional BOIII RCON administration. Reports involving command construction, target identity, path confinement, secret handling, privacy filtering or uncertain UDP delivery are security-sensitive.
+## Reporting a problem
 
-## Reporting
+Please use GitHub private vulnerability reporting when available. Do not publish a security issue before it has been reviewed.
 
-Please report security issues privately through GitHub's private vulnerability reporting/security-advisory feature when available. Do not disclose an exploitable issue in a public issue before it has been reviewed.
+Never include in an issue, screenshot or archive:
 
-Never attach or paste:
+- an RCON password;
+- DPAPI or `*.secret` files;
+- a private IP address, Windows path, SMB share or credential;
+- a full player XUID;
+- PinteMod runtime data, logs or a personal server archive.
 
-- an RCON password or command packet containing it;
-- `rcon.secret.dpapi` or any DPAPI-protected file;
-- operator settings containing a real server path/address;
-- full BOIII XUID values;
-- private IP addresses, SMB credentials or share configuration;
-- PinteMod runtime directories, logs or player registries;
-- a production server archive.
+Use a test copy and synthetic names when explaining a problem.
 
-Use synthetic identifiers and a dedicated test copy when preparing a reproduction.
+## Current protections
 
-## Supported baseline
+- RCON is configured deliberately and stored with Windows DPAPI for the current user;
+- the application only exposes supported, confirmed actions rather than free-form server commands;
+- player actions use BOIII XUID internally, not a nickname alone;
+- local data is read only from a server folder explicitly chosen by the operator;
+- uncertain server actions are never retried automatically;
+- closing the Control Center never stops BOIII.
 
-Security fixes target the latest source on `main` and the latest documented operator preview. The current development candidate is Integration Preview 4B1 Fix16; v2.2.0 remains the public stable baseline and 4A7 Fix2 the human-validated fallback for the Manager line.
-
-## Operational guarantees
-
-- no inbound listener or automatic network discovery;
-- no Control Center remote-control server; VM access must be supplied by an existing hypervisor console or secured RDP/VPN gateway;
-- optional outbound HTTPS GET to GitHub (`BiereFraiche/PinteMod`) for release metadata only; no server paths, IPs, XUIDs, profiles or secrets are sent;
-- explicit numeric private/local RCON targets only;
-- DPAPI `CurrentUser` secret storage;
-- closed command allowlists and strict option validation;
-- BOIII_XUID targeting for real player actions;
-- confirmation before mutations;
-- no automatic retry after uncertain delivery;
-- local readers confined to an explicit root;
-- no direct writes into PinteMod runtime data.
+The supported public version is the latest stable release: **v2.4.5**.

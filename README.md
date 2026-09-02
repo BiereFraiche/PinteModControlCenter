@@ -108,21 +108,12 @@ The current stable release is **v2.4.5**. The blank-server workflow has been fie
 
 The optional Remote Agent is never required for a local server. If it was explicitly enabled for LAN use, it can be fully disabled from the Manager.
 
-### For advanced users and contributors
+### Useful guides
 
-- [Technical and operator documentation](app/README.md)
 - [Blank server guide (French)](docs/SERVEUR_BOIII_DEMARRAGE_FR.md)
-- [Final test plan (French)](docs/RECETTE_FINALE_FR.md)
+- [Public test guide (French)](docs/RECETTE_FINALE_FR.md)
 - [VM deployment guide (French)](docs/DEPLOIEMENT_VM_FR.md)
 - [PinteMod project](https://github.com/BiereFraiche/PinteMod)
 - [Security policy](SECURITY.md)
-
-To build from source, use Windows 10/11 with the .NET 8 SDK:
-
-```powershell
-.\BUILD_MANAGER.bat
-```
-
-This performs the Debug and Release builds, both test runs, packaging and offline self-test. It does not start a BOIII server or send an RCON command.
 
 Created and maintained by **BiereFraiche**, with development assistance from Codex and ChatGPT.

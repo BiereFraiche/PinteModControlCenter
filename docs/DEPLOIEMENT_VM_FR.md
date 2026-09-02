@@ -49,7 +49,7 @@ Ne jamais exposer directement sur Internet :
 2. Appliquer les mises à jour Windows et activer la protection antimalware.
 3. Copier soit l’EXE unique, soit tout le dossier portable.
 4. Lancer l’application avec un compte Windows dédié à l’exploitation.
-5. Ajouter uniquement Server3 pour la première validation.
+5. Ajouter le ou les serveurs à administrer.
 6. Si l’Agent est utilisé, effectuer le pairing depuis ce compte et ce profil Windows.
 7. Créer un instantané de VM après configuration, sans inclure de secret dans une image destinée au partage.
 
@@ -64,5 +64,4 @@ Les secrets RCON et Agent sont liés par DPAPI au compte Windows qui les a cré�
 - aucun processus n’écoute pour le compte du Control Center ;
 - RDP ou la console distante exige une authentification forte ;
 - le pare-feu n’accepte pas RDP/SMB/RCON depuis Internet ;
-- Server3 est le seul serveur autorisé pendant la Preview ;
 - aucune donnée runtime, configuration locale ou secret n’est placé dans le paquet de distribution.

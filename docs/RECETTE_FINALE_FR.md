@@ -1,6 +1,6 @@
-# Recette finale — PinteMod Control Center
+# Test public — PinteMod Control Center v2.4.5
 
-Cette recette est exécutée une seule fois avant la prochaine publication finale. Elle ne demande aucun secret dans un rapport ou une capture.
+Ce guide sert aux testeurs de la version stable. Il ne faut jamais transmettre de secret dans un rapport ou une capture.
 
 ## A. Serveur vierge local
 

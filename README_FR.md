@@ -108,21 +108,12 @@ La version stable actuelle est la **v2.4.5**. Le parcours serveur vierge a été
 
 L’Agent distant optionnel n’est jamais nécessaire pour un serveur local. S’il a été activé volontairement pour le LAN, il peut être désactivé complètement depuis le Gestionnaire.
 
-### Pour les utilisateurs avancés et contributeurs
+### Guides utiles
 
-- [Documentation technique et opérateur](app/README.md)
 - [Guide serveur vierge](docs/SERVEUR_BOIII_DEMARRAGE_FR.md)
-- [Plan de test final](docs/RECETTE_FINALE_FR.md)
+- [Guide de test public](docs/RECETTE_FINALE_FR.md)
 - [Guide de déploiement VM](docs/DEPLOIEMENT_VM_FR.md)
 - [Projet PinteMod](https://github.com/BiereFraiche/PinteMod)
 - [Politique de sécurité](SECURITY.md)
-
-Pour compiler depuis les sources, Windows 10/11 et le SDK .NET 8 sont nécessaires :
-
-```powershell
-.\BUILD_MANAGER.bat
-```
-
-Cette commande lance les compilations Debug et Release, les tests, la création des paquets et l’auto-diagnostic hors ligne. Elle ne démarre pas BOIII et n’envoie aucune commande RCON.
 
 Créé et maintenu par **BiereFraiche**, avec l’assistance de développement de Codex et ChatGPT.
