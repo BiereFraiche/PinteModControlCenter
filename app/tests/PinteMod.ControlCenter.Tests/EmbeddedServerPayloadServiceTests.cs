@@ -35,8 +35,9 @@ public sealed class EmbeddedServerPayloadServiceTests
         Assert.IsTrue(result.Success, result.Message);
         var verifier = Path.Combine(directory.Root, "boiii", "tools", "Verify_PinteMod_Installation.ps1");
         var content = await File.ReadAllTextAsync(verifier);
-        StringAssert.Contains(content, "$gsc.Count -in @(28,35)");
-        StringAssert.Contains(content, "Not provided by current Ezz BOIII distributions");
+        StringAssert.Contains(content, "$gsc.Count -lt 28");
+        StringAssert.Contains(content, "extensible module count accepted");
+        StringAssert.Contains(content, "no action is required by PinteMod");
         Assert.IsFalse(content.Contains("Add-Result WARNING 'BOIII hotfix.gsc'", StringComparison.Ordinal));
     }
 
@@ -62,7 +63,7 @@ public sealed class EmbeddedServerPayloadServiceTests
         Assert.IsTrue(result.Success, result.Message);
         Assert.IsTrue(result.CreatedFiles.Any(path =>
             path.Replace('\\', '/').Equals("boiii/tools/Verify_PinteMod_Installation.ps1", StringComparison.OrdinalIgnoreCase)));
-        StringAssert.Contains(await File.ReadAllTextAsync(verifier), "$gsc.Count -in @(28,35)");
+        StringAssert.Contains(await File.ReadAllTextAsync(verifier), "$gsc.Count -lt 28");
     }
 
     [TestMethod]
@@ -84,7 +85,7 @@ public sealed class EmbeddedServerPayloadServiceTests
 
         Assert.IsTrue(result.Success, result.Message);
         Assert.AreEqual(customBanService, await File.ReadAllTextAsync(banService));
-        StringAssert.Contains(await File.ReadAllTextAsync(verifier), "$gsc.Count -in @(28,35)");
+        StringAssert.Contains(await File.ReadAllTextAsync(verifier), "$gsc.Count -lt 28");
     }
 
     [TestMethod]

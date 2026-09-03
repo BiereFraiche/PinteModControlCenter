@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.Windows.Controls;
+using System.Windows;
 using System.Windows.Threading;
 using PinteMod.ControlCenter.ViewModels;
 
@@ -61,6 +62,14 @@ public partial class PlayerChatView : UserControl
         {
             _viewModel.Messages.CollectionChanged -= OnMessagesChanged;
             _viewModel = null;
+        }
+    }
+
+    private async void RequestUnban_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is PlayerChatViewModel viewModel && sender is FrameworkElement { Tag: ActiveBanItemViewModel ban })
+        {
+            await viewModel.RequestUnbanAsync(ban);
         }
     }
 }

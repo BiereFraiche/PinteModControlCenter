@@ -24,6 +24,7 @@ public sealed record BanServiceStatusSnapshot(
     string PrivacyMode);
 
 public sealed record ActiveBan(
+    string Xuid,
     string DisplayName,
     string Duration,
     string ExpiresLabel,

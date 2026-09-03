@@ -174,6 +174,8 @@ public sealed class PlayerAdministrationCommandService(
                 $"ezzkick {xuid} control-center",
             PlayerAdministrationAction.Ban when request.PointsAmount is null && option is not null && AllowedBanDurations.Contains(option) =>
                 $"ezzban {xuid} {option} control-center",
+            PlayerAdministrationAction.Unban when request.PointsAmount is null && option is null =>
+                $"ezzunban {xuid}",
             PlayerAdministrationAction.SetRole when request.PointsAmount is null && option is not null && AllowedRoles.Contains(option) =>
                 $"ezzidsetrole {xuid} {option}",
             PlayerAdministrationAction.RemoveRole when request.PointsAmount is null && option is null =>

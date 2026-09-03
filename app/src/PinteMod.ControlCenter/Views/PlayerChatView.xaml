@@ -40,7 +40,7 @@
             <StackPanel>
                 <Grid Margin="0,0,0,8">
                     <TextBlock Text="BANS ACTIFS" Style="{StaticResource SectionTitleStyle}" />
-                    <TextBlock Text="LECTURE LOCALE · AUCUNE MODIFICATION" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Right" />
+                    <TextBlock Text="LECTURE LOCALE · DÉBAN SUR CONFIRMATION" Style="{StaticResource EyebrowTextStyle}" HorizontalAlignment="Right" />
                 </Grid>
                 <TextBlock Text="{Binding ActiveBanStatus}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="0,0,0,8" />
                 <ItemsControl ItemsSource="{Binding ActiveBans}"
@@ -57,6 +57,9 @@
                                     <TextBlock Text="{Binding Duration}" Foreground="{StaticResource DangerBrush}" FontSize="10" Margin="0,3,0,0" />
                                     <TextBlock Text="{Binding ExpiresLabel}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" Margin="0,2,0,0" />
                                     <TextBlock Text="{Binding Reason}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="9" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                    <Button Content="DÉBAN" Click="RequestUnban_Click" Tag="{Binding}"
+                                            Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" Margin="0,8,0,0"
+                                            HorizontalAlignment="Left" ToolTip="Demande confirmation puis envoie le déban via RCON." />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

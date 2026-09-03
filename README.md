@@ -4,13 +4,13 @@ PinteMod Control Center is the simple Windows app for creating, starting and man
 
 It is made for players who want a working server without having to edit configuration files by hand.
 
-[![Version](https://img.shields.io/badge/stable-v2.4.8-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.8)
+[![Version](https://img.shields.io/badge/stable-v2.4.9-168BFF)](https://github.com/BiereFraiche/PinteModControlCenter/releases/tag/v2.4.9)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D4)
 ![Tests](https://img.shields.io/badge/tests-637%20passing-24C875)
 
-**[Download PinteMod Control Center v2.4.8](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.8/PinteMod.ControlCenter.exe)**
+**[Download PinteMod Control Center v2.4.9](https://github.com/BiereFraiche/PinteModControlCenter/releases/download/v2.4.9/PinteMod.ControlCenter.exe)**
 
-[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.8.md)
+[French documentation](README_FR.md) · [Release notes](docs/RELEASE_NOTES_v2.4.9.md)
 
 ![PinteMod Control Center interface](design/pintemod-control-center-reference.png)
 
@@ -23,8 +23,8 @@ The Control Center brings the important server tasks into one clear interface:
 - start and stop each configured server from the same place;
 - see the map, round, player count and PinteMod service health;
 - automatically refresh live server data while it is open;
-- change the BOIII port, RCON password and recurring public chat tips in Settings;
-- view active bans and keep a local trace of kick and ban requests;
+- change the BOIII port, RCON password, recurring public chat tips and anti-AFK settings in Settings;
+- view active bans, request a confirmed unban and keep a local trace of moderation requests;
 - access player information, records, logs and local chat history;
 - manage several servers through separate tabs;
 - use guided server and moderation actions only when they are supported and confirmed.
@@ -100,7 +100,7 @@ RCON is the private password that lets the Control Center request supported BOII
 
 ## Technical information
 
-The current stable release is **v2.4.8**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
+The current stable release is **v2.4.9**. The blank-server workflow has been field validated: PinteMod installation, first RCON or confirmed replacement, BOIII startup and health check.
 
 | Check | Status |
 |---|---|

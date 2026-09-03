@@ -35,6 +35,7 @@ public sealed class PlayerAdministrationCommandServiceTests
             new PlayerAdministrationRequest(PlayerAdministrationAction.Unmute, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.Kick, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.Ban, Xuid, Option: "7d"),
+            new PlayerAdministrationRequest(PlayerAdministrationAction.Unban, Xuid),
             new PlayerAdministrationRequest(PlayerAdministrationAction.SetRole, Xuid, Option: "moderator"),
             new PlayerAdministrationRequest(PlayerAdministrationAction.RemoveRole, Xuid)
         };
@@ -64,6 +65,7 @@ public sealed class PlayerAdministrationCommandServiceTests
                 $"ezzunmute {Xuid}",
                 $"ezzkick {Xuid} control-center",
                 $"ezzban {Xuid} 7d control-center",
+                $"ezzunban {Xuid}",
                 $"ezzidsetrole {Xuid} moderator",
                 $"ezzidremoverole {Xuid}"
             },

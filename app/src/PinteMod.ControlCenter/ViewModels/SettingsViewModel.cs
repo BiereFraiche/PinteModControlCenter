@@ -16,6 +16,7 @@ public sealed class SettingsViewModel : PageViewModel
     private readonly IRconSecretStore? _rconSecretStore;
     private readonly IBoiiiRconBootstrapService? _rconBootstrapService;
     private readonly IPublicChatTipsConfigurationService? _publicChatTipsConfigurationService;
+    private readonly IAntiAfkConfigurationService? _antiAfkConfigurationService;
     private readonly IOperatorActivityStore? _operatorActivityStore;
     private readonly IOperatorRconOperationCoordinator _rconOperations;
     private readonly IMapCatalogService? _mapCatalogService;
@@ -44,6 +45,12 @@ public sealed class SettingsViewModel : PageViewModel
     private string _publicChatTipsStatus = "NON CHARGÉ";
     private string _publicChatTipsMessage = "Sélectionnez un serveur PinteMod pour gérer ses messages automatiques.";
     private ServiceHealth _publicChatTipsHealth = ServiceHealth.Unknown;
+    private bool _antiAfkEnabled = true;
+    private string _antiAfkTimeoutText = "600";
+    private string _antiAfkWarningText = "120";
+    private string _antiAfkStatus = "NON CHARGÉ";
+    private string _antiAfkMessage = "Sélectionnez un serveur PinteMod pour gérer la protection anti-AFK.";
+    private ServiceHealth _antiAfkHealth = ServiceHealth.Unknown;
     private string _rconSecretStatus = "NON CONFIGURÉ";
     private string _rconTestStatus = "NON TESTÉ";
     private string _rconResponse = "Aucune commande RCON envoyée.";
@@ -86,7 +93,8 @@ public sealed class SettingsViewModel : PageViewModel
         bool allowPinteModDiagnostics = true,
         IControlCenterSelfTestService? selfTestService = null,
         IBoiiiRconBootstrapService? rconBootstrapService = null,
-        IPublicChatTipsConfigurationService? publicChatTipsConfigurationService = null)
+        IPublicChatTipsConfigurationService? publicChatTipsConfigurationService = null,
+        IAntiAfkConfigurationService? antiAfkConfigurationService = null)
         : base("Paramètres", "Configuration opérateur locale ou LAN · diagnostics RCON manuels")
     {
         _localDataSourceProbe = localDataSourceProbe;
@@ -95,6 +103,7 @@ public sealed class SettingsViewModel : PageViewModel
         _rconSecretStore = rconSecretStore;
         _rconBootstrapService = rconBootstrapService;
         _publicChatTipsConfigurationService = publicChatTipsConfigurationService;
+        _antiAfkConfigurationService = antiAfkConfigurationService;
         _operatorActivityStore = operatorActivityStore;
         _rconOperations = rconOperations ?? new OperatorRconOperationCoordinator();
         _mapCatalogService = mapCatalogService;
@@ -336,6 +345,42 @@ public sealed class SettingsViewModel : PageViewModel
     {
         get => _publicChatTipsHealth;
         private set => SetProperty(ref _publicChatTipsHealth, value);
+    }
+
+    public bool AntiAfkEnabled
+    {
+        get => _antiAfkEnabled;
+        set => SetProperty(ref _antiAfkEnabled, value);
+    }
+
+    public string AntiAfkTimeoutText
+    {
+        get => _antiAfkTimeoutText;
+        set => SetProperty(ref _antiAfkTimeoutText, value ?? string.Empty);
+    }
+
+    public string AntiAfkWarningText
+    {
+        get => _antiAfkWarningText;
+        set => SetProperty(ref _antiAfkWarningText, value ?? string.Empty);
+    }
+
+    public string AntiAfkStatus
+    {
+        get => _antiAfkStatus;
+        private set => SetProperty(ref _antiAfkStatus, value);
+    }
+
+    public string AntiAfkMessage
+    {
+        get => _antiAfkMessage;
+        private set => SetProperty(ref _antiAfkMessage, value);
+    }
+
+    public ServiceHealth AntiAfkHealth
+    {
+        get => _antiAfkHealth;
+        private set => SetProperty(ref _antiAfkHealth, value);
     }
 
     public string MapRotationLine
@@ -721,6 +766,7 @@ public sealed class SettingsViewModel : PageViewModel
 
         await RefreshMapCatalogAsync(cancellationToken);
         await LoadPublicChatTipsAsync(cancellationToken);
+        await LoadAntiAfkAsync(cancellationToken);
     }
 
     public void RemovePublicChatTip(PublicChatTipItemViewModel? tip)
@@ -759,6 +805,49 @@ public sealed class SettingsViewModel : PageViewModel
         PublicChatTipsStatus = result.Success ? "ENREGISTRÉ" : "NON ENREGISTRÉ";
         PublicChatTipsMessage = result.Message;
         PublicChatTipsHealth = result.Success ? ServiceHealth.Healthy : ServiceHealth.Error;
+    }
+
+    public async Task SaveAntiAfkAsync(CancellationToken cancellationToken = default)
+    {
+        if (_antiAfkConfigurationService is null)
+        {
+            AntiAfkStatus = "INDISPONIBLE";
+            AntiAfkMessage = "Cette installation du Control Center ne peut pas modifier la protection anti-AFK.";
+            AntiAfkHealth = ServiceHealth.Error;
+            return;
+        }
+
+        if (!int.TryParse(AntiAfkTimeoutText, out var timeout) || !int.TryParse(AntiAfkWarningText, out var warning))
+        {
+            AntiAfkStatus = "À CORRIGER";
+            AntiAfkMessage = "Entrez des délais en secondes (nombres entiers).";
+            AntiAfkHealth = ServiceHealth.Warning;
+            return;
+        }
+
+        var result = await _antiAfkConfigurationService.SaveAsync(
+            OperatorServerRoot,
+            new AntiAfkConfiguration(AntiAfkEnabled, timeout, warning),
+            cancellationToken).ConfigureAwait(true);
+        AntiAfkStatus = result.Success ? "ENREGISTRÉ" : "NON ENREGISTRÉ";
+        AntiAfkMessage = result.Message;
+        AntiAfkHealth = result.Success ? ServiceHealth.Healthy : ServiceHealth.Error;
+    }
+
+    private async Task LoadAntiAfkAsync(CancellationToken cancellationToken)
+    {
+        if (_antiAfkConfigurationService is null || string.IsNullOrWhiteSpace(OperatorServerRoot))
+        {
+            return;
+        }
+
+        var result = await _antiAfkConfigurationService.LoadAsync(OperatorServerRoot, cancellationToken).ConfigureAwait(true);
+        AntiAfkStatus = result.Supported ? "PRÊT" : "INDISPONIBLE";
+        AntiAfkMessage = result.Message;
+        AntiAfkHealth = result.Supported ? ServiceHealth.Healthy : ServiceHealth.Unknown;
+        AntiAfkEnabled = result.Configuration.Enabled;
+        AntiAfkTimeoutText = result.Configuration.TimeoutSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        AntiAfkWarningText = result.Configuration.WarningSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private async Task LoadPublicChatTipsAsync(CancellationToken cancellationToken)

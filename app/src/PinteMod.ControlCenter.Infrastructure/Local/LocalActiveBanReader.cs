@@ -96,7 +96,8 @@ public sealed class LocalActiveBanReader : IActiveBanReader, IDisposable
                 continue;
             }
 
-            if (!TryText(ban, "display", 80, out var display) ||
+            if (!TryText(ban, "xuid", 64, out var xuid) || !XuidValidator.IsValid(xuid) ||
+                !TryText(ban, "display", 80, out var display) ||
                 !TryText(ban, "duration", 16, out var duration) ||
                 !TryText(ban, "reason", 180, out var reason) ||
                 !TryText(ban, "created_utc", 64, out var createdText) ||
@@ -115,6 +116,7 @@ public sealed class LocalActiveBanReader : IActiveBanReader, IDisposable
             }
 
             active.Add(new ActiveBan(
+                xuid,
                 LogPrivacyFilter.SanitizeDisplayText(display, 80),
                 duration,
                 expires,

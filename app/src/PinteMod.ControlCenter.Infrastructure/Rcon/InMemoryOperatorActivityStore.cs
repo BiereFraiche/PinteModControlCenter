@@ -164,6 +164,7 @@ public sealed class InMemoryOperatorActivityStore : IOperatorActivityStore
             PlayerAdministrationAction.Unmute => "Unmute",
             PlayerAdministrationAction.Kick => "Kick",
             PlayerAdministrationAction.Ban => "Ban",
+            PlayerAdministrationAction.Unban => "Déban",
             PlayerAdministrationAction.SetRole => "Définir le rôle",
             PlayerAdministrationAction.RemoveRole => "Retirer le rôle",
             _ => "Action joueur"

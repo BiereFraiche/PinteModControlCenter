@@ -12,6 +12,9 @@ public sealed class PlayerChatViewModel : PageViewModel
     private readonly IPlayerChatLogReader? _chatReader;
     private readonly IActiveBanReader? _activeBanReader;
     private readonly IOperatorActivityStore? _operatorActivityStore;
+    private readonly IPlayerAdministrationCommandService? _playerAdministrationService;
+    private readonly IOperatorConfirmationService? _confirmationService;
+    private readonly Func<RconEndpoint?>? _rconEndpointFactory;
     private readonly IPlayerChatHistoryStore _historyStore;
     private PlayerChatReadResult _lastRead = PlayerChatReadResult.Empty(LocalSourceMetadata.Simulation());
     private bool _historyLoaded;
@@ -24,7 +27,10 @@ public sealed class PlayerChatViewModel : PageViewModel
         IPlayerChatHistoryStore historyStore,
         IPlayerChatLogReader? chatReader = null,
         IActiveBanReader? activeBanReader = null,
-        IOperatorActivityStore? operatorActivityStore = null)
+        IOperatorActivityStore? operatorActivityStore = null,
+        IPlayerAdministrationCommandService? playerAdministrationService = null,
+        IOperatorConfirmationService? confirmationService = null,
+        Func<RconEndpoint?>? rconEndpointFactory = null)
         : base("Chat joueurs", "Messages, connexions et déconnexions observés · historique local par serveur")
     {
         _snapshotStore = snapshotStore;
@@ -32,6 +38,9 @@ public sealed class PlayerChatViewModel : PageViewModel
         _chatReader = chatReader;
         _activeBanReader = activeBanReader;
         _operatorActivityStore = operatorActivityStore;
+        _playerAdministrationService = playerAdministrationService;
+        _confirmationService = confirmationService;
+        _rconEndpointFactory = rconEndpointFactory;
         ClearChatCommand = new AsyncRelayCommand(
             ClearChatAsync,
             () => HasMessages,
@@ -134,6 +143,36 @@ public sealed class PlayerChatViewModel : PageViewModel
         }
 
         NotifyState();
+    }
+
+    public async Task RequestUnbanAsync(ActiveBanItemViewModel? ban, CancellationToken cancellationToken = default)
+    {
+        if (ban is null || _playerAdministrationService is null || _confirmationService is null || _rconEndpointFactory?.Invoke() is not { } endpoint)
+        {
+            ActiveBanStatus = "Déban indisponible : configurez RCON et sélectionnez un serveur local.";
+            return;
+        }
+
+        var confirmed = await _confirmationService.ConfirmAsync(
+            new OperatorConfirmationRequest(
+                "Confirmer le déban",
+                $"Retirer le ban de {ban.DisplayName} ?\n\nCette action est envoyée au serveur. Vérifiez ensuite la partie ou la console."),
+            cancellationToken).ConfigureAwait(true);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        var result = await _playerAdministrationService.ExecuteAsync(
+            new PlayerAdministrationRequest(PlayerAdministrationAction.Unban, ban.Xuid), endpoint, cancellationToken).ConfigureAwait(true);
+        _operatorActivityStore?.RecordPlayerAdministrationResult(result);
+        ActiveBanStatus = result.CommandSent
+            ? "Déban transmis · vérifiez le résultat dans la partie puis actualisez la liste."
+            : result.DisplayMessage;
+        if (result.CommandSent)
+        {
+            await RefreshActiveBansAsync(cancellationToken).ConfigureAwait(true);
+        }
     }
 
     private async Task ClearChatAsync()
@@ -243,10 +282,12 @@ public sealed class PlayerChatViewModel : PageViewModel
         return _operatorActivityStore.GetSnapshot()
             .Where(item => string.Equals(item.Category, "RCON", StringComparison.Ordinal) &&
                            (string.Equals(item.Title, "Administration joueur · Kick", StringComparison.Ordinal) ||
-                            string.Equals(item.Title, "Administration joueur · Ban", StringComparison.Ordinal)))
+                            string.Equals(item.Title, "Administration joueur · Ban", StringComparison.Ordinal) ||
+                            string.Equals(item.Title, "Administration joueur · Déban", StringComparison.Ordinal)))
             .Select(item =>
             {
-                var action = item.Title.EndsWith("Kick", StringComparison.Ordinal) ? "Kick" : "Ban";
+                var action = item.Title.EndsWith("Kick", StringComparison.Ordinal) ? "Kick" :
+                    item.Title.EndsWith("Déban", StringComparison.Ordinal) ? "Déban" : "Ban";
                 var identity = $"{snapshot.Server.SessionId}\n{item.OccurredAt:O}\n{action}";
                 var eventId = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..32].ToLowerInvariant();
                 return new PlayerChatMessage(
@@ -300,6 +341,8 @@ public sealed class PlayerChatViewModel : PageViewModel
 
 public sealed class ActiveBanItemViewModel(ActiveBan ban)
 {
+    internal string Xuid { get; } = ban.Xuid;
+
     public string DisplayName { get; } = ban.DisplayName;
 
     public string Duration { get; } = ban.Duration;

@@ -116,4 +116,23 @@ public partial class SettingsView : UserControl
             await viewModel.SavePublicChatTipsAsync();
         }
     }
+
+    private async void SaveAntiAfk_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel viewModel)
+        {
+            return;
+        }
+
+        var answer = PinteMod.ControlCenter.Services.PinteModMessageBox.Show(
+            "Enregistrer la protection anti-AFK dans ce serveur ?\n\nLe serveur doit être arrêté. Les joueurs AFK sont placés spectateur sans mort ni perte d’équipement et peuvent revenir avec .retour.",
+            "Enregistrer la protection anti-AFK",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+        if (answer == MessageBoxResult.Yes)
+        {
+            await viewModel.SaveAntiAfkAsync();
+        }
+    }
 }

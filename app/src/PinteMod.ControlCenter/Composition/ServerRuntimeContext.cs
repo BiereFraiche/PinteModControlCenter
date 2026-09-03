@@ -259,12 +259,6 @@ public sealed class ServerRuntimeContext : IDisposable
         var rconOperations = new OperatorRconOperationCoordinator();
         var records = new RecordsViewModel(snapshotStore);
         var logs = new LogsViewModel(snapshotStore, operatorActivityStore, clipboardService);
-        var playerChat = new PlayerChatViewModel(
-            snapshotStore,
-            playerChatHistoryStore,
-            playerChatReader,
-            activeBanReader,
-            operatorActivityStore);
         var settings = new SettingsViewModel(
             startup.DataMode,
             integrationProfile.Kind == ManagedServerIntegrationKind.Unknown
@@ -288,7 +282,17 @@ public sealed class ServerRuntimeContext : IDisposable
                                      integrationProfile.SupportsPinteModClosedCommands,
             selfTestService: new ControlCenterSelfTestService(),
             rconBootstrapService: new BoiiiRconBootstrapService(),
-            publicChatTipsConfigurationService: new PinteModPublicChatTipsConfigurationService());
+            publicChatTipsConfigurationService: new PinteModPublicChatTipsConfigurationService(),
+            antiAfkConfigurationService: new PinteModAntiAfkConfigurationService());
+        var playerChat = new PlayerChatViewModel(
+            snapshotStore,
+            playerChatHistoryStore,
+            playerChatReader,
+            activeBanReader,
+            operatorActivityStore,
+            playerAdministrationCommandService,
+            confirmationService,
+            settings.CreateRconEndpoint);
         var managedRuntimeProbe = new ManagedServerRuntimeProbe();
         bool ProbeManagedServerRunning()
         {

@@ -18,6 +18,7 @@ public enum PlayerAdministrationAction
     Unmute,
     Kick,
     Ban,
+    Unban,
     SetRole,
     RemoveRole
 }
